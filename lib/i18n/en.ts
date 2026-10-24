@@ -99,6 +99,8 @@ export const en = {
   "orders.markPacked": "Mark packed",
   "orders.bookDelivery": "Book delivery",
   "orders.readyPickup": "Ready for pickup",
+  "orders.callMe": "Call me about this order",
+  "orders.calling": "Calling you now. Pick up to hear the order.",
 
   "payments.title": "Payments",
   "surplus.title": "Surplus rescue",

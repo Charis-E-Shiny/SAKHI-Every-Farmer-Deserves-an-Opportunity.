@@ -85,6 +85,8 @@ export const kn: Partial<Record<MessageKey, string>> = {
   "orders.markPacked": "ಪ್ಯಾಕ್ ಆಗಿದೆ",
   "orders.bookDelivery": "ಡೆಲಿವರಿ ಬುಕ್ ಮಾಡಿ",
   "orders.readyPickup": "ಪಿಕಪ್‌ಗೆ ಸಿದ್ಧ",
+  "orders.callMe": "ಈ ಆರ್ಡರ್ ಬಗ್ಗೆ ನನಗೆ ಕರೆ ಮಾಡಿ",
+  "orders.calling": "ನಿಮಗೆ ಕರೆ ಮಾಡುತ್ತಿದ್ದೇವೆ. ಆರ್ಡರ್ ಕೇಳಲು ಫೋನ್ ಎತ್ತಿ.",
 
   "payments.title": "ಪಾವತಿಗಳು",
   "surplus.title": "ಹೆಚ್ಚುವರಿ ಉಳಿಸಿ",

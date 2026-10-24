@@ -92,3 +92,13 @@ Reading earnings, stock, orders or prices happens straight away. Anything that c
 harvest for review, changing a price or stock, making an offer, booking a delivery) is shown on a card
 first and runs only after the farmer confirms. Confirmations are signed, belong to that farmer, expire
 after five minutes and work once.
+
+## The order phone call
+
+With `VOICE_CALLS=on`, a confirmed order rings the farmer's registered number through Twilio. Twilio
+receives that number, speaks the order (crop, quantity, buyer's first name or organisation, delivery area,
+rider's first name and arrival time) and turns the farmer's spoken replies into text. A reply that isn't a
+plain yes or no is sent to Gemini together with that one order's facts, so Sakhi can answer it; nothing else
+about the farmer is sent. FoodFlow logs that a call was placed (with the number masked) and, when the
+farmer says no, what they said, so the team can follow up. The only change a call can make is the one it
+asks about out loud: a spoken "yes" (or pressing 1) books the rider, exactly like the orders board's button.

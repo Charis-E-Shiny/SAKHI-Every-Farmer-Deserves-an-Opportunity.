@@ -3,7 +3,7 @@
 // mark packed, book a rider (one click), ready for pickup, verify pickup.
 "use client";
 
-import { Bike, ClipboardList, Loader2, MapPin, Package, ScanLine, Store, Timer } from "lucide-react";
+import { Bike, ClipboardList, Loader2, MapPin, Package, PhoneCall, ScanLine, Store, Timer } from "lucide-react";
 import { LayoutGroup, motion } from "framer-motion";
 import Link from "next/link";
 import { useState } from "react";
@@ -47,6 +47,7 @@ export function OrdersBoard() {
   const { data, error, isLoading, mutate } = useSWR<SerializedOrder[]>("/api/orders?limit=100");
   useLive(["order.updated", "delivery.updated"], () => mutate());
   const [busy, setBusy] = useState<string | null>(null);
+  const { data: voice } = useSWR<{ enabled: boolean }>("/api/voice/status");
 
   const current = TABS.find((x) => x.key === tab)!;
   const rows = data?.filter((o) => (current.statuses as readonly string[]).includes(o.status)) ?? [];
@@ -64,6 +65,18 @@ export function OrdersBoard() {
             : t("orders.buyerNotified"),
       );
       mutate();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function callMe(o: SerializedOrder) {
+    setBusy(`${o.id}:CALL`);
+    try {
+      await sendJSON(`/api/orders/${o.id}/call`, {});
+      toast.success(t("orders.calling"));
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -163,6 +176,11 @@ export function OrdersBoard() {
                 {o.fulfilment === "PICKUP" && ["CONFIRMED", "PACKED"].includes(o.status) && (
                   <Button variant="brand" onClick={() => act(o, "READY_FOR_PICKUP")} disabled={busy !== null}>
                     {isBusy("READY_FOR_PICKUP") ? <Loader2 className="animate-spin" /> : <Store />} {t("orders.readyPickup")}
+                  </Button>
+                )}
+                {voice?.enabled && ["CONFIRMED", "PACKED", "READY_FOR_PICKUP"].includes(o.status) && (
+                  <Button variant="outline" onClick={() => callMe(o)} disabled={busy !== null}>
+                    {busy === `${o.id}:CALL` ? <Loader2 className="animate-spin" /> : <PhoneCall />} {t("orders.callMe")}
                   </Button>
                 )}
                 {o.status === "READY_FOR_PICKUP" && (

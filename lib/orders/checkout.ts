@@ -8,6 +8,7 @@ import type { User } from "@prisma/client";
 import { z } from "zod";
 import { coordsFor } from "@/lib/areas";
 import { onOrderConfirmed } from "@/lib/assistant/autopilot";
+import { scheduleOrderCall } from "@/lib/voice-call";
 import { db } from "@/lib/db";
 import { HttpError } from "@/lib/api";
 import { orderTotals, round2 } from "@/lib/fees";
@@ -187,6 +188,8 @@ export async function placeQuote(
       placed.push({ id: order.id, code: order.code, farmerId: g.farmerId, farmerName: g.farmerName, total: g.total });
       // Farmers who let Sakhi run their orders get a rider booked (or pickup readied) right away.
       await onOrderConfirmed(order.id);
+      // …and every farmer gets a phone call about it (no smartphone needed).
+      scheduleOrderCall(order.id);
     } else failed.push({ orderId: order.id, farmerId: g.farmerId, farmerName: g.farmerName, total: g.total, reason: res.reason });
   }
   return { groupId, placed, failed, total: round2(placed.reduce((s, p) => s + p.total, 0)) };

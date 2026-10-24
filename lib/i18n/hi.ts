@@ -85,6 +85,8 @@ export const hi: Partial<Record<MessageKey, string>> = {
   "orders.markPacked": "पैक हो गया",
   "orders.bookDelivery": "डिलीवरी बुक करें",
   "orders.readyPickup": "पिकअप के लिए तैयार",
+  "orders.callMe": "इस ऑर्डर के बारे में मुझे कॉल करें",
+  "orders.calling": "आपको कॉल कर रहे हैं। ऑर्डर सुनने के लिए फ़ोन उठाइए।",
 
   "payments.title": "भुगतान",
   "surplus.title": "बचा माल बचाएँ",

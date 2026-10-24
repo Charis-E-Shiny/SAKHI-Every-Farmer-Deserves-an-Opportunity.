@@ -13,6 +13,7 @@ import { withFallback } from "@/lib/ai";
 import { rankOffersPrompt } from "@/lib/ai/prompts";
 import { rankedOffersSchema } from "@/lib/ai/schemas";
 import { onOrderConfirmed } from "@/lib/assistant/autopilot";
+import { scheduleOrderCall } from "@/lib/voice-call";
 import { CROPS, isCropSlug } from "@/lib/crops";
 import { publish } from "@/lib/events";
 import { orderTotals, round2 } from "@/lib/fees";
@@ -349,6 +350,7 @@ export async function acceptOffer(buyer: User, offerId: string) {
   const res = await confirmOrder(order.id, buyer.id);
   if (!res.ok) throw new HttpError(409, `The farmer's stock changed, ${res.reason}. Ask them to revise the offer.`);
   await onOrderConfirmed(order.id);
+  scheduleOrderCall(order.id);
 
   const awarded = await db.$transaction(async (tx) => {
     await tx.offer.update({ where: { id: offer.id }, data: { status: "ACCEPTED", pricePerKg: price, counterPrice: null } });

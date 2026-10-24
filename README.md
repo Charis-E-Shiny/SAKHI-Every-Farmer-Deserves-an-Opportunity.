@@ -29,6 +29,17 @@ One marketplace, five apps — each built mobile-first at 360px and scaling up t
 | **Admin** | Operations | Human **verification queue** for every harvest (AI flags, duplicate-photo detection, EXIF capture time); disputes and refunds; trust & safety; platform controls; live analytics. |
 | **Delivery** | Riders | Runs, find order by code / QR / voice; a delivery is only complete when the **customer's OTP** is entered. |
 
+### A phone call for every order
+
+Not every farmer has a smartphone. When an order is confirmed, Sakhi **rings the farmer** (Twilio Voice):
+*"Press 1 for Kannada, 2 for Hindi, 3 for English"*, then reads the order in that language: what was
+ordered and by whom, where it goes, which rider is coming and when, and to keep the pack ready. After
+that the farmer just talks: *"ಹೌದು"* / *"हाँ"* / *"yes"* (or pressing 1) books the rider through the same
+service as the orders board's button, questions (*"ಹಣ ಯಾವಾಗ ಸಿಗುತ್ತದೆ?"*) are answered by Gemini from
+that order's facts only, and *"no"* leaves the order unchanged and flags it for the team. The farmer's
+orders board has *Call me about this order* to hear it again. Switch it on with `VOICE_CALLS=on` (see
+[Configuration](#configuration)).
+
 ### AI assists. People decide.
 
 - **Visual checks, not certificates.** Quality scores describe what's visible in photos — never freshness or food safety.
@@ -284,6 +295,7 @@ Copy `.env.example` to `.env` (`npm run setup` does this for you).
 | `KANNADA_VOICE_DIR` | no | Where Sakhi's Kannada voice model lives (default `models/kn-female`, built by `npm run voice:kannada`, which needs Python with `torch`, `onnx` and `onnxruntime`). Without it Kannada uses the device's voices |
 | `HINDI_VOICE_DIR` | no | Where Sakhi's Hindi voice model lives (default `models/hi-female`, built by `npm run voice:hindi`). Without it Hindi uses the device's voices |
 | `SMS_PROVIDER` | for launch | How sign-up and "Forgot PIN?" codes are texted: `msg91` (India, DLT template with an `{otp}` variable; `MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID`) or `twilio` (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`). `console` shows the code on screen instead, for development and labelled demos only. Unset: development behaves like `console`, production refuses to send |
+| `VOICE_CALLS` | no | `on` rings the farmer about every confirmed order (Twilio Voice, Google WaveNet voices for Kannada, Hindi and English; replies understood by Gemini, Sakhi's FAQ without it). Needs `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, a voice-capable `TWILIO_FROM` (or `TWILIO_VOICE_FROM`) and a public https URL Twilio can reach: `VOICE_CALL_BASE_URL`, else `NEXT_PUBLIC_APP_URL`. On a Twilio trial account set `VOICE_CALL_TEST_NUMBER` to your verified phone and every call goes there |
 | `NEXT_PUBLIC_STT_PROVIDER` | no | `browser` (default) uses the browser's speech recognition for Sakhi. `server` is reserved for a self-hosted Indic model and is not implemented yet |
 | `DEMO_MODE` | no | One-tap sign-in as seeded accounts (API only). Off in production unless set to `true`; keep it off on a live site |
 | `DIRECT_URL` | no | Direct (unpooled) Postgres URL for Neon / Supabase |
@@ -295,6 +307,8 @@ Copy `.env.example` to `.env` (`npm run setup` does this for you).
    connections), `SESSION_SECRET`, optionally `GEMINI_API_KEY` and `CRON_SECRET`, and an
    `SMS_PROVIDER` with its keys so new members get their sign-up code by text. (Without one, sign-up
    can't send codes in production; `SMS_PROVIDER=console` shows the code on screen for a demo site.)
+   For order phone calls also set `VOICE_CALLS=on`, the Twilio keys and `NEXT_PUBLIC_APP_URL` to the
+   deployed https URL (Twilio fetches the call script from it).
 3. Deploy. `vercel.json` runs `npm run vercel-build`, which switches the Prisma schema to Postgres,
    pushes the schema and builds.
 4. Seed the demo once from your machine:
