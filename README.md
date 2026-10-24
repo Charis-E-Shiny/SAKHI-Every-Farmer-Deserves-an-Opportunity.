@@ -1,5 +1,9 @@
 # FoodFlow — From Every Harvest to Every Table
 
+[![CI/CD](https://github.com/skypank-coder/FOODFLOW-From-Every-Harvest-to-Every-Table/actions/workflows/ci.yml/badge.svg)](https://github.com/skypank-coder/FOODFLOW-From-Every-Harvest-to-Every-Table/actions/workflows/ci.yml)
+
+AI-assisted fresh-produce marketplace connecting smallholder farmers directly with households,
+restaurants and community kitchens (UN SDG 2 — Zero Hunger).
 **A fresh-produce marketplace that connects smallholder farmers directly with households, restaurants
 and community kitchens — with AI that assists and people who decide.** Built for UN SDG 2 — Zero Hunger.
 
@@ -217,4 +221,31 @@ scripts/             setup, Postgres switch, responsive screenshot QA
 tests/               Vitest suites (run against a throwaway SQLite database)
 ```
 
+## CI/CD
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every pull request and every push to
+`main`:
+
+- **Lint, types & tests** — ESLint, `tsc` (with Next route types), the Vitest suite, a check that
+  `prisma/migrations` matches `schema.prisma`, a fresh migrate + seed, and Postgres schema validation.
+- **Production build** — `npm run build`, with the Next.js build cache persisted between runs.
+- **Deploy** — pushes to `main` that pass both jobs are deployed to Vercel production (built on
+  Vercel via `npm run vercel-build`).
+
+To turn on deploys, add these repository secrets (**Settings → Secrets and variables → Actions**):
+
+| Secret | Where to find it |
+| --- | --- |
+| `VERCEL_TOKEN` | Vercel → Account Settings → Tokens |
+| `VERCEL_ORG_ID` | `orgId` in `.vercel/project.json` after running `npx vercel link` |
+| `VERCEL_PROJECT_ID` | `projectId` in the same file |
+
+Without them, CI still runs and the deploy job is skipped. The app's runtime variables
+(`DATABASE_URL`, `DIRECT_URL`, `SESSION_SECRET`, `CRON_SECRET`, `GEMINI_API_KEY`) stay in the Vercel
+project settings. If the Vercel project is also connected to this repo through Vercel's Git
+integration, add `"git": { "deploymentEnabled": { "main": false } }` to `vercel.json` so `main`
+deploys only after CI passes. Without that, each push deploys twice.
+
+Full documentation (architecture, SDG mapping, screenshots) lands at the end of the build — see
+[PROGRESS.md](PROGRESS.md) for what's done so far.
 Build notes and decisions: [PROGRESS.md](PROGRESS.md).
