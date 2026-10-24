@@ -59,8 +59,18 @@ How it stays trustworthy:
   them), then the most natural voice on the device (Edge's *Natural* voices, Google and Apple enhanced
   voices), in a female voice by default with a male one a tap away. Amounts are read the Indian way (*1 lakh 25 thousand*, *ಎರಡು ಸಾವಿರದ
   ಐನೂರು*), order codes letter by letter, and replies sentence by sentence. Replies are fixed templates with
-  numbers from the database. Kannada is never read by an English voice: where a device has no Kannada voice
-  (desktop Chrome), a Hindi voice reads it from Devanagari letters, and the panel says so.
+  numbers from the database.
+- **A real Kannada voice.** Browsers rarely have one (desktop Chrome has none), so FoodFlow speaks Kannada
+  itself: SYSPIN's open Kannada female voice from IISc Bangalore (CC BY 4.0), converted to ONNX and run on
+  the server with onnxruntime-node (`/api/tts`). Names, *FoodFlow* and order codes inside Kannada lines are
+  written in Kannada letters first, so they are pronounced, not skipped. Sakhi's fixed lines are recorded
+  once and cached. Build it with `npm run voice:kannada` (see [Configuration](#configuration)); without
+  it, a Kannada voice on the device is used, or a Hindi voice reads the Kannada and the panel says so.
+- **Understands more than the options.** Shortcuts and slips pick the right answer (*"rest"*, *"resturant"*,
+  *"the 2nd one"*, *"ಸಣ್ಣ"*, *"gpay and cash"*), and many more ways of saying yes and no (*"ಆಯ್ತು"*,
+  *"हाँ जी"*, *"not now"*). Questions get answers instead of "I don't know": *"what is this app?"*,
+  *"ಇದು ಉಚಿತವಾ?"*, *"पैसे कब मिलेंगे?"*, *"why do you need my number?"*, *"what are the options?"*. During
+  sign-up Sakhi answers, then asks the pending question again, so a question is never saved as an answer.
 - **From sign-up to first listing, by voice.** On seller sign-up, Sakhi asks every question out loud
   in Kannada, Hindi or English (the screens switch language too) and fills the form from the answers:
   *"ನನ್ನ ಹೆಸರು ರಮೇಶ್"*, *"ದೊಡ್ಡಬಳ್ಳಾಪುರ"* (district, nearest service area and PIN code follow), *"ಟೊಮೇಟೊ
@@ -238,6 +248,7 @@ Playwright (responsive QA script).
 | `npm run lint` / `npm run typecheck` | ESLint (zero warnings) and TypeScript |
 | `npm run db:reset` | Recreate the database and reseed the demo |
 | `npm run db:studio` | Browse the data in Prisma Studio |
+| `npm run voice:kannada` | Download SYSPIN's open Kannada voice and convert it for the server (one time: a 333 MB download, 115 MB kept on disk) |
 | `node scripts/screenshots.mjs --role FARMER /farmer` | Screenshot pages at 360 / 768 / 1280 px and flag overflow and console errors |
 
 ## Configuration
@@ -254,6 +265,7 @@ Copy `.env.example` to `.env` (`npm run setup` does this for you).
 | `CRON_SECRET` | no | Lets a scheduler call `/api/subscriptions/run-due` |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | no | Turn on Razorpay checkout and refunds. Test keys (`rzp_test_…`) are free and move no real money |
 | `RAZORPAY_WEBHOOK_SECRET` | no | Verifies `/api/payments/razorpay/webhook`, which places orders if a buyer closes the tab after paying |
+| `KANNADA_VOICE_DIR` | no | Where Sakhi's Kannada voice model lives (default `models/kn-female`, built by `npm run voice:kannada`, which needs Python with `torch`, `onnx` and `onnxruntime`). Without it Kannada uses the device's voices |
 | `NEXT_PUBLIC_STT_PROVIDER` | no | `browser` (default) uses the browser's speech recognition for Sakhi. `server` is reserved for a self-hosted Indic model and is not implemented yet |
 | `DEMO_MODE` | no | One-tap sign-in as seeded accounts (API only). Off in production unless set to `true`; keep it off on a live site |
 | `DIRECT_URL` | no | Direct (unpooled) Postgres URL for Neon / Supabase |
