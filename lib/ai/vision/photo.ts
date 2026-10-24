@@ -45,11 +45,10 @@ export function measureGrey(grey: Uint8Array | Buffer, width: number, height: nu
     for (let v = 0; v < 256; v++) if ((seen += hist[v]) >= q * n) return v;
     return 255;
   };
-  // Edges are measured relative to the photo's own contrast range, so a dim
-  // photo isn't also called blurry (low light is judged separately below).
+
+  // Keep the heuristic forgiving for real farm photos: blur is a secondary
+  // signal, and dim-but-clear produce should not be treated as blurry.
   const range = Math.max(24, percentile(0.98) - percentile(0.02));
-  // Absolute 4-neighbour Laplacian; a high percentile is robust to plain
-  // backgrounds (a sharp tomato on a white sheet still has sharp edges).
   const edges: number[] = [];
   for (let y = 1; y < height - 1; y++) {
     for (let x = 1; x < width - 1; x++) {
@@ -64,15 +63,28 @@ export function measureGrey(grey: Uint8Array | Buffer, width: number, height: nu
 
   const issues: PhotoIssue[] = [];
   const sharpScore = clamp01((Math.log(sharpness + 1e-6) - Math.log(BLURRY_EDGE)) / (Math.log(SHARP_EDGE) - Math.log(BLURRY_EDGE)));
-  if (sharpScore < 0.5) issues.push("blurry_photo");
+  const isDark = brightness < 0.2;
+  const isBright = brightness > 0.9;
+
+  // Clear produce photos are still valid even when the phone is slightly dim.
+  if (!isDark && sharpScore < 0.35) issues.push("blurry_photo");
+
   let light = 1;
-  if (brightness < 0.3) light = 0.4 + 0.6 * clamp01((brightness - 0.1) / 0.2);
+  if (brightness < 0.3) light = 0.5 + 0.5 * clamp01((brightness - 0.1) / 0.2);
   else if (brightness > 0.82) light = 1 - 0.5 * clamp01((brightness - 0.82) / 0.12);
-  if (brightness < 0.22) issues.push("low_light");
-  if (brightness > 0.88 || clippedShare > 0.35) issues.push("overexposed");
-  if (clippedShare > 0.25) light *= 0.85;
-  const confidence = Math.round((0.3 + 0.7 * (0.35 + 0.65 * sharpScore) * light) * 100) / 100;
-  return { sharpness: Math.round(sharpness * 1000) / 1000, brightness: Math.round(brightness * 1000) / 1000, clipped: Math.round(clippedShare * 1000) / 1000, issues, confidence: Math.min(1, confidence) };
+
+  if (brightness < 0.18) issues.push("low_light");
+  if (isBright || clippedShare > 0.35) issues.push("overexposed");
+  if (clippedShare > 0.28) light *= 0.8;
+
+  const confidence = Math.min(1, Math.max(0.45, 0.35 + 0.65 * sharpScore * light));
+  return {
+    sharpness: Math.round(sharpness * 1000) / 1000,
+    brightness: Math.round(brightness * 1000) / 1000,
+    clipped: Math.round(clippedShare * 1000) / 1000,
+    issues,
+    confidence: Math.round(confidence * 100) / 100,
+  };
 }
 
 /** Checks one encoded photo at 256 px. */
