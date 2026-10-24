@@ -122,7 +122,7 @@ export async function quoteCheckout(buyer: User, input: CheckoutInput) {
  * Farmers whose stock ran out in the meantime get a cancelled order with
  * the authorisation released; the rest go through.
  */
-export async function placeCheckout(buyer: User, input: CheckoutInput) {
+export async function placeCheckout(buyer: User, input: CheckoutInput, opts: { subscriptionId?: string; notes?: string } = {}) {
   const quote = await quoteCheckout(buyer, input);
   if (quote.blocked) throw new HttpError(422, quote.blocked.message, { code: quote.blocked.code });
   if (quote.issues.length) throw new HttpError(409, quote.issues[0].message, { issues: quote.issues });
@@ -145,6 +145,8 @@ export async function placeCheckout(buyer: User, input: CheckoutInput) {
       lat: at?.lat,
       lng: at?.lng,
       groupId,
+      subscriptionId: opts.subscriptionId ?? null,
+      notes: opts.notes ?? null,
       paymentMethod: input.paymentMethod === "CARD" ? "Card (simulated)" : "UPI (simulated)",
       items: g.items.map(({ listingId, title, unit, qty, unitPrice }) => ({ listingId, title, unit, qty, unitPrice })),
       totals: { subtotal: g.subtotal, deliveryFee: g.deliveryFee, platformFee: g.platformFee, total: g.total },

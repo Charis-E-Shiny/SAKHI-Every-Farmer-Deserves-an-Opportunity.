@@ -3,14 +3,16 @@
 // card, and more from this farmer / similar listings.
 "use client";
 
-import { ArrowLeft, BadgeCheck, MapPin, Star, Timer, TrendingUp, Truck } from "lucide-react";
+import { ArrowLeft, BadgeCheck, MapPin, Repeat, Star, Timer, TrendingUp, Truck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import useSWR from "swr";
 import { IndicativeTag } from "@/components/ai/ai-labels";
 import { MediaImage } from "@/components/common/media-image";
 import { ErrorState, SkeletonBlock } from "@/components/common/states";
+import { Button } from "@/components/ui/button";
 import { QualityCard } from "@/components/farmer/new-batch/quality-panel";
 import { useLive } from "@/hooks/use-live";
 import { QUALITY_DISCLAIMER } from "@/lib/ai/schemas";
@@ -21,6 +23,7 @@ import { cn } from "@/lib/utils";
 import { AddToCart } from "./add-to-cart";
 import { CartBar } from "./cart-bar";
 import { ListingCard } from "./listing-card";
+import { SubscribeSheet } from "./subscribe-sheet";
 
 interface Detail extends SerializedListing {
   farmerRating: { average: number | null; count: number };
@@ -35,8 +38,10 @@ interface Detail extends SerializedListing {
  */
 export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/listing", bulk = false }: { id: string; backHref?: string; detailBase?: string; bulk?: boolean }) {
   const { data, error, isLoading, mutate } = useSWR<Detail>(`/api/listings/${id}`);
+  const router = useRouter();
   useLive(["inventory.updated"], () => mutate());
   const [shot, setShot] = useState(0);
+  const [repeat, setRepeat] = useState(false);
 
   if (isLoading) {
     return (
@@ -129,6 +134,14 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
           <div className="mt-6">
             <AddToCart listing={data} bulk={bulk} size="lg" />
             <p className="mt-2 text-center text-xs text-muted-foreground">Stock is reserved only when you confirm checkout.</p>
+            {!bulk && (
+              <>
+                <Button variant="outline" className="mt-3 min-h-11 w-full" onClick={() => setRepeat(true)}>
+                  <Repeat /> Get this on repeat
+                </Button>
+                <SubscribeSheet open={repeat} onOpenChange={setRepeat} listing={data} onCreated={() => router.push("/shop/subscriptions")} />
+              </>
+            )}
           </div>
 
           <div className="mt-6 grid grid-cols-2 gap-3 text-sm">

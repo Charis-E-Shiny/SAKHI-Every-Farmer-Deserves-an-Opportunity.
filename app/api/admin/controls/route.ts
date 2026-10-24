@@ -1,6 +1,6 @@
 // /api/admin/controls — platform controls.
 // GET   → settings (with ranges), service areas, cold-chain categories,
-//         pending payouts and the last payout run.
+//         pending payouts, the last payout run and the subscription queue.
 // PATCH → one change: a setting value, a service area (active / base fee),
 //         or a special category's availability in one area. Audit-logged.
 import { z } from "zod";
@@ -18,12 +18,16 @@ const body = z.discriminatedUnion("kind", [
 
 /** Everything the controls page shows. */
 export const GET = handler({ roles: ["ADMIN"] }, async () => {
-  const [values, areas, categories, pending, lastRun] = await Promise.all([
+  const now = new Date();
+  const [values, areas, categories, pending, lastRun, subsActive, subsDue, nextSub] = await Promise.all([
     allSettings(),
     db.serviceArea.findMany({ orderBy: [{ isPilot: "desc" }, { name: "asc" }] }),
     db.category.findMany({ where: { special: true }, orderBy: { sortOrder: "asc" } }),
     db.settlement.aggregate({ where: { status: "PENDING" }, _count: true, _sum: { net: true } }),
     db.auditLog.findFirst({ where: { action: "PAYOUT_BATCH" }, orderBy: { createdAt: "desc" } }),
+    db.subscription.count({ where: { active: true } }),
+    db.subscription.count({ where: { active: true, nextRunAt: { lte: now } } }),
+    db.subscription.findFirst({ where: { active: true, nextRunAt: { gt: now } }, orderBy: { nextRunAt: "asc" }, select: { nextRunAt: true } }),
   ]);
   return {
     settings: SETTING_KEYS.map((key) => ({ key, value: values[key], ...SETTING_DEFS[key] })),
@@ -34,6 +38,7 @@ export const GET = handler({ roles: ["ADMIN"] }, async () => {
       pendingAmount: round2(pending._sum.net ?? 0),
       lastRun: lastRun ? { at: lastRun.createdAt.toISOString(), meta: lastRun.meta as { count?: number; amount?: number } | null } : null,
     },
+    subscriptions: { active: subsActive, due: subsDue, nextRunAt: nextSub?.nextRunAt.toISOString() ?? null },
   };
 });
 

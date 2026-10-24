@@ -3,7 +3,7 @@
 // area, and the simulated payout run.
 "use client";
 
-import { Check, Loader2, MapPin, Percent, Snowflake, Wallet } from "lucide-react";
+import { Check, Loader2, MapPin, Percent, Repeat, Snowflake, Wallet } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import useSWR from "swr";
@@ -17,7 +17,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { useLive } from "@/hooks/use-live";
 import { sendJSON } from "@/lib/fetcher";
-import { formatINR, timeAgo } from "@/lib/format";
+import { formatDateTime, formatINR, timeAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface SettingRow {
@@ -36,6 +36,7 @@ interface Controls {
   areas: { id: string; name: string; active: boolean; isPilot: boolean; baseDeliveryFee: number; radiusKm: number }[];
   categories: { slug: string; name: string; enabledAreas: string[] }[];
   payouts: { pendingCount: number; pendingAmount: number; lastRun: { at: string; meta: { count?: number; amount?: number } | null } | null };
+  subscriptions: { active: number; due: number; nextRunAt: string | null };
 }
 
 /** /admin/controls */
@@ -65,6 +66,19 @@ export function ControlsPanel() {
     try {
       const r = await sendJSON<{ settled: number; amount: number }>("/api/admin/settlements/run", {});
       toast.success(r.settled ? `Settled ${r.settled} payouts · ${formatINR(r.amount)}` : "Nothing pending");
+      await mutate();
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function runSubscriptions() {
+    setBusy("subs");
+    try {
+      const r = await sendJSON<{ due: number; placed: number; skipped: number }>("/api/subscriptions/run-due", {});
+      toast.success(r.due ? `${r.placed} placed${r.skipped ? ` · ${r.skipped} skipped` : ""}` : "No subscriptions due right now");
       await mutate();
     } catch (e) {
       toast.error((e as Error).message);
@@ -110,6 +124,27 @@ export function ControlsPanel() {
               ? `Last run ${timeAgo(data.payouts.lastRun.at)}${data.payouts.lastRun.meta?.count ? ` · ${data.payouts.lastRun.meta.count} payouts, ${formatINR(data.payouts.lastRun.meta.amount ?? 0)}` : ""}`
               : "No payout run yet."}{" "}
             Simulated — in production this follows the gateway&apos;s transfer confirmation.
+          </p>
+        </Card>
+
+        <Card title="Subscriptions" icon={Repeat} className="lg:col-span-2">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex gap-8">
+              <div>
+                <p className="tabular text-3xl font-semibold">{data.subscriptions.active}</p>
+                <p className="text-sm text-muted-foreground">active plans</p>
+              </div>
+              <div>
+                <p className={cn("tabular text-3xl font-semibold", data.subscriptions.due > 0 && "text-tomato")}>{data.subscriptions.due}</p>
+                <p className="text-sm text-muted-foreground">due now</p>
+              </div>
+            </div>
+            <Button variant="outline" className="min-h-11" disabled={busy === "subs"} onClick={runSubscriptions}>
+              {busy === "subs" && <Loader2 className="animate-spin" />} Run due now
+            </Button>
+          </div>
+          <p className="mt-3 text-xs text-muted-foreground">
+            {data.subscriptions.nextRunAt ? `Next order goes out ${formatDateTime(data.subscriptions.nextRunAt)}. ` : ""}A scheduler calls <code className="font-mono">/api/subscriptions/run-due</code> every 15 minutes in production; each plan is claimed atomically, so overlapping runs never double-order.
           </p>
         </Card>
       </div>

@@ -11,6 +11,7 @@ import { CROPS, CATEGORIES, type CropSlug } from "../lib/crops";
 import { SERVICE_AREAS, VILLAGES, MANDIS, haversineKm, coordsFor } from "../lib/areas";
 import { hashPin } from "../lib/auth/password";
 import { orderTotals, settlementFor, courierCost, DEFAULT_COMMISSION_PCT, round2 } from "../lib/fees";
+import { nextRun } from "../lib/subscription-schedule";
 
 const prisma = new PrismaClient();
 
@@ -715,12 +716,11 @@ async function main() {
   });
 
   // ── Subscriptions (milk/eggs only exist in the pilot area)
-  const tomorrow6 = new Date(startOfDay(new Date()).getTime() + 30 * 3_600_000);
   await prisma.subscription.createMany({
     data: [
-      { buyerId: consumers[0].id, listingId: active[12].id, crop: "milk", qty: 1, unit: "litre", frequency: "DAILY", preferredSlot: "6–8 AM", nextRunAt: tomorrow6 },
-      { buyerId: consumers[0].id, listingId: active[0].id, crop: "tomato", qty: 2, unit: "kg", frequency: "WEEKLY", dayOfWeek: 0, preferredSlot: "9–11 AM", nextRunAt: new Date(tomorrow6.getTime() + 3 * 86_400_000) },
-      { buyerId: consumers[3].id, listingId: active[13].id, crop: "eggs", qty: 1, unit: "dozen", frequency: "WEEKLY", dayOfWeek: 3, preferredSlot: "7–9 AM", nextRunAt: new Date(tomorrow6.getTime() + 86_400_000), active: false },
+      { buyerId: consumers[0].id, listingId: active[12].id, crop: "milk", qty: 1, unit: "litre", frequency: "DAILY", preferredSlot: "6–8 AM", nextRunAt: nextRun("DAILY", null, "6–8 AM").runAt },
+      { buyerId: consumers[0].id, listingId: active[0].id, crop: "tomato", qty: 2, unit: "kg", frequency: "WEEKLY", dayOfWeek: 0, preferredSlot: "9–11 AM", nextRunAt: nextRun("WEEKLY", 0, "9–11 AM").runAt },
+      { buyerId: consumers[3].id, listingId: active[13].id, crop: "eggs", qty: 1, unit: "dozen", frequency: "WEEKLY", dayOfWeek: 3, preferredSlot: "7–9 AM", nextRunAt: nextRun("WEEKLY", 3, "7–9 AM").runAt, active: false },
     ],
   });
 
