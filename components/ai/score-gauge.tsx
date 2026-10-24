@@ -50,7 +50,7 @@ export function ScoreGauge({ score, size = 132, label, className }: { score: num
       </svg>
       <div className="text-center">
         <motion.span className="tabular block text-4xl leading-none font-semibold tracking-tight">{display}</motion.span>
-        {label && <span className="mt-1 block text-[11px] text-muted-foreground">{label}</span>}
+        {label && <span className="mx-auto mt-1 block max-w-[72%] text-[10px] leading-tight text-muted-foreground">{label}</span>}
       </div>
     </div>
   );

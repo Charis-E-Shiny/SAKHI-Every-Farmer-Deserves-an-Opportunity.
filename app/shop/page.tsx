@@ -1,7 +1,14 @@
-// Consumer home — the full view is built in a later step of the plan.
-import { PageHeader } from "@/components/shell/page-header";
+// /shop — consumer marketplace browse.
+import type { Metadata } from "next";
+import { Browse } from "@/components/shop/browse";
+import { getCurrentUser } from "@/lib/auth/session";
+import { categoryChips } from "@/lib/categories";
 
-/** Consumer landing view. */
-export default function ShopHome() {
-  return <PageHeader title="Fresh from the *farm*" description="Loading your workspace…" />;
+export const metadata: Metadata = { title: "Shop" };
+
+/** Loads the buyer's area and category availability, then renders browse. */
+export default async function ShopPage() {
+  const user = await getCurrentUser();
+  const area = user?.area ?? null;
+  return <Browse area={area} categories={await categoryChips(area)} bulk={user?.role === "BULK_BUYER"} />;
 }

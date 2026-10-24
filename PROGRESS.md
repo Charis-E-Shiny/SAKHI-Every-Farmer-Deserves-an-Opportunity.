@@ -33,10 +33,26 @@ Status of each build phase, what's next, and the decisions made along the way.
 - SSE `/api/events` + `useLive` hook (5s polling fallback); Harvests list with resume.
 - Tests: parsers + visual heuristic (13 passing).
 
-## Next — Phase 2 (consumer shopping)
+## Phase 2 — Consumer shopping ✅
 
-Browse/search/filter + listing detail → cart + checkout + simulated payments → atomic inventory
-reservation (+ race test) → AI grocery assistant + smart basket → live order tracking.
+- Browse (`/shop`): search, category chips (area-gated milk/eggs/chicken say "Soon"), filter sheet,
+  cards with harvest age, visual-score ring and Verified badge, fly-to-cart, sticky cart bar
+- Listing detail: verified gallery, price vs mandi (indicative), stock bar, delivery/pickup, quality
+  card, farmer reliability + rating, related listings
+- Cart grouped by farm → checkout (delivery/pickup, slots, UPI/card simulated) with a server-side
+  quote; out-of-area addresses blocked with a friendly message; one order per farm per checkout
+- `lib/inventory.ts`: conditional `updateMany` reservation inside a transaction, release on cancel,
+  commit on handover; guarded order state machine (`lib/orders/state.ts`)
+- AI grocery assistant (`/shop/assistant`): photo / speech / text → editable list → smart basket with
+  per-pick reasons and alternatives → add all to cart
+- Live tracking (`/shop/orders/[id]`): animated status, SSE timeline, payment trail, contacts, cancel
+- Tests: inventory race (2 buyers, 8-buyer burst), all-or-nothing orders, idempotent confirm, release
+  on cancel — 19 tests passing
+
+## Next — Phase 3 (fulfilment)
+
+Delivery booking + rider assignment → delivery app + OTP (hashed, expiring, attempt-limited,
+idempotent) → self-pickup QR → settlements + farmer payments timeline.
 
 ## Decisions
 
@@ -57,3 +73,6 @@ reservation (+ race test) → AI grocery assistant + smart basket → live order
 | Frames for AI, video for humans | Videos are stored as evidence for admins; three client-extracted JPEG frames feed the visual check. |
 | Quality is recomputed on submit | The wizard's preview isn't trusted; submit re-runs the check on stored media (cached, so it's consistent and free). |
 | Test DB | Vitest builds a throwaway `prisma/test.db` by deleting the file and pushing the schema (no destructive reset of any real database). |
+| Confirm at checkout | Checkout places the order (payment AUTHORISED) and immediately confirms it (stock reserved + payment CAPTURED) in one transaction, so stock can't be oversold between cart and payment. A farm whose stock ran out gets a cancelled order with the authorisation released. |
+| Quote never errors for out-of-area | `/api/checkout/quote` returns `blocked` with a friendly message (no 4xx in the console); only placing the order returns 422. |
+| Smart basket weights | Price 0.30, ETA 0.27, freshness 0.25, visual score 0.18, +0.12 per extra item a farm covers — so a marginally cheaper lot 60 km away loses to a nearby fresher one. |

@@ -103,6 +103,7 @@ function Sidebar({ role, user, items, active }: { role: Role; user: PublicUser; 
                 key={item.href}
                 href={item.href}
                 aria-current={on ? "page" : undefined}
+                data-cart-target={item.badge === "cart" ? "" : undefined}
                 className={cn(
                   "relative flex h-11 items-center gap-3 rounded-xl px-3 text-[15px] transition-colors",
                   on ? "font-medium text-sidebar-primary-foreground" : "text-muted-foreground hover:text-foreground",
@@ -290,7 +291,7 @@ function Tab({ item, on, label, count }: { item: NavItem; on: boolean; label: st
           transition={{ type: "spring", stiffness: 500, damping: 36 }}
         />
       )}
-      <span className="relative">
+      <span className="relative" data-cart-target={item.badge === "cart" ? "" : undefined}>
         <Icon className="size-5" />
         {count > 0 && (
           <motion.span

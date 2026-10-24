@@ -151,11 +151,10 @@ function Scanning({ previews, label }: { previews: string[]; label: string }) {
  * @param onRerun - optional re-check button
  */
 export function QualityCard({ result, onRerun, compact = false }: { result: QualityState; onRerun?: () => void; compact?: boolean }) {
-  const { t } = useI18n();
   return (
     <div className="rounded-3xl border bg-card p-5">
       <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
-        <ScoreGauge score={result.score} size={compact ? 104 : 132} label={t("batch.score")} />
+        <ScoreGauge score={result.score} size={compact ? 104 : 132} label="out of 100" />
         <div className="min-w-0 flex-1 text-center sm:text-left">
           <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
             <span className="grid size-9 place-items-center rounded-xl bg-foreground text-lg font-semibold text-background">{result.grade}</span>

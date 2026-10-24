@@ -69,3 +69,12 @@ export function harvestAge(d: Date | string): string {
 function startOfDay(d: Date) {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
+
+/** Compact harvest age for small cards: "Today", "Yesterday", "3d ago". */
+export function harvestAgeShort(d: Date | string): string {
+  const date = typeof d === "string" ? new Date(d) : d;
+  const days = Math.floor((startOfDay(new Date()).getTime() - startOfDay(date).getTime()) / 86_400_000);
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
+  return `${days}d ago`;
+}
