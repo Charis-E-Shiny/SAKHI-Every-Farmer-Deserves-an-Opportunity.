@@ -6,13 +6,22 @@
 //    and waived for retail baskets above the free-delivery threshold).
 //  • Farmer receives net = subtotal − platformFee − deliveryCost, where
 //    platformFee = commission% × subtotal and deliveryCost is the part of
-//    the actual courier cost that the buyer's delivery fee did not cover.
+//    the actual courier cost that the buyer's delivery fee did not cover,
+//    capped at FARMER_DELIVERY_SHARE_CAP of the order value (FoodFlow absorbs
+//    the rest) so a small order can never leave a farmer out of pocket.
 
 export const DEFAULT_COMMISSION_PCT = 5;
 export const FREE_DELIVERY_THRESHOLD = 499;
-/** Courier pricing: flat pickup charge + per-km rate. */
-export const COURIER_BASE = 30;
-export const COURIER_PER_KM = 6;
+/**
+ * Courier pricing per order. Riders run pooled "milk runs" (several farms →
+ * several homes per trip), so the per-order share is a small flat charge
+ * plus a per-km rate, capped.
+ */
+export const COURIER_BASE = 15;
+export const COURIER_PER_KM = 1.5;
+export const COURIER_CAP = 60;
+/** Max share of an order's value a farmer can be charged for delivery. */
+export const FARMER_DELIVERY_SHARE_CAP = 0.15;
 
 /** Rounds to paise, avoiding binary float drift (e.g. 1.005 → 1.01). */
 export function round2(n: number): number {
@@ -47,9 +56,9 @@ export function buyerDeliveryFee(
   return round2(baseFee);
 }
 
-/** Actual courier cost for a run of `distanceKm`. */
+/** Actual courier cost for an order travelling `distanceKm` (capped). */
 export function courierCost(distanceKm: number): number {
-  return round2(COURIER_BASE + COURIER_PER_KM * Math.max(0, distanceKm));
+  return round2(Math.min(COURIER_CAP, COURIER_BASE + COURIER_PER_KM * Math.max(0, distanceKm)));
 }
 
 /** Commission withheld from the farmer's gross. */
@@ -102,8 +111,10 @@ export function settlementFor(args: {
   buyerDeliveryFee: number;
   actualCourierCost: number;
 }): SettlementAmounts {
-  // The farmer only absorbs the shortfall between courier cost and the fee the buyer paid.
-  const deliveryCost = round2(Math.max(0, args.actualCourierCost - args.buyerDeliveryFee));
+  // The farmer only absorbs the shortfall between courier cost and the fee the
+  // buyer paid — and never more than 15% of the order value.
+  const shortfall = Math.max(0, args.actualCourierCost - args.buyerDeliveryFee);
+  const deliveryCost = round2(Math.min(shortfall, args.subtotal * FARMER_DELIVERY_SHARE_CAP));
   const net = round2(args.subtotal - args.platformFee - deliveryCost);
   return { gross: round2(args.subtotal), platformFee: round2(args.platformFee), deliveryCost, net };
 }

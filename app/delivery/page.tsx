@@ -1,7 +1,10 @@
-// Delivery home — the full view is built in a later step of the plan.
-import { PageHeader } from "@/components/shell/page-header";
+// /delivery — rider home: today's runs.
+import type { Metadata } from "next";
+import { Runs } from "@/components/delivery/runs";
 
-/** Delivery landing view. */
+export const metadata: Metadata = { title: "Runs" };
+
+/** Rider runs. */
 export default function DeliveryHome() {
-  return <PageHeader title="Today's *runs*" description="Loading your workspace…" />;
+  return <Runs />;
 }

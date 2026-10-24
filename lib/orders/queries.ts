@@ -72,6 +72,7 @@ export function serializeOrder(o: OrderRow, viewer: Pick<User, "id" | "role">) {
       mode: o.delivery.mode,
       status: o.delivery.status,
       distanceKm: o.delivery.distanceKm,
+      cost: isFarmer || isAdmin ? o.delivery.cost : null,
       otpActive: Boolean(o.delivery.otpHash && o.delivery.otpExpiresAt && o.delivery.otpExpiresAt > new Date()),
       otpExpiresAt: o.delivery.otpExpiresAt?.toISOString() ?? null,
       otpAttempts: o.delivery.otpAttempts,

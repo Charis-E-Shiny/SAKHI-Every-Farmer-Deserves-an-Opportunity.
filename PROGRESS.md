@@ -49,10 +49,25 @@ Status of each build phase, what's next, and the decisions made along the way.
 - Tests: inventory race (2 buyers, 8-buyer burst), all-or-nothing orders, idempotent confirm, release
   on cancel — 19 tests passing
 
-## Next — Phase 3 (fulfilment)
+## Phase 3 — Fulfilment ✅
 
-Delivery booking + rider assignment → delivery app + OTP (hashed, expiring, attempt-limited,
-idempotent) → self-pickup QR → settlements + farmer payments timeline.
+- Farmer orders board: To pack / On the way / Done with estimated payout; mark packed, one-click
+  delivery booking (rider in the order's area with the fewest active runs, distance-priced), ready
+  for pickup
+- `lib/otp.ts`: 6-digit CSPRNG codes stored as HMAC(secret, deliveryId:nonce:otp), 15-min expiry,
+  5 attempts counted atomically, regeneration rotates the nonce, single use
+- `lib/delivery/handover.ts`: only the assigned rider (or owning farmer for pickup) can verify, only
+  after pickup; idempotent; commits stock and creates the PENDING settlement
+- Rider app (`/delivery`): runs, find by code / QR / voice, picked up, OTP keypad with spoken digits,
+  problem reports. Buyers see a flip-in OTP with countdown; pickup orders also get a signed QR.
+- Farmer pickup counter (`/farmer/pickup`): scan QR or code + OTP
+- Payments (`/farmer/payments`): awaiting → pending → settled with fee equations; admin payout batch
+- Tests: 39 passing (OTP hashing/expiry/lockout/wrong rider/races/QR binding, fee math)
+
+## Next — Phase 4 (bulk procurement)
+
+Demand posting (form / voice / list, urgent, recurring) → farmer offers + AI ranking + negotiation +
+award → bulk order → invoices.
 
 ## Decisions
 
@@ -75,4 +90,7 @@ idempotent) → self-pickup QR → settlements + farmer payments timeline.
 | Test DB | Vitest builds a throwaway `prisma/test.db` by deleting the file and pushing the schema (no destructive reset of any real database). |
 | Confirm at checkout | Checkout places the order (payment AUTHORISED) and immediately confirms it (stock reserved + payment CAPTURED) in one transaction, so stock can't be oversold between cart and payment. A farm whose stock ran out gets a cancelled order with the authorisation released. |
 | Quote never errors for out-of-area | `/api/checkout/quote` returns `blocked` with a friendly message (no 4xx in the console); only placing the order returns 422. |
+| Courier pricing | Pooled routes: ₹15 + ₹1.5/km per order, capped at ₹60. The farmer pays only the shortfall over the buyer's delivery fee, and never more than 15% of the order value — FoodFlow absorbs the rest, so a small order can't leave a farmer out of pocket. |
+| Recipient generates the OTP | The plaintext OTP is returned only to the buyer when they tap "Show OTP" (kept in sessionStorage until expiry). The rider never sees it except from the customer. |
+| Pickup QR | A JWT bound to the order and the current OTP nonce, so regenerating the code invalidates old QRs. |
 | Smart basket weights | Price 0.30, ETA 0.27, freshness 0.25, visual score 0.18, +0.12 per extra item a farm covers — so a marginally cheaper lot 60 km away loses to a nearby fresher one. |
