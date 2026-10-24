@@ -6,6 +6,9 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { coordsFor, haversineKm } from "@/lib/areas";
 import { db } from "@/lib/db";
+import { HttpError } from "@/lib/api";
+import { audit } from "@/lib/audit";
+import { publish } from "@/lib/events";
 import { caseVariants } from "@/lib/search";
 import { round2 } from "@/lib/fees";
 
@@ -142,4 +145,24 @@ export async function browseListings(buyer: { area: string | null; lat: number |
     quality: (a, b) => (b.quality.score ?? 0) - (a.quality.score ?? 0),
   };
   return items.sort(sorters[f.sort ?? "nearest"]);
+}
+
+/**
+ * Farmer edits their own listing's price and/or availability. Pausing hides
+ * it from buyers but keeps stock reserved for confirmed orders; resuming
+ * needs stock left. Audit-logged.
+ */
+export async function updateOwnListing(farmerId: string, listingId: string, change: { price?: number; status?: "ACTIVE" | "PAUSED" }) {
+  const l = await db.listing.findUnique({ where: { id: listingId } });
+  if (!l) throw new HttpError(404, "Listing not found");
+  if (l.farmerId !== farmerId) throw new HttpError(403, "This listing belongs to another farmer");
+  if (l.status === "SOLD_OUT" && change.status === "ACTIVE") throw new HttpError(409, "Sold out, list a new harvest to sell more");
+  if (change.status === "ACTIVE" && l.availableQty <= 0) throw new HttpError(409, "No stock left to resume");
+  const updated = await db.listing.update({
+    where: { id: l.id },
+    data: { ...(change.price !== undefined && { pricePerUnit: change.price }), ...(change.status && { status: change.status }) },
+  });
+  await audit({ actorId: farmerId, action: "LISTING_UPDATED", entity: "Listing", entityId: l.id, meta: { from: { price: l.pricePerUnit, status: l.status }, to: change } });
+  publish({ type: "inventory.updated", id: l.id });
+  return { before: l, after: updated };
 }

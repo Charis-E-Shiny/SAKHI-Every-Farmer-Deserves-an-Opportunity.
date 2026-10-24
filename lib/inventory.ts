@@ -13,6 +13,9 @@
 import "server-only";
 import { Prisma, type PrismaClient } from "@prisma/client";
 import { db } from "@/lib/db";
+import { HttpError } from "@/lib/api";
+import { audit } from "@/lib/audit";
+import { publish } from "@/lib/events";
 import { round2 } from "@/lib/fees";
 
 type Tx = Prisma.TransactionClient;
@@ -98,4 +101,30 @@ export async function commitItems(tx: Tx, items: { listingId: string; qty: numbe
 /** Sold quantity for display (total − available − reserved). */
 export function soldQty(l: { totalQty: number; availableQty: number; reservedQty: number }): number {
   return round2(l.totalQty - l.availableQty - l.reservedQty);
+}
+
+/**
+ * Sets how much of a listing is still available (e.g. some was sold at the
+ * gate or spoiled). Reserved and sold stock are untouched, and the total can
+ * never exceed the quantity the admin verified on the batch. Optimistic:
+ * fails with 409 if the stock moved since it was read.
+ */
+export async function setAvailableStock(farmerId: string, listingId: string, available: number) {
+  const l = await db.listing.findUnique({ where: { id: listingId }, include: { batch: { select: { quantityKg: true } } } });
+  if (!l) throw new HttpError(404, "Listing not found");
+  if (l.farmerId !== farmerId) throw new HttpError(403, "This listing belongs to another farmer");
+  const sold = soldQty(l);
+  const cap = round2(Math.max(0, l.batch.quantityKg - sold - l.reservedQty));
+  if (available < 0) throw new HttpError(400, "Stock can't be negative");
+  if (available > cap) throw new HttpError(409, `The verified harvest only allows up to ${cap} ${l.unit} available, list a new harvest for more`);
+  const totalQty = round2(available + l.reservedQty + sold);
+  const status = available === 0 ? "SOLD_OUT" : l.status === "SOLD_OUT" ? "ACTIVE" : l.status;
+  const moved = await db.listing.updateMany({
+    where: { id: l.id, availableQty: l.availableQty, reservedQty: l.reservedQty },
+    data: { availableQty: available, totalQty, status },
+  });
+  if (moved.count === 0) throw new HttpError(409, "Stock changed just now, check it and try again");
+  await audit({ actorId: farmerId, action: "STOCK_SET", entity: "Listing", entityId: l.id, meta: { from: l.availableQty, to: available } });
+  publish({ type: "inventory.updated", id: l.id });
+  return { before: l.availableQty, after: available, unit: l.unit, status };
 }
