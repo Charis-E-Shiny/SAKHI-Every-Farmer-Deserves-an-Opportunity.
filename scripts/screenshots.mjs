@@ -1,7 +1,7 @@
 // Responsive QA helper: screenshots pages at 360 / 768 / 1280 px, flags
 // horizontal overflow (the #1 mobile bug) and browser console errors.
 //
-// Usage: node scripts/screenshots.mjs [--role FARMER] [--base http://localhost:3000] /path [/path2 …]
+// Usage: node scripts/screenshots.mjs [--role FARMER] [--base http://localhost:3000] [--scroll true] /path [/path2 …]
 // Output: screenshots-tmp/<path>-<width>.png (gitignored)
 import { chromium } from "playwright";
 import fs from "node:fs";
@@ -20,6 +20,9 @@ const role = opt("role", null);
 const widths = opt("widths", "360,768,1280").split(",").map(Number);
 const fullPage = opt("full", "true") !== "false";
 const waitMs = Number(opt("wait", "1200"));
+// Scroll the page top-to-bottom first so scroll-triggered reveals fire.
+const scrollFirst = opt("scroll", "false") === "true";
+const scheme = opt("scheme", "light");
 const paths = args.length ? args : ["/"];
 const outDir = path.join(process.cwd(), "screenshots-tmp");
 fs.mkdirSync(outDir, { recursive: true });
@@ -32,6 +35,7 @@ for (const width of widths) {
     deviceScaleFactor: 1,
     hasTouch: width < 768,
     isMobile: width < 768,
+    colorScheme: scheme,
   });
   if (role) {
     const res = await context.request.post(`${base}/api/auth/demo`, { data: { role } });
@@ -45,6 +49,14 @@ for (const width of widths) {
     errors.length = 0;
     await page.goto(`${base}${p}`, { waitUntil: "networkidle" });
     await page.waitForTimeout(waitMs);
+    if (scrollFirst) {
+      const h = await page.evaluate(() => document.documentElement.scrollHeight);
+      for (let y = 0; y < h; y += 400) {
+        await page.mouse.wheel(0, 400);
+        await page.waitForTimeout(120);
+      }
+      await page.waitForTimeout(1800);
+    }
     const overflow = await page.evaluate(() => {
       const vw = document.documentElement.clientWidth;
       const offenders = [];

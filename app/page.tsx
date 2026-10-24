@@ -1,8 +1,32 @@
-// Landing page placeholder — replaced by the full landing experience in Phase 6.
-export default function Home() {
+// Landing page: 3D hero, live mandi ticker, interfaces, how it works,
+// live impact counters + SDG mapping, honesty principles and the demo
+// persona switcher. Data is read live from the database on each request.
+import { DemoSection, LandingFooter } from "@/components/landing/demo-section";
+import { Hero } from "@/components/landing/hero";
+import { HowItWorks } from "@/components/landing/how-it-works";
+import { Impact } from "@/components/landing/impact";
+import { Interfaces } from "@/components/landing/interfaces";
+import { LandingNav } from "@/components/landing/nav";
+import { MandiTicker } from "@/components/landing/ticker";
+import { getImpactStats, getMandiTicker } from "@/lib/stats";
+
+export const dynamic = "force-dynamic";
+
+/** Public home page. */
+export default async function Home() {
+  const [stats, ticker] = await Promise.all([getImpactStats(), getMandiTicker()]);
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <h1 className="text-2xl font-semibold">FoodFlow</h1>
-    </main>
+    <>
+      <LandingNav />
+      <main className="flex-1">
+        <Hero stats={stats} />
+        <MandiTicker items={ticker} />
+        <Interfaces />
+        <HowItWorks />
+        <Impact stats={stats} />
+        <DemoSection />
+      </main>
+      <LandingFooter />
+    </>
   );
 }

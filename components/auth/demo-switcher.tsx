@@ -26,15 +26,12 @@ interface Persona {
 }
 
 /**
- * Persona cards for every role.
- * @param next - optional path to land on instead of the role's home
- * @param compact - tighter cards (used inside the landing hero)
+ * Signs in as a seeded persona and navigates to the role's home.
+ * Shared by the persona cards here and the landing page's interface cards.
  */
-export function DemoSwitcher({ next, compact = false }: { next?: string; compact?: boolean }) {
+export function useDemoLogin(next?: string) {
   const router = useRouter();
   const [busy, setBusy] = useState<string | null>(null);
-  const [allOpen, setAllOpen] = useState(false);
-
   async function signIn(payload: { role?: Role; userId?: string }, key: string, label: string) {
     setBusy(key);
     try {
@@ -48,6 +45,17 @@ export function DemoSwitcher({ next, compact = false }: { next?: string; compact
       setBusy(null);
     }
   }
+  return { busy, signIn };
+}
+
+/**
+ * Persona cards for every role.
+ * @param next - optional path to land on instead of the role's home
+ * @param compact - tighter cards (used inside the landing hero)
+ */
+export function DemoSwitcher({ next, compact = false }: { next?: string; compact?: boolean }) {
+  const { busy, signIn } = useDemoLogin(next);
+  const [allOpen, setAllOpen] = useState(false);
 
   return (
     <div className="w-full">
