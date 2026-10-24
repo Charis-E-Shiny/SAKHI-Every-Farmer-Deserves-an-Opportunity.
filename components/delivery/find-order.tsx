@@ -38,7 +38,7 @@ export function FindOrder() {
     if (c.length < 5) return toast.error("That doesn't look like an order code");
     setBusy(true);
     try {
-      const r = await fetcher<{ orderId: string }>(`/api/deliveries/find?code=FF-${c}`);
+      const r = await fetcher<{ orderId: string }>(`/api/deliveries/find?code=SK-${c}`);
       router.push(`/delivery/${r.orderId}`);
     } catch (e) {
       toast.error((e as Error).message);
@@ -78,7 +78,7 @@ export function FindOrder() {
           className="space-y-4"
         >
           <label className="flex h-16 items-center rounded-2xl border-2 px-4 focus-within:border-lime">
-            <span className="font-mono text-2xl text-muted-foreground">FF-</span>
+            <span className="font-mono text-2xl text-muted-foreground">SK-</span>
             <input
               autoFocus
               value={code}

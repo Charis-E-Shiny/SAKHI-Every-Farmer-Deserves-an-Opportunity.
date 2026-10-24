@@ -36,7 +36,7 @@ export function HouseholdForm({ google }: { google?: { name: string; email: stri
         area: f.area,
         address: f.address || undefined,
       });
-      toast.success("Welcome to FoodFlow!");
+      toast.success("Welcome to SAKHI!");
       router.push(res.redirect);
       router.refresh();
     } catch (err) {

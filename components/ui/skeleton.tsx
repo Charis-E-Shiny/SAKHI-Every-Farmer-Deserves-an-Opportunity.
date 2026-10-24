@@ -1,4 +1,4 @@
-// shadcn/ui primitive (skeleton) — shared UI kit used by every FoodFlow interface.
+// shadcn/ui primitive (skeleton) — shared UI kit used by every SAKHI interface.
 import { cn } from "cn"
 
 function Skeleton({ className, ...props }: React.ComponentProps<"div">) {

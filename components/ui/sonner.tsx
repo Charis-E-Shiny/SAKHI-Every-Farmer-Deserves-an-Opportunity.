@@ -1,4 +1,4 @@
-// shadcn/ui primitive (sonner) — shared UI kit used by every FoodFlow interface.
+// shadcn/ui primitive (sonner) — shared UI kit used by every SAKHI interface.
 "use client"
 
 import { useTheme } from "next-themes"

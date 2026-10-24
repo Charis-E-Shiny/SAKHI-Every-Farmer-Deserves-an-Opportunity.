@@ -27,7 +27,7 @@ export function Hero({ stats }: { stats: ImpactStats }) {
       <div className="relative mx-auto flex max-w-7xl flex-col px-4 pb-14 sm:px-6 lg:min-h-[min(100dvh,50rem)] lg:justify-center lg:px-8 lg:pt-24 lg:pb-16">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="-mt-6 flex flex-wrap gap-2 lg:mt-0">
           <a href="#how" className="glass inline-flex min-h-9 items-center gap-2 rounded-full border px-3 font-mono text-[11px] transition-colors hover:border-lime/60">
-            <ShieldCheck className="size-4 text-lime" /> FF-7K2QA · delivered with OTP ✓
+            <ShieldCheck className="size-4 text-lime" /> SK-7K2QA · delivered with OTP ✓
           </a>
           <a href="#how" className="glass inline-flex min-h-9 items-center gap-2 rounded-full border px-3 text-xs transition-colors hover:border-lime/60">
             <BadgeCheck className="size-4 text-lime" /> Every listing admin-verified
@@ -35,10 +35,10 @@ export function Hero({ stats }: { stats: ImpactStats }) {
         </motion.div>
 
         <h1 className="mt-5 max-w-3xl text-[2.65rem] leading-[0.98] font-semibold tracking-[-0.03em] sm:text-6xl lg:text-7xl xl:text-[5.25rem]">
-          <WordReveal text="From every *harvest* to every *table.*" />
+          <WordReveal text="Your *harvest.* Your *choices.* Your *future.*" />
         </h1>
         <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 }} className="mt-6 max-w-xl text-lg leading-relaxed text-foreground/80">
-          Farmers list harvests by voice. AI checks the produce, admins verify it, and households, restaurants and community kitchens buy direct, with every handover OTP-verified and nothing left to rot.
+          A trusted companion connecting farmers, buyers and communities. Farmers list harvests by voice in Kannada, Hindi or English, admins verify every listing, and households, restaurants and community kitchens buy direct, with every handover OTP-verified.
         </motion.p>
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85 }} className="mt-8 flex flex-wrap gap-3">
           <Button asChild size="lg" variant="brand" className="h-14 rounded-2xl px-7 text-base">

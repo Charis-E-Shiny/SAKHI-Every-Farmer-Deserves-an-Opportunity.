@@ -9,7 +9,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
-  { icon: Mic, title: "Speak the harvest", body: "“50 kilo tamatar, aaj tode, 25 rupaye kilo.” FoodFlow fills the listing, the farmer checks every field." },
+  { icon: Mic, title: "Speak the harvest", body: "“50 kilo tamatar, aaj tode, 25 rupaye kilo.” SAKHI fills the listing, the farmer checks every field." },
   { icon: ScanEye, title: "AI looks closely", body: "Photos or a short video get a visual quality score and flags like bruising or mould. Assistive, never a certificate." },
   { icon: BadgeCheck, title: "A person verifies", body: "Admins approve, reject or ask for changes. Duplicate photos are flagged. Nothing goes live unchecked." },
   { icon: ShoppingBasket, title: "Buyers order direct", body: "Households build smart baskets; kitchens post bulk demand and accept AI-ranked offers. Stock can't be double-sold." },

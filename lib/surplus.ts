@@ -135,7 +135,7 @@ export async function detectSurplus(farmerId: string, onlyListingId?: string): P
           label: `${who} needs ${remaining} kg${d.urgent ? " urgently" : ""}, offer ${offerQty} kg at ₹${offerPrice}/kg`,
         });
       }
-      // Community kitchens first (SDG 2), then urgent, then nearest.
+      // Community kitchens first, then urgent, then nearest.
       suggestions.sort((a, b) => {
         if (a.kind !== "DEMAND" || b.kind !== "DEMAND") return 0;
         return Number(b.orgType === "COMMUNITY_KITCHEN") - Number(a.orgType === "COMMUNITY_KITCHEN") || Number(b.urgent) - Number(a.urgent) || (a.distanceKm ?? 99) - (b.distanceKm ?? 99);

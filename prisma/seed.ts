@@ -46,7 +46,7 @@ function seedCode(): string {
     s += alphabet[n % alphabet.length];
     n = Math.floor(n / alphabet.length);
   }
-  return `FF-${s}`;
+  return `SK-${s}`;
 }
 
 // ─── Seed images ──────────────────────────────────────────────────────────
@@ -149,7 +149,7 @@ async function wipe() {
 }
 
 async function main() {
-  console.log("Seeding FoodFlow pilot data…");
+  console.log("Seeding SAKHI pilot data…");
   await wipe();
   const pinHash = await hashPin("1234");
 
@@ -306,7 +306,7 @@ async function main() {
     const info = CROPS[opts.crop];
     const area = f.village.nearestArea;
     const modal = todayModal.get(opts.crop) ?? info.basePrice;
-    // Retail on FoodFlow sits ~15% above wholesale modal — still below street retail.
+    // Retail on SAKHI sits ~15% above wholesale modal — still below street retail.
     const suggested = round2(modal * 1.15);
     const price = Math.round(suggested * (opts.priceFactor ?? between(0.94, 1.06)));
     const total = round2(opts.available + (opts.soldQty ?? 0));

@@ -81,8 +81,8 @@ export function AutoLocation({ enabled }: { enabled: boolean }) {
   useEffect(() => {
     if (!enabled) return;
     try {
-      if (sessionStorage.getItem("foodflow.geo-checked")) return;
-      sessionStorage.setItem("foodflow.geo-checked", "1");
+      if (sessionStorage.getItem("sakhi.geo-checked")) return;
+      sessionStorage.setItem("sakhi.geo-checked", "1");
     } catch {
       return;
     }
@@ -96,7 +96,7 @@ export function AutoLocation({ enabled }: { enabled: boolean }) {
         if (active) {
           toast.success(`Delivering to ${resolved.label}`);
           router.refresh();
-        } else toast.message("FoodFlow isn't available at your current location yet.", { description: "You can still browse, or pick another address from the top bar." });
+        } else toast.message("SAKHI isn't available at your current location yet.", { description: "You can still browse, or pick another address from the top bar." });
       } catch {
         /* declined, unavailable or offline: keep the saved address */
       }
@@ -139,7 +139,7 @@ export function LocationPicker({ label, value, defaultLabel = "Home", className 
       if (active) {
         toast.success(`Using ${resolved.label}`);
         setOpen(false);
-      } else setError("FoodFlow isn't available at your current location yet. It's saved, but we'll keep your previous delivery address.");
+      } else setError("SAKHI isn't available at your current location yet. It's saved, but we'll keep your previous delivery address.");
     });
   const choose = (a: SavedAddress) =>
     run(a.id, async () => {

@@ -25,7 +25,7 @@ export default function NotFound() {
       <p className="mt-3 max-w-md text-muted-foreground">The page you&apos;re after doesn&apos;t exist, or the listing has sold out and moved on.</p>
       <div className="mt-8 flex flex-col gap-2 sm:flex-row">
         <Button asChild size="lg" className="min-h-12">
-          <Link href="/">Back to FoodFlow</Link>
+          <Link href="/">Back to SAKHI</Link>
         </Button>
         <Button asChild size="lg" variant="outline" className="min-h-12">
           <Link href="/login">Sign in</Link>

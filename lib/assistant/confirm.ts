@@ -11,7 +11,7 @@ import { secretKey } from "@/lib/auth/token";
 import type { AssistantLang, ConfirmIntent } from "./intents";
 import type { AssistantReply } from "./types";
 
-const AUDIENCE = "foodflow:assistant-confirm";
+const AUDIENCE = "sakhi:assistant-confirm";
 export const CONFIRM_TTL_SECONDS = 5 * 60;
 
 /** Resolved ids and values — what will actually be changed. */

@@ -46,7 +46,7 @@ export const GET = handler({ roles: ["CONSUMER"] }, async ({ user }) => {
 /** Creates a subscription; the first order is placed at the first run time. */
 export const POST = handler({ roles: ["CONSUMER"], body: createSubscriptionSchema }, async ({ user, body }) => {
   const area = await serviceArea(user.area);
-  if (!area) throw new HttpError(422, `FoodFlow doesn't deliver to ${user.area ?? "your area"} yet`);
+  if (!area) throw new HttpError(422, `SAKHI doesn't deliver to ${user.area ?? "your area"} yet`);
   const listing = await db.listing.findUnique({ where: { id: body.listingId } });
   if (!listing || listing.status !== "ACTIVE") throw new HttpError(404, "That listing isn't available any more");
   if (!(await visibleCategories(area.name)).includes(listing.category)) throw new HttpError(422, `${listing.title} isn't sold in ${area.name} yet`);

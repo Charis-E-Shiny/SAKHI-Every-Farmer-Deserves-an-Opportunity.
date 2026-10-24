@@ -1,5 +1,5 @@
 // Speech-to-text providers for Farmer's Friend. The browser provider uses
-// the Web Speech API (on-device or the browser vendor's service); FoodFlow
+// the Web Speech API (on-device or the browser vendor's service); SAKHI
 // never records, stores or uploads audio. A server provider (e.g. AI4Bharat
 // IndicConformer) is declared for later but NOT implemented.
 "use client";

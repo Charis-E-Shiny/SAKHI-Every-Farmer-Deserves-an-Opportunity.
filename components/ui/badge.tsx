@@ -1,4 +1,4 @@
-// shadcn/ui primitive (badge) — shared UI kit used by every FoodFlow interface.
+// shadcn/ui primitive (badge) — shared UI kit used by every SAKHI interface.
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"

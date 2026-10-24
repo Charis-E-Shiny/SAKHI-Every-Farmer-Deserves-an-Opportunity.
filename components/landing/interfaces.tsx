@@ -1,4 +1,4 @@
-// "One marketplace, five apps": compact cards for each way of using FoodFlow,
+// "One marketplace, five apps": compact cards for each way of using SAKHI,
 // each with a small photo, a one-line pitch and a real call to action that
 // starts that kind of sign-up. (The rider app is mentioned underneath: riders
 // are onboarded by the team, not self-serve.)

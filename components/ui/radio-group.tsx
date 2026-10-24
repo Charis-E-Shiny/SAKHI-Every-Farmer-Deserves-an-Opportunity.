@@ -1,4 +1,4 @@
-// shadcn/ui primitive (radio-group) — shared UI kit used by every FoodFlow interface.
+// shadcn/ui primitive (radio-group) — shared UI kit used by every SAKHI interface.
 "use client"
 
 import * as React from "react"

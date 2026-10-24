@@ -65,7 +65,7 @@ export const useCart = create<CartState>()(
       removeFarmers: (farmerIds) =>
         set((s) => ({ items: s.items.filter((i) => !farmerIds.includes(i.farmerId)) })),
     }),
-    { name: "foodflow-cart", storage: createJSONStorage(() => localStorage) },
+    { name: "sakhi-cart", storage: createJSONStorage(() => localStorage) },
   ),
 );
 

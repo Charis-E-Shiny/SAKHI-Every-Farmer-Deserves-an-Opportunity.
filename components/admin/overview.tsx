@@ -100,7 +100,7 @@ export function AdminOverview() {
         ))}
       </div>
 
-      {/* Impact hero: kg rescued (SDG 12) */}
+      {/* Impact hero: kg rescued */}
       <section className="dark relative overflow-hidden rounded-3xl bg-background p-5 text-foreground sm:p-6">
         <span className="absolute -top-16 -right-10 size-56 animate-orb rounded-full bg-lime/25 blur-3xl" />
         <div className="relative flex flex-wrap items-end justify-between gap-4">

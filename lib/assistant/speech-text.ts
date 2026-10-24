@@ -1,5 +1,5 @@
 // Shapes reply text for the voice. The screen shows "₹2,500 · 50 kg ·
-// FF-7K2QA"; a voice reading that literally stumbles ("rupee symbol two
+// SK-7K2QA"; a voice reading that literally stumbles ("rupee symbol two
 // comma five hundred", "kay gee"). Here amounts become "2500 rupees", units
 // become the spoken word ("kilos", "ಕಿಲೋ"), order codes are spelled out and
 // symbols that cause odd pauses are dropped. Long replies are split into
@@ -20,7 +20,7 @@ export function toSpoken(text: string, lang: AssistantLang): string {
   s = s.replace(/(\d),(?=\d)/g, "$1");
   // Order codes and OTP are spelled out letter by letter.
   s = s.replace(/\b([A-Z]{2})-([A-Z0-9]{4,8})\b/g, (_, a: string, b: string) => `${a}${b}`.split("").join(" "));
-  s = s.replace(/\bOTP\b/g, "O T P");
+  s = s.replace(/\bOTP\b/g, "O T P").replace(/\bSAKHI\b/g, "Sakhi");
   s = s.replace(/~\s?₹/g, `${ABOUT[lang]} ₹`);
   // ₹25/kg → "25 rupees per kg" (the unit is spoken below).
   s = s.replace(/₹\s?(\d+(?:\.\d+)?)\s?\/\s?([^\s.,;:!?।]+)/g, (_, n: string, u: string) =>

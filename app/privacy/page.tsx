@@ -1,4 +1,4 @@
-// /privacy — what FoodFlow collects and why, written to match what the app does today.
+// /privacy — what SAKHI collects and why, written to match what the app does today.
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal/legal-page";
 
@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Privacy policy" };
 export default function PrivacyPage() {
   return (
     <LegalPage title="Privacy policy" updated="21 October 2026">
-      <p>FoodFlow connects farmers with households, restaurants and community kitchens. This page explains what we collect while you use the FoodFlow pilot, and what we do with it.</p>
+      <p>SAKHI connects farmers with households, restaurants and community kitchens. This page explains what we collect while you use the SAKHI pilot, and what we do with it.</p>
 
       <h2>What we collect</h2>
       <ul>
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
         <li>Addresses you save, and your location if you allow your browser to share it.</li>
         <li>For sellers: farm or business details, produce, supply and delivery preferences, and any licence number you choose to give.</li>
         <li>For restaurants: business name, address and optional licence or GST numbers.</li>
-        <li>Orders, deliveries, payments and settlements made through FoodFlow.</li>
+        <li>Orders, deliveries, payments and settlements made through SAKHI.</li>
         <li>Photos or videos of produce you list, and the text of voice listings.</li>
         <li>Messages you send us through the contact form.</li>
       </ul>
@@ -26,7 +26,7 @@ export default function PrivacyPage() {
         <li>To run your account, show nearby farms and fees, take and deliver orders, and pay sellers.</li>
         <li>To check produce listings, prevent duplicate or misleading listings and resolve disputes.</li>
         <li>To give price guidance and quality checks. These may be produced by an AI service; see below.</li>
-        <li>To reply to you and to improve FoodFlow.</li>
+        <li>To reply to you and to improve SAKHI.</li>
       </ul>
 
       <h2>Location</h2>
@@ -48,7 +48,7 @@ export default function PrivacyPage() {
       <h2>Your choices</h2>
       <p>You can change your language and addresses in the app at any time. To ask us to correct or delete your data, use the contact form on the home page.</p>
 
-      <p>This policy describes the FoodFlow pilot as it works today and will be updated as the service grows.</p>
+      <p>This policy describes the SAKHI pilot as it works today and will be updated as the service grows.</p>
     </LegalPage>
   );
 }

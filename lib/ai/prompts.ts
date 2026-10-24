@@ -1,4 +1,4 @@
-// Every prompt FoodFlow sends to a model lives here. All of them demand
+// Every prompt SAKHI sends to a model lives here. All of them demand
 // strict JSON matching the Zod schemas in ./schemas.ts.
 import { CROP_SLUGS } from "@/lib/crops";
 import type { Lang } from "@/lib/i18n";
@@ -66,7 +66,7 @@ Return JSON: {"ranking": [{"offerId": string, "score": 0-100, "reason": one shor
 };
 
 export const surplusPrompt = {
-  system: `You advise a farmer whose listing is selling slowly, so produce isn't wasted. Suggestions must be actions the farmer can take on FoodFlow; never suggest dumping. ${JSON_RULE}`,
+  system: `You advise a farmer whose listing is selling slowly, so produce isn't wasted. Suggestions must be actions the farmer can take on SAKHI; never suggest dumping. ${JSON_RULE}`,
   user: (facts: string, lang: Lang = "en") =>
     `Facts:\n${facts}\n${plainWords(lang)}\nReturn JSON: {"reasons": string[] (why it's at risk), "suggestions": string[] (concrete next steps, most impactful first)}`,
 };

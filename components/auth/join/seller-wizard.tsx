@@ -55,7 +55,7 @@ const EMPTY: Draft = {
 };
 
 const STEPS = ["About you", "Your produce", "Your buyers", "Delivery", "Pricing & payment", "Verify & finish"] as const;
-const DRAFT_KEY = "foodflow.seller-draft.v1";
+const DRAFT_KEY = "sakhi.seller-draft.v1";
 const subscribeNever = () => () => {};
 /** The saved draft's JSON, or null (also null on the server and when storage is unavailable). */
 function readDraft(): string | null {
@@ -283,7 +283,7 @@ export function SellerWizard({ google }: { google?: { name: string; email: strin
                 <TextField label={tx("PIN code")} id="pincode" inputMode="numeric" maxLength={6} value={d.pincode} onChange={(v) => set("pincode")(v.replace(/\D/g, ""))} />
               </div>
               <TextField label={tx("Farm, shop or collection-centre address")} id="addr" autoComplete="street-address" value={d.addressLine} onChange={str("addressLine")} />
-              <AreaField value={d.area} onChange={str("area")} label={tx("Nearest FoodFlow service area")} id="area" servedOnly />
+              <AreaField value={d.area} onChange={str("area")} label={tx("Nearest SAKHI service area")} id="area" servedOnly />
               <Question label={tx("How do you hold the land or source the produce?")}>{pick("ownership", OWNERSHIP, { cols: true })}</Question>
             </>
           )}
@@ -342,7 +342,7 @@ export function SellerWizard({ google }: { google?: { name: string; email: strin
                 <div className="space-y-1.5">
                   <p className="font-semibold">{tx("We don't collect bank details here.")}</p>
                   <p className="text-muted-foreground">{tx("Payout details are set up separately, through a secure payment provider, when you're ready to be paid. We will never ask for your UPI PIN, bank password, card PIN or an OTP.")}</p>
-                  <p className="text-muted-foreground">{tx("FoodFlow keeps a 5% platform fee on each sale. The delivery share is shown on every order, and you are paid after the handover is verified.")}</p>
+                  <p className="text-muted-foreground">{tx("SAKHI keeps a 5% platform fee on each sale. The delivery share is shown on every order, and you are paid after the handover is verified.")}</p>
                 </div>
               </div>
             </>

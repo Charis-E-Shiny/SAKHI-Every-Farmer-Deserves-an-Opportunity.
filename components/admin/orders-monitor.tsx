@@ -138,7 +138,7 @@ function OrderSheet({ orderId, onClose, onChanged }: { orderId: string; onClose:
   async function cancel() {
     setBusy("CANCEL");
     try {
-      await sendJSON(`/api/orders/${orderId}/cancel`, { reason: note || "Cancelled by FoodFlow support" });
+      await sendJSON(`/api/orders/${orderId}/cancel`, { reason: note || "Cancelled by SAKHI support" });
       toast.success("Cancelled, stock released, buyer refunded");
       mutate();
       onChanged();

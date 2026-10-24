@@ -8,7 +8,7 @@ describe("toSpoken", () => {
   it.each([
     ["en", "I've made a draft for 50 kg of Tomato at ₹25 per kg.", "I've made a draft for 50 kilos of Tomato at 25 rupees per kilo."],
     ["en", "You have ₹1,25,000 in confirmed orders.", "You have 1 lakh 25000 rupees in confirmed orders."],
-    ["en", "Order FF-7K2QA: ₹1 was settled.", "Order F F 7 K 2 Q A, 1 rupee was settled."],
+    ["en", "Order SK-7K2QA: ₹1 was settled.", "Order S K 7 K 2 Q A, 1 rupee was settled."],
     ["en", "Market ~₹32/kg", "Market about 32 rupees per kilo"],
     ["en", "You'll get about ₹540 after the buyer's OTP.", "You'll get about 540 rupees after the buyer's O T P."],
     ["hi", "ड्राफ़्ट बना दिया: 50 किलो टमाटर, ₹25 प्रति किलो।", "ड्राफ़्ट बना दिया, 50 किलो टमाटर, 25 रुपये प्रति किलो।"],

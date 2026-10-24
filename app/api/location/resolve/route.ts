@@ -1,5 +1,5 @@
 // POST /api/location/resolve { lat, lng } — turns the browser's GPS fix into
-// something readable: the nearest FoodFlow service area, whether it is inside
+// something readable: the nearest SAKHI service area, whether it is inside
 // one, and a human label from OpenStreetMap's Nominatim (best effort, 3 s
 // timeout, cached) so the top bar can say "Yelahanka New Town" not coordinates.
 import { z } from "zod";
@@ -17,7 +17,7 @@ async function reverseGeocode(lat: number, lng: number): Promise<string | null> 
   if (cache.has(key)) return cache.get(key)!;
   try {
     const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=16&lat=${lat}&lon=${lng}`, {
-      headers: { "User-Agent": "FoodFlow/1.0 (farm-to-table marketplace)", "Accept-Language": "en" },
+      headers: { "User-Agent": "SAKHI/1.0 (farm marketplace)", "Accept-Language": "en" },
       signal: AbortSignal.timeout(3000),
     });
     if (!res.ok) throw new Error(String(res.status));

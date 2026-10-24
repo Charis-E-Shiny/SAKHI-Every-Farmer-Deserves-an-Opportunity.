@@ -19,7 +19,7 @@ Crops (use the slug): ${CROP_SLUGS.join(", ")}. 1 quintal = 100 kg. Prices are p
 function prompt(text: string, lang: AssistantLang, today: string) {
   return `Language hint: ${lang}. Today: ${today}.
 Utterance: """${text}"""
-Return JSON: {"intent": one of the intents, "entities": {"crop": slug|null, "qty": number|null, "unit": "kg"|"litre"|"dozen"|null, "price": number|null, "harvestDate": "YYYY-MM-DD"|null, "period": "today"|"week"|"month"|"all"|null, "orderCode": "FF-XXXXX"|null}, "confidence": 0..1, "missing": string[]}`;
+Return JSON: {"intent": one of the intents, "entities": {"crop": slug|null, "qty": number|null, "unit": "kg"|"litre"|"dozen"|null, "price": number|null, "harvestDate": "YYYY-MM-DD"|null, "period": "today"|"week"|"month"|"all"|null, "orderCode": "SK-XXXXX"|null}, "confidence": 0..1, "missing": string[]}`;
 }
 
 /** Drops nulls so entity merging stays simple. */

@@ -19,7 +19,7 @@ export const POST = handler<z.infer<typeof body>>({ roles: ["FARMER"], body }, a
   rateLimit(`pickup:${user.id}`, 30, 60_000);
   if ("qrToken" in body) {
     const token = await readPickupToken(body.qrToken);
-    if (!token) throw new HttpError(400, "This QR isn't a valid FoodFlow pickup code (or it expired)");
+    if (!token) throw new HttpError(400, "This QR isn't a valid SAKHI pickup code (or it expired)");
     const order = await db.order.findUnique({ where: { id: token.orderId }, select: { id: true, code: true } });
     if (!order) throw new HttpError(404, "Order not found");
     return { code: order.code, ...(await verifyHandover(order.id, user, { qrToken: body.qrToken })) };

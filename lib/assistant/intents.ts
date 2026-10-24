@@ -38,7 +38,7 @@ export const entitiesSchema = z
     price: z.number().positive().max(100_000).nullable(),
     harvestDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable(),
     period: z.enum(["today", "week", "month", "all"]).nullable(),
-    orderCode: z.string().regex(/^FF-[A-Z0-9]{5}$/).nullable(),
+    orderCode: z.string().regex(/^SK-[A-Z0-9]{5}$/).nullable(),
     draftId: z.string().max(40).nullable(),
     demandId: z.string().max(40).nullable(),
   })

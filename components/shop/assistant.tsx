@@ -303,7 +303,7 @@ function PickRow({ pick, current, onChoose, index }: { pick: BasketPick; current
   if (!pick.best || !current) {
     return (
       <motion.li initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className="rounded-3xl border border-dashed p-4 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">{label}</span>, not on FoodFlow right now.
+        <span className="font-medium text-foreground">{label}</span>, not on SAKHI right now.
       </motion.li>
     );
   }

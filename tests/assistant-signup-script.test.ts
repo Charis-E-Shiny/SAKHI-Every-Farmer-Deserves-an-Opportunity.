@@ -74,7 +74,7 @@ describe("several choices", () => {
     ["buyerTypes", "restaurants and shops", ["RESTAURANTS", "SHOPS"]],
     ["buyerTypes", "ಮನೆಗಳು ಮತ್ತು ಹೋಟೆಲ್‌ಗಳು", ["HOUSEHOLDS", "RESTAURANTS"]],
     ["buyerTypes", "सब", ["HOUSEHOLDS", "RESTAURANTS", "COMMUNITIES", "SHOPS", "WHOLESALERS", "INSTITUTIONS", "PROCESSORS", "MANDIS"]],
-    ["fulfilment", "they pick it up, or FoodFlow delivers", ["PICKUP", "FOODFLOW_DELIVERY"]],
+    ["fulfilment", "they pick it up, or SAKHI delivers", ["PICKUP", "SAKHI_DELIVERY"]],
     ["fulfilment", "ಅವರೇ ಬಂದು ತೆಗೆದುಕೊಳ್ಳುತ್ತಾರೆ", ["PICKUP"]],
     ["paymentMethods", "UPI and cash", ["UPI", "CASH"]],
     ["paymentMethods", "ಫೋನ್ ಪೇ ಮತ್ತು ನಗದು", ["UPI", "CASH"]],

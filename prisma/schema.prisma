@@ -1,4 +1,4 @@
-// FoodFlow data model — shared by all five interfaces (farmer, consumer,
+// SAKHI data model — shared by all five interfaces (farmer, consumer,
 // bulk buyer, admin, delivery). Written to stay Postgres-compatible: no
 // SQLite-only types, money as Float rounded at the edges (lib/fees.ts),
 // lists stored as Json. `npm run db:postgres` swaps the provider for deploy.

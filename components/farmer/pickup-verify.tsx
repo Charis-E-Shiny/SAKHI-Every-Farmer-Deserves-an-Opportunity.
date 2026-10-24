@@ -29,7 +29,7 @@ export function PickupVerify() {
   const { t, lang } = useI18n();
   const params = useSearchParams();
   const [mode, setMode] = useState<"scan" | "code">(params.get("code") ? "code" : "scan");
-  const [code, setCode] = useState((params.get("code") ?? "").replace(/^FF-/, ""));
+  const [code, setCode] = useState((params.get("code") ?? "").replace(/^SK-/, ""));
   const [otp, setOtp] = useState("");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -105,7 +105,7 @@ export function PickupVerify() {
             ) : (
               <div className="space-y-4">
                 <label className="flex h-14 items-center rounded-2xl border-2 px-4 focus-within:border-lime">
-                  <span className="font-mono text-xl text-muted-foreground">FF-</span>
+                  <span className="font-mono text-xl text-muted-foreground">SK-</span>
                   <input
                     value={code}
                     onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 5))}
@@ -114,7 +114,7 @@ export function PickupVerify() {
                     className="min-w-0 flex-1 bg-transparent font-mono text-xl tracking-[0.3em] uppercase outline-none"
                   />
                 </label>
-                <OtpKeypad value={otp} onChange={(v) => { setOtp(v); setErr(null); }} onSubmit={(o) => (code.length === 5 ? submit({ code: `FF-${code}`, otp: o }) : setErr(t("pickup.enterCodeFirst")))} busy={busy} shakeKey={shake} error={err} />
+                <OtpKeypad value={otp} onChange={(v) => { setOtp(v); setErr(null); }} onSubmit={(o) => (code.length === 5 ? submit({ code: `SK-${code}`, otp: o }) : setErr(t("pickup.enterCodeFirst")))} busy={busy} shakeKey={shake} error={err} />
               </div>
             )}
           </motion.div>
@@ -127,7 +127,7 @@ export function PickupVerify() {
           <ul className="space-y-2">
             {waiting.map((o) => (
               <li key={o.id}>
-                <button type="button" onClick={() => { setMode("code"); setCode(o.code.replace("FF-", "")); setOtp(""); }} className="flex w-full items-center gap-3 rounded-2xl border bg-card p-3 text-left hover:border-foreground/30">
+                <button type="button" onClick={() => { setMode("code"); setCode(o.code.replace("SK-", "")); setOtp(""); }} className="flex w-full items-center gap-3 rounded-2xl border bg-card p-3 text-left hover:border-foreground/30">
                   <PackageCheck className="size-5 shrink-0" />
                   <span className="min-w-0 flex-1">
                     <span className="block font-mono font-semibold">{o.code}</span>

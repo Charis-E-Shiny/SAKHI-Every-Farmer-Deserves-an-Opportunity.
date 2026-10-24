@@ -1,4 +1,4 @@
-// Next.js configuration for FoodFlow.
+// Next.js configuration for SAKHI.
 // Cache Components is left off: almost every screen is per-user, live data
 // (orders, inventory, deliveries), so classic dynamic rendering is simpler.
 import type { NextConfig } from "next";
