@@ -88,7 +88,7 @@ function nextImage(crop: CropSlug): string {
 // ─── People ───────────────────────────────────────────────────────────────
 
 const FARMERS = [
-  { name: "Ramesh Gowda", phone: "9000000101", village: "Doddaballapur", farm: "Gowda Natural Farm", crops: ["tomato", "spinach", "beans", "cabbage"], lang: "kn", reliability: 0.95 },
+  { name: "Ramesh Gowda", phone: "9000000101", village: "Doddaballapur", farm: "Gowda Natural Farm", crops: ["tomato", "spinach", "beans", "cabbage"], lang: "en", reliability: 0.95 },
   { name: "Lakshmamma", phone: "9000000102", village: "Devanahalli", farm: "Lakshmi Tota", crops: ["spinach", "carrot", "brinjal"], lang: "kn", reliability: 0.92 },
   { name: "Suresh Yadav", phone: "9000000103", village: "Hoskote", farm: "Yadav Krishi Kendra", crops: ["onion", "potato"], lang: "hi", reliability: 0.9 },
   { name: "Manjunath Reddy", phone: "9000000104", village: "Chikkajala", farm: "Reddy Farms", crops: ["tomato", "onion", "brinjal"], lang: "kn", reliability: 0.88 },

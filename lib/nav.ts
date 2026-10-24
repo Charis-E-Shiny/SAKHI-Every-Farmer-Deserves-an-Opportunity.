@@ -1,0 +1,102 @@
+// Navigation per role. `tab` items sit in the mobile bottom bar, `fab` is
+// the raised centre action, everything else lives under "More" on phones.
+// The desktop sidebar always shows every item.
+import {
+  BadgeIndianRupee,
+  Bike,
+  CalendarClock,
+  ChartNoAxesCombined,
+  ClipboardList,
+  Handshake,
+  LayoutGrid,
+  Package,
+  Plus,
+  Recycle,
+  Repeat,
+  ScanLine,
+  ScanSearch,
+  Search,
+  ShieldAlert,
+  ShoppingBag,
+  SlidersHorizontal,
+  Sparkles,
+  Sprout,
+  Store,
+  Truck,
+  type LucideIcon,
+} from "lucide-react";
+import type { Role } from "@/lib/auth/token";
+import type { MessageKey } from "@/lib/i18n";
+
+export interface NavItem {
+  href: string;
+  labelKey: MessageKey;
+  icon: LucideIcon;
+  /** Shown in the bottom tab bar on phones. */
+  tab?: boolean;
+  /** Raised centre button on phones. */
+  fab?: boolean;
+  /** Only highlight on an exact path match (role home routes). */
+  exact?: boolean;
+  /** Live counter to render on the item. */
+  badge?: "cart" | "review" | "runs";
+}
+
+export const NAV: Record<Role, NavItem[]> = {
+  FARMER: [
+    { href: "/farmer", labelKey: "nav.home", icon: LayoutGrid, tab: true },
+    { href: "/farmer/listings", labelKey: "nav.listings", icon: Package, tab: true },
+    { href: "/farmer/batches/new", labelKey: "nav.newBatch", icon: Plus, fab: true },
+    { href: "/farmer/orders", labelKey: "nav.orders", icon: ClipboardList, tab: true },
+    { href: "/farmer/batches", labelKey: "nav.batches", icon: Sprout },
+    { href: "/farmer/bulk", labelKey: "nav.bulk", icon: Handshake },
+    { href: "/farmer/surplus", labelKey: "nav.surplus", icon: Recycle },
+    { href: "/farmer/payments", labelKey: "nav.payments", icon: BadgeIndianRupee },
+    { href: "/farmer/pickup", labelKey: "nav.pickup", icon: ScanLine },
+  ],
+  CONSUMER: [
+    { href: "/shop", labelKey: "nav.shop", icon: Store, tab: true },
+    { href: "/shop/assistant", labelKey: "nav.assistant", icon: Sparkles, tab: true },
+    { href: "/shop/cart", labelKey: "nav.cart", icon: ShoppingBag, tab: true, badge: "cart" },
+    { href: "/shop/orders", labelKey: "nav.orders", icon: Truck, tab: true },
+    { href: "/shop/subscriptions", labelKey: "nav.subscriptions", icon: Repeat, tab: true },
+  ],
+  BULK_BUYER: [
+    { href: "/bulk", labelKey: "nav.demands", icon: Handshake, tab: true },
+    { href: "/bulk/browse", labelKey: "nav.browse", icon: Store, tab: true },
+    { href: "/bulk/demands/new", labelKey: "nav.postDemand", icon: Plus, fab: true },
+    { href: "/bulk/orders", labelKey: "nav.orders", icon: Truck, tab: true },
+    { href: "/bulk/schedule", labelKey: "nav.schedule", icon: CalendarClock, tab: true },
+    { href: "/shop/cart", labelKey: "nav.cart", icon: ShoppingBag, badge: "cart" },
+  ],
+  ADMIN: [
+    { href: "/admin", labelKey: "nav.overview", icon: ChartNoAxesCombined, tab: true },
+    { href: "/admin/review", labelKey: "nav.review", icon: ScanSearch, tab: true, badge: "review" },
+    { href: "/admin/orders", labelKey: "nav.orders", icon: ClipboardList, tab: true },
+    { href: "/admin/trust", labelKey: "nav.trust", icon: ShieldAlert, tab: true },
+    { href: "/admin/deliveries", labelKey: "nav.deliveries", icon: Bike },
+    { href: "/admin/controls", labelKey: "nav.controls", icon: SlidersHorizontal },
+  ],
+  DELIVERY: [
+    { href: "/delivery", labelKey: "nav.runs", icon: Bike, tab: true, badge: "runs" },
+    { href: "/delivery/find", labelKey: "nav.find", icon: Search, tab: true },
+  ],
+};
+
+/** True when `pathname` falls under the nav item (exact items match only themselves). */
+function matches(item: NavItem, pathname: string): boolean {
+  if (item.exact) return pathname === item.href;
+  return pathname === item.href || pathname.startsWith(`${item.href}/`);
+}
+
+/**
+ * Picks the active item — the longest matching href wins, so
+ * /farmer/batches/new lights up "New harvest" rather than "Harvests".
+ */
+export function activeHref(items: NavItem[], pathname: string): string | null {
+  let best: string | null = null;
+  for (const item of items) {
+    if (matches(item, pathname) && (!best || item.href.length > best.length)) best = item.href;
+  }
+  return best;
+}

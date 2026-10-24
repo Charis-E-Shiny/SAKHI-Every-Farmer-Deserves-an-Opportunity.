@@ -72,6 +72,29 @@
   --animate-scan: scan 1.8s ease-in-out infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-ring: pulse-ring 1.8s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  --animate-spin-y: spin-y var(--spin-duration, 36s) linear infinite;
+  --animate-orb: orb 14s ease-in-out infinite;
+
+  @keyframes spin-y {
+    from {
+      transform: rotateX(var(--tilt, -8deg)) rotateY(0deg);
+    }
+    to {
+      transform: rotateX(var(--tilt, -8deg)) rotateY(-360deg);
+    }
+  }
+  @keyframes orb {
+    0%,
+    100% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    33% {
+      transform: translate3d(8%, -6%, 0) scale(1.08);
+    }
+    66% {
+      transform: translate3d(-6%, 5%, 0) scale(0.95);
+    }
+  }
 
   @keyframes marquee {
     from {

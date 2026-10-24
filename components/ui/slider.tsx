@@ -1,3 +1,4 @@
+// shadcn/ui primitive (slider) — shared UI kit used by every FoodFlow interface.
 "use client"
 
 import * as React from "react"

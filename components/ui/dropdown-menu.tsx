@@ -1,3 +1,4 @@
+// shadcn/ui primitive (dropdown-menu) — shared UI kit used by every FoodFlow interface.
 "use client"
 
 import * as React from "react"
