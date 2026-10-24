@@ -1,4 +1,4 @@
-// Farmer's Friend dispatcher: one handler per intent, follow-up questions
+// Sakhi dispatcher: one handler per intent, follow-up questions
 // for missing fields, and execution of confirmed actions. Handlers only
 // call existing services and only ever report success they observed.
 import "server-only";

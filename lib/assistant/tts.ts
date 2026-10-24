@@ -1,9 +1,9 @@
-// Text-to-speech for Farmer's Friend via the browser's speechSynthesis.
+// Text-to-speech for Sakhi via the browser's speechSynthesis.
 //
 // Picking a voice: Indian English first for English (names, places and crops
 // are pronounced the way farmers say them), then the most natural voice
-// (Edge "Natural", Google network, Apple enhanced), then the farmer's choice
-// of a female or male voice. Kannada with no Kannada voice on the device
+// (Edge "Natural", Google network, Apple enhanced), and a female voice for
+// Sakhi unless the farmer picks a male one. Kannada with no Kannada voice on the device
 // (desktop Chrome has none) is read by a Hindi voice from Devanagari letters
 // rather than not at all, and the panel says so. Kannada or Hindi text is
 // never read by an English voice. Text is spoken sentence by sentence at a
@@ -147,13 +147,11 @@ export const getSpeed = (): Speed => {
   return s === "slow" || s === "fast" ? s : "normal";
 };
 export const setSpeed = (s: Speed) => local.set(SPEED_KEY, s === "normal" ? null : s);
-export const getGender = (): Gender | null => {
-  const g = local.get(GENDER_KEY);
-  return g === "female" || g === "male" ? g : null;
-};
+/** Sakhi speaks with a female voice unless the farmer picks a male one. */
+export const getGender = (): Gender => (local.get(GENDER_KEY) === "male" ? "male" : "female");
 /** Prefers a female or male voice from now on (a specific voice picked earlier gives way). */
-export function setGender(g: Gender | null) {
-  local.set(GENDER_KEY, g);
+export function setGender(g: Gender) {
+  local.set(GENDER_KEY, g === "male" ? g : null);
   for (const l of ["en", "hi", "kn"] as const) local.set(voiceKey(l), null);
 }
 

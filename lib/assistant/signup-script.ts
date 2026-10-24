@@ -1,4 +1,4 @@
-// The seller sign-up conversation: what Farmer's Friend asks on each screen,
+// The seller sign-up conversation: what Sakhi asks on each screen,
 // how each choice is said in English, Kannada and Hindi (also used to show
 // the choices in the farmer's language), and how a spoken answer becomes a
 // form value: keywords in three languages and scripts, "first / ಎರಡನೇ / तीसरा",
@@ -354,7 +354,7 @@ export const SCRIPT: Question[][] = [
 
 /** What the guide says, outside the questions. */
 export const LINES = {
-  intro: { en: "Namaskara! I'm Farmer's Friend. I'll set up your seller account with you, one question at a time. Just answer out loud, or type if you prefer.", kn: "ನಮಸ್ಕಾರ! ನಾನು ರೈತ ಮಿತ್ರ. ನಿಮ್ಮ ಮಾರಾಟಗಾರರ ಖಾತೆಯನ್ನು ನಿಮ್ಮ ಜೊತೆ, ಒಂದೊಂದೇ ಪ್ರಶ್ನೆ ಕೇಳಿ ತೆರೆಯುತ್ತೇನೆ. ಉತ್ತರವನ್ನು ಜೋರಾಗಿ ಹೇಳಿ, ಬೇಕಿದ್ದರೆ ಟೈಪ್ ಮಾಡಿ.", hi: "नमस्ते! मैं किसान मित्र हूँ। आपका विक्रेता खाता आपके साथ, एक-एक सवाल पूछकर बनाऊँगा। बस बोलकर जवाब दीजिए, या चाहें तो लिखिए।" },
+  intro: { en: "Namaskara! I'm Sakhi. I'll set up your seller account with you, one question at a time. Just answer out loud, or type if you prefer.", kn: "ನಮಸ್ಕಾರ! ನಾನು ಸಖಿ. ನಿಮ್ಮ ಮಾರಾಟಗಾರರ ಖಾತೆಯನ್ನು ನಿಮ್ಮ ಜೊತೆ, ಒಂದೊಂದೇ ಪ್ರಶ್ನೆ ಕೇಳಿ ತೆರೆಯುತ್ತೇನೆ. ಉತ್ತರವನ್ನು ಜೋರಾಗಿ ಹೇಳಿ, ಬೇಕಿದ್ದರೆ ಟೈಪ್ ಮಾಡಿ.", hi: "नमस्ते! मैं सखी हूँ। आपका विक्रेता खाता आपके साथ, एक-एक सवाल पूछकर बनाऊँगी। बस बोलकर जवाब दीजिए, या चाहें तो लिखिए।" },
   step: [
     { en: "", kn: "", hi: "" },
     { en: "Step 2 of 6, your produce.", kn: "ಎರಡನೇ ಹಂತ, ನಿಮ್ಮ ಬೆಳೆ.", hi: "दूसरा कदम, आपकी उपज।" },
@@ -377,13 +377,13 @@ export const LINES = {
   pinCheck: { en: "Is the PIN code {pin}?", kn: "ಪಿನ್ ಕೋಡ್ {pin}, ಸರಿಯೇ?", hi: "पिन कोड {pin} है, सही?" },
   badPhone: { en: "I heard {n} digits. Please say all 10 digits of your mobile number again.", kn: "ನಾನು {n} ಅಂಕಿಗಳನ್ನು ಕೇಳಿದೆ. ದಯವಿಟ್ಟು ಮೊಬೈಲ್ ನಂಬರ್‌ನ ಎಲ್ಲಾ 10 ಅಂಕಿಗಳನ್ನು ಮತ್ತೆ ಹೇಳಿ.", hi: "मैंने {n} अंक सुने। कृपया मोबाइल नंबर के सभी 10 अंक फिर से बोलें।" },
   badPin: { en: "A PIN code has 6 digits, and I heard {n}. Please say it again.", kn: "ಪಿನ್ ಕೋಡ್‌ನಲ್ಲಿ 6 ಅಂಕಿಗಳಿರುತ್ತವೆ, ನಾನು {n} ಕೇಳಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಹೇಳಿ.", hi: "पिन कोड में 6 अंक होते हैं, मैंने {n} सुने। कृपया फिर से बोलें।" },
-  unclear: { en: "Sorry, I didn't catch that. You can also tap your answer on the screen.", kn: "ಕ್ಷಮಿಸಿ, ಅರ್ಥವಾಗಲಿಲ್ಲ. ಪರದೆಯ ಮೇಲೆ ಉತ್ತರವನ್ನು ಟ್ಯಾಪ್ ಕೂಡ ಮಾಡಬಹುದು.", hi: "माफ़ कीजिए, समझ नहीं पाया। आप स्क्रीन पर जवाब टैप भी कर सकते हैं।" },
+  unclear: { en: "Sorry, I didn't catch that. You can also tap your answer on the screen.", kn: "ಕ್ಷಮಿಸಿ, ಅರ್ಥವಾಗಲಿಲ್ಲ. ಪರದೆಯ ಮೇಲೆ ಉತ್ತರವನ್ನು ಟ್ಯಾಪ್ ಕೂಡ ಮಾಡಬಹುದು.", hi: "माफ़ कीजिए, समझ नहीं पाई। आप स्क्रीन पर जवाब टैप भी कर सकते हैं।" },
   noCrop: { en: "I didn't catch a crop name. Try saying: tomato, onion.", kn: "ಬೆಳೆಯ ಹೆಸರು ಅರ್ಥವಾಗಲಿಲ್ಲ. ಹೀಗೆ ಹೇಳಿ: ಟೊಮೇಟೊ, ಈರುಳ್ಳಿ.", hi: "फ़सल का नाम समझ नहीं आया। ऐसे बोलें: टमाटर, प्याज़।" },
   crops: { en: "Added {crops}.", kn: "{crops} ಸೇರಿಸಿದ್ದೇನೆ.", hi: "{crops} जोड़ दिए।" },
   declined: { en: "No problem. You'll need to tick that box before the account can be created.", kn: "ಪರವಾಗಿಲ್ಲ. ಖಾತೆ ತೆರೆಯುವ ಮೊದಲು ಆ ಬಾಕ್ಸ್ ಟಿಕ್ ಮಾಡಬೇಕಾಗುತ್ತದೆ.", hi: "कोई बात नहीं। खाता बनाने से पहले वह बॉक्स टिक करना होगा।" },
-  pin: { en: "Now type a 4 to 6 digit PIN in the PIN box. Please type it, don't say it out loud. I'll wait.", kn: "ಈಗ ಪಿನ್ ಬಾಕ್ಸ್‌ನಲ್ಲಿ 4 ರಿಂದ 6 ಅಂಕಿಯ ಪಿನ್ ಟೈಪ್ ಮಾಡಿ. ಅದನ್ನು ಜೋರಾಗಿ ಹೇಳಬೇಡಿ. ನಾನು ಕಾಯುತ್ತೇನೆ.", hi: "अब पिन बॉक्स में 4 से 6 अंकों का पिन टाइप करें। उसे बोलें नहीं। मैं इंतज़ार करता हूँ।" },
+  pin: { en: "Now type a 4 to 6 digit PIN in the PIN box. Please type it, don't say it out loud. I'll wait.", kn: "ಈಗ ಪಿನ್ ಬಾಕ್ಸ್‌ನಲ್ಲಿ 4 ರಿಂದ 6 ಅಂಕಿಯ ಪಿನ್ ಟೈಪ್ ಮಾಡಿ. ಅದನ್ನು ಜೋರಾಗಿ ಹೇಳಬೇಡಿ. ನಾನು ಕಾಯುತ್ತೇನೆ.", hi: "अब पिन बॉक्स में 4 से 6 अंकों का पिन टाइप करें। उसे बोलें नहीं। मैं इंतज़ार करती हूँ।" },
   create: { en: "All set, {name}. Shall I create your seller account now?", kn: "{name}, ಎಲ್ಲಾ ಸಿದ್ಧ. ಈಗ ನಿಮ್ಮ ಮಾರಾಟಗಾರರ ಖಾತೆ ತೆರೆಯಲೇ?", hi: "{name} जी, सब तैयार है। अब आपका विक्रेता खाता बना दूँ?" },
-  creating: { en: "Creating your account…", kn: "ನಿಮ್ಮ ಖಾತೆ ತೆರೆಯುತ್ತಿದ್ದೇನೆ…", hi: "आपका खाता बना रहा हूँ…" },
+  creating: { en: "Creating your account…", kn: "ನಿಮ್ಮ ಖಾತೆ ತೆರೆಯುತ್ತಿದ್ದೇನೆ…", hi: "आपका खाता बना रही हूँ…" },
   notNow: { en: "Okay. Tap Create my seller account whenever you're ready.", kn: "ಸರಿ. ಸಿದ್ಧವಾದಾಗ Create my seller account ಒತ್ತಿ.", hi: "ठीक है। जब तैयार हों, Create my seller account दबाएँ।" },
   notYet: { en: "Something on this screen still needs an answer. Look for the red note above the Next button.", kn: "ಈ ಪರದೆಯಲ್ಲಿ ಇನ್ನೂ ಏನೋ ತುಂಬಬೇಕಿದೆ. Next ಬಟನ್ ಮೇಲಿನ ಕೆಂಪು ಸೂಚನೆ ನೋಡಿ.", hi: "इस स्क्रीन पर अभी कुछ भरना बाक़ी है। Next बटन के ऊपर लाल संदेश देखें।" },
   failed: { en: "The account couldn't be created: {reason}", kn: "ಖಾತೆ ತೆರೆಯಲು ಆಗಲಿಲ್ಲ: {reason}", hi: "खाता नहीं बन पाया: {reason}" },

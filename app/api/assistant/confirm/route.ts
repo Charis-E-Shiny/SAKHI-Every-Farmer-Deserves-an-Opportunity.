@@ -1,4 +1,4 @@
-// POST /api/assistant/confirm — run a confirmed Farmer's Friend action.
+// POST /api/assistant/confirm — run a confirmed Sakhi action.
 // The token is verified (signature, expiry, same farmer), the action runs
 // once through the normal services, and a replay returns the first result.
 import { handler, HttpError } from "@/lib/api";

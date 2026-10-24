@@ -1,4 +1,4 @@
-// Reply and card shapes shared by the Farmer's Friend API and panel.
+// Reply and card shapes shared by the Sakhi API and panel.
 import type { AssistantLang, ConfirmIntent, Entities, Intent } from "./intents";
 
 export interface DraftCard {

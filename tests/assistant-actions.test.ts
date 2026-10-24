@@ -1,4 +1,4 @@
-// Farmer's Friend server guarantees: confirm tokens are signed, expiring,
+// Sakhi server guarantees: confirm tokens are signed, expiring,
 // per-farmer and single-use; actions are scoped to the farmer's own data;
 // earnings never call pending money settled; drafts need a photo before
 // review; and the model being down never breaks understanding.

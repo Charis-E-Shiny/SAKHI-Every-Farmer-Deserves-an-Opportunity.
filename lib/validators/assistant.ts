@@ -1,4 +1,4 @@
-// Request schemas for the Farmer's Friend API.
+// Request schemas for the Sakhi API.
 import { z } from "zod";
 import { CONFIRM_INTENTS, contextSchema, entitiesSchema } from "@/lib/assistant/intents";
 

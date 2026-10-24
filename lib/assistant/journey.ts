@@ -1,5 +1,5 @@
 // The hand-off from the voice sign-up to the farmer app: the sign-up guide
-// leaves a short note in this tab, and Farmer's Friend picks it up on the
+// leaves a short note in this tab, and Sakhi picks it up on the
 // farmer home to carry on, in the same language, with the first harvest.
 "use client";
 

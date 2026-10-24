@@ -1,4 +1,4 @@
-// POST /api/assistant/interpret — Farmer's Friend: understand one utterance
+// POST /api/assistant/interpret — Sakhi: understand one utterance
 // (rules first, model only when unsure) and answer it. Reads run now;
 // anything that changes data comes back as a confirmation card + token.
 import { handler, HttpError } from "@/lib/api";

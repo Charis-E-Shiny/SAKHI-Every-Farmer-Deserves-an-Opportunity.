@@ -1,4 +1,4 @@
-// Farmer's Friend avatar: a little sprout drawn in SVG whose pose tells
+// Sakhi avatar: a little sprout drawn in SVG whose pose tells
 // the farmer what it's doing — idle sway, listening rings + red mic dot,
 // thinking dots, a mouth that moves with each spoken word, a confirm glow,
 // and a droop on errors. Honours prefers-reduced-motion.

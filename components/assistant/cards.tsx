@@ -1,4 +1,4 @@
-// Structured cards in the Farmer's Friend chat: an editable harvest draft
+// Structured cards in the Sakhi chat: an editable harvest draft
 // (with photo upload and "send for review"), confirmation cards with
 // editable values, and read-only earnings / stock / price / status /
 // demand / delivery / payment summaries. All amounts come from the API.

@@ -69,7 +69,7 @@ export function Gateway({ next, google, error }: { next?: string; google?: { nam
             <span className="mt-1 text-[15px] text-muted-foreground">{c.body}</span>
             {c.title === "Seller" && (
               <span className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full bg-lime/30 px-2.5 py-1 text-xs font-medium">
-                <Mic className="size-3.5" /> Voice help in ಕನ್ನಡ, हिंदी and English
+                <Mic className="size-3.5" /> Sakhi helps by voice in ಕನ್ನಡ, हिंदी and English
               </span>
             )}
             <span className="mt-auto flex items-center gap-1 pt-4 text-sm font-semibold">

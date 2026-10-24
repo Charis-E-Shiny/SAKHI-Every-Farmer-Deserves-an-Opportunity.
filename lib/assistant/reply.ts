@@ -1,4 +1,4 @@
-// Reply builders for Farmer's Friend: fill the i18n templates with real
+// Reply builders for Sakhi: fill the i18n templates with real
 // numbers and names in the farmer's language. No free-form text.
 import { cropName } from "@/lib/crops";
 import { translate, type MessageKey } from "@/lib/i18n";

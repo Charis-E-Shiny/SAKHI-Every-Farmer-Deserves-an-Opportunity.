@@ -108,7 +108,7 @@ function draftData(d: DraftFields) {
 }
 
 /**
- * Creates a DRAFT batch (wizard details step, Farmer's Friend). Drafts are
+ * Creates a DRAFT batch (wizard details step, Sakhi). Drafts are
  * never shown to buyers; they reach the admin only via {@link submitBatch}.
  */
 export async function createDraftBatch(farmer: { id: string; name: string }, d: BatchDetails) {

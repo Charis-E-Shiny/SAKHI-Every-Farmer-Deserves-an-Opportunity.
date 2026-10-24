@@ -1,4 +1,4 @@
-// Language suggestion for the Farmer's Friend welcome: farmers registered
+// Language suggestion for the Sakhi welcome: farmers registered
 // in Karnataka (every FoodFlow pilot village and service area) are offered
 // Kannada first, then their saved language, then the rest.
 import { SERVICE_AREAS, VILLAGES } from "@/lib/areas";

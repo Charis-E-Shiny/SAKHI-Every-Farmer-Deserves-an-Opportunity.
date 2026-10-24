@@ -1,9 +1,9 @@
-// Farmer's Friend strings (Kannada): panel UI and spoken reply templates.
+// Sakhi strings (Kannada): panel UI and spoken reply templates.
 import type { MessageKey } from "./en";
 
 export const assistantKn: Partial<Record<MessageKey, string>> = {
-  "ff.name": "ರೈತ ಮಿತ್ರ",
-  "ff.open": "ರೈತ ಮಿತ್ರ ತೆರೆಯಿರಿ",
+  "ff.name": "ಸಖಿ",
+  "ff.open": "ಸಖಿ ತೆರೆಯಿರಿ",
   "ff.state.idle": "ನಾನು ಸಿದ್ಧ",
   "ff.state.listening": "ಕೇಳುತ್ತಿದ್ದೇನೆ…",
   "ff.state.thinking": "ಯೋಚಿಸುತ್ತಿದ್ದೇನೆ…",
@@ -39,23 +39,23 @@ export const assistantKn: Partial<Record<MessageKey, string>> = {
   "ff.micAllow": "ಮೈಕ್‌ಗೆ ಅನುಮತಿ ಕೊಡಿ",
   "ff.micDenied": "ಮೈಕ್ ತಡೆಹಿಡಿಯಲಾಗಿದೆ. ಬ್ರೌಸರ್ ಸೆಟ್ಟಿಂಗ್‌ನಲ್ಲಿ ಅನುಮತಿ ಕೊಡಿ, ಅಥವಾ ಬರೆದು ಕೇಳಿ.",
   "ff.noSpeech": "ಏನೂ ಕೇಳಿಸಲಿಲ್ಲ, ಮೈಕ್ ಒತ್ತಿ ಮತ್ತೆ ಮಾತನಾಡಿ.",
-  "ff.tapToHear": "ರೈತ ಮಿತ್ರನನ್ನು ಕೇಳಲು ಒತ್ತಿ",
+  "ff.tapToHear": "ಸಖಿಯನ್ನು ಕೇಳಲು ಒತ್ತಿ",
   "ff.settings": "ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
   "ff.autoVoice": "ಉತ್ತರಗಳನ್ನು ತಾನಾಗಿ ಓದಿ",
   "ff.replayWelcome": "ಸ್ವಾಗತ ಮತ್ತೆ ಕೇಳಿ",
-  "ff.hide": "ರೈತ ಮಿತ್ರ ಮರೆಮಾಡಿ",
-  "ff.show": "ರೈತ ಮಿತ್ರ",
+  "ff.hide": "ಸಖಿ ಮರೆಮಾಡಿ",
+  "ff.show": "ಸಖಿ",
   "ff.minimise": "ಚಿಕ್ಕದು ಮಾಡಿ",
   "ff.privacy": "ನಿಮ್ಮ ಧ್ವನಿ ಖಾಸಗಿಯಾಗಿರುತ್ತದೆ",
   "ff.lowConfidence": "ನಾನು ಸರಿಯಾಗಿ ಕೇಳಿದೆನೋ ಗೊತ್ತಿಲ್ಲ. ಅಕ್ಷರ ನೋಡಿ, ನಂತರ “ಇದನ್ನೇ ಬಳಸಿ” ಒತ್ತಿ.",
   "ff.sessionExpired": "ನಿಮ್ಮ ಸೆಷನ್ ಮುಗಿದಿದೆ, ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಿ.",
 
-  "ff.welcome.title": "ನಮಸ್ಕಾರ! ನಾನು ರೈತ ಮಿತ್ರ.",
+  "ff.welcome.title": "ನಮಸ್ಕಾರ! ನಾನು ಸಖಿ.",
   "ff.welcome.body": "ನನ್ನ ಜೊತೆ ಮಾತನಾಡಿ ನಿಮ್ಮ ಬೆಳೆ ಪಟ್ಟಿ ಮಾಡಿ, ಆದಾಯ ನೋಡಿ, ಹೋಟೆಲ್ ಆರ್ಡರ್‌ಗಳಿಗೆ ಉತ್ತರಿಸಿ. ನಿರ್ಧಾರ ಯಾವಾಗಲೂ ನಿಮ್ಮದೇ, ಏನನ್ನಾದರೂ ಬದಲಿಸುವ ಮೊದಲು ನಾನು ಕೇಳುತ್ತೇನೆ.",
   "ff.welcome.pickLang": "ನಾನು ಯಾವ ಭಾಷೆಯಲ್ಲಿ ಮಾತನಾಡಲಿ?",
   "ff.welcome.suggested": "ನಿಮ್ಮ ಪ್ರದೇಶಕ್ಕೆ ಸೂಚಿಸಿದ್ದು",
   "ff.welcome.start": "ಶುರು ಮಾಡೋಣ",
-  "ff.welcome.spoken": "ನಮಸ್ಕಾರ! ನಾನು ರೈತ ಮಿತ್ರ. ಇಂದು ಏನು ಕೊಯ್ದಿರಿ ಹೇಳಿ, ಅಥವಾ ಈ ವಾರ ಎಷ್ಟು ಗಳಿಸಿದಿರಿ ಎಂದು ಕೇಳಿ.",
+  "ff.welcome.spoken": "ನಮಸ್ಕಾರ! ನಾನು ಸಖಿ. ಇಂದು ಏನು ಕೊಯ್ದಿರಿ ಹೇಳಿ, ಅಥವಾ ಈ ವಾರ ಎಷ್ಟು ಗಳಿಸಿದಿರಿ ಎಂದು ಕೇಳಿ.",
 
   "ff.card.draft": "ಬೆಳೆ ಕರಡು",
   "ff.card.crop": "ಬೆಳೆ",
@@ -180,7 +180,7 @@ export const assistantKn: Partial<Record<MessageKey, string>> = {
 
   // Seller sign-up guide
   "ff.join.banner.title": "ಟೈಪ್ ಮಾಡುವ ಬದಲು ಮಾತನಾಡುತ್ತೀರಾ?",
-  "ff.join.banner.body": "ರೈತ ಮಿತ್ರ ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ನೋಂದಣಿಗೆ ಸಹಾಯ ಮಾಡುತ್ತದೆ, ಮತ್ತು ನೀವು ಹೇಳಿದ್ದನ್ನು ಫಾರ್ಮ್‌ನಲ್ಲಿ ತುಂಬುತ್ತದೆ.",
+  "ff.join.banner.body": "ಸಖಿ ನಿಮ್ಮ ಭಾಷೆಯಲ್ಲಿ ನೋಂದಣಿಗೆ ಸಹಾಯ ಮಾಡುತ್ತಾಳೆ, ಮತ್ತು ನೀವು ಹೇಳಿದ್ದನ್ನು ಫಾರ್ಮ್‌ನಲ್ಲಿ ತುಂಬುತ್ತಾಳೆ.",
   "ff.join.start": "ಮಾತನಾಡಿ ನೋಂದಾಯಿಸಿ",
   "ff.join.title": "ನೋಂದಣಿ ಸಹಾಯಕ",
   "ff.join.close": "ಸಹಾಯಕ ಮುಚ್ಚಿ",
@@ -192,7 +192,6 @@ export const assistantKn: Partial<Record<MessageKey, string>> = {
   "ff.sttLanguage": "ಈ ಬ್ರೌಸರ್ ಈ ಭಾಷೆಯನ್ನು ಕೇಳಿಸಿಕೊಳ್ಳಲಾರದು. Chrome ನಲ್ಲಿ ಸಾಧ್ಯ, ಅಥವಾ ಟೈಪ್ ಮಾಡಿ.",
   "ff.voice.borrowed": "ಈ ಸಾಧನದಲ್ಲಿ ಕನ್ನಡ ಧ್ವನಿ ಇಲ್ಲ, ಹಾಗಾಗಿ ಹಿಂದಿ ಧ್ವನಿ ಕನ್ನಡವನ್ನು ಓದುತ್ತಿದೆ. Microsoft Edge ನಲ್ಲಿ ನಿಜವಾದ ಕನ್ನಡ ಧ್ವನಿ ಇದೆ.",
   "ff.voice.gender": "ಧ್ವನಿ ಬಗೆ",
-  "ff.voice.any": "ಉತ್ತಮ",
   "ff.voice.female": "ಮಹಿಳೆ",
   "ff.voice.male": "ಪುರುಷ",
   "ff.handsFree": "ನನ್ನ ಪ್ರಶ್ನೆಗಳ ನಂತರ ಮೈಕ್ ಆನ್ ಮಾಡಿ",

@@ -1,4 +1,4 @@
-// Voice and speed for Farmer's Friend on this device: a female or male
+// Voice and speed for Sakhi on this device: a female (default) or male
 // voice, the voices the browser has for the current language (most natural
 // first), three speeds and a sample to hear the choice. Voices are per
 // device, so the choice is remembered on this device only.
@@ -13,7 +13,7 @@ import { translate, type MessageKey } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const SPEEDS: Speed[] = ["slow", "normal", "fast"];
-const GENDERS: (Gender | null)[] = [null, "female", "male"];
+const GENDERS: Gender[] = ["female", "male"];
 
 /**
  * @param lang - language whose voices are listed
@@ -23,7 +23,7 @@ export function VoiceSettings({ lang, onSpeaking }: { lang: AssistantLang; onSpe
   const t = (k: MessageKey) => translate(lang, k);
   const [state, setState] = useState<{ options: VoiceOption[]; current: string | null; borrowed: boolean } | null>(null);
   const [speed, setSpeedState] = useState<Speed>(() => getSpeed());
-  const [gender, setGenderState] = useState<Gender | null>(() => getGender());
+  const [gender, setGenderState] = useState<Gender>(() => getGender());
 
   const reload = () => voiceOptions(lang).then(setState);
   useEffect(() => {
@@ -48,10 +48,10 @@ export function VoiceSettings({ lang, onSpeaking }: { lang: AssistantLang; onSpe
   return (
     <div className="space-y-2">
       {genders.has("female") && genders.has("male") && (
-        <div className="grid grid-cols-3 gap-1 rounded-xl bg-muted p-1" role="radiogroup" aria-label={t("ff.voice.gender")}>
+        <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1" role="radiogroup" aria-label={t("ff.voice.gender")}>
           {GENDERS.map((g) => (
             <button
-              key={g ?? "any"}
+              key={g}
               type="button"
               role="radio"
               aria-checked={gender === g}
@@ -62,7 +62,7 @@ export function VoiceSettings({ lang, onSpeaking }: { lang: AssistantLang; onSpe
               }}
               className={cn("min-h-11 rounded-lg text-xs font-medium", gender === g ? "bg-background shadow-sm" : "text-muted-foreground")}
             >
-              {t(g ? `ff.voice.${g}` : "ff.voice.any")}
+              {t(`ff.voice.${g}`)}
             </button>
           ))}
         </div>
@@ -121,7 +121,7 @@ export function VoiceSettings({ lang, onSpeaking }: { lang: AssistantLang; onSpe
 export function VoiceQuickPick({ lang }: { lang: AssistantLang }) {
   const t = (k: MessageKey) => translate(lang, k);
   const [both, setBoth] = useState(false);
-  const [gender, setGenderState] = useState<Gender | null>(() => getGender());
+  const [gender, setGenderState] = useState<Gender>(() => getGender());
   useEffect(() => {
     let live = true;
     voiceOptions(lang).then((r) => {

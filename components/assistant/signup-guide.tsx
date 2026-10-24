@@ -1,4 +1,4 @@
-// Farmer's Friend on the seller sign-up: talks the farmer through all six
+// Sakhi on the seller sign-up: talks the farmer through all six
 // screens in Kannada, Hindi or English, asks every question out loud, fills
 // the form from the answer (spoken or typed), moves on by itself and, once
 // the PIN is typed, creates the account on a spoken "yes". Everything runs

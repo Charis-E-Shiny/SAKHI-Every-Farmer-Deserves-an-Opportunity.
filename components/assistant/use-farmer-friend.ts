@@ -1,4 +1,4 @@
-// State machine behind the Farmer's Friend panel: conversation, avatar
+// State machine behind the Sakhi panel: conversation, avatar
 // state, browser speech in/out, the editable "heard" transcript with a
 // confidence gate, voice yes/no for a visible confirmation, hands-free
 // listening after a question, context (pending follow-up, latest draft /

@@ -1,9 +1,9 @@
-// Farmer's Friend strings (English): panel UI and the spoken reply
+// Sakhi strings (English): panel UI and the spoken reply
 // templates. Every reply that contains numbers is one of these templates
 // filled with real data — never free-form model text.
 export const assistantEn = {
-  "ff.name": "Farmer's Friend",
-  "ff.open": "Open Farmer's Friend",
+  "ff.name": "Sakhi",
+  "ff.open": "Open Sakhi",
   "ff.state.idle": "Ready when you are",
   "ff.state.listening": "Listening…",
   "ff.state.thinking": "Thinking…",
@@ -39,23 +39,23 @@ export const assistantEn = {
   "ff.micAllow": "Allow microphone",
   "ff.micDenied": "Microphone is blocked. Allow it in your browser settings, or type instead.",
   "ff.noSpeech": "I didn't hear anything, tap the mic and try again.",
-  "ff.tapToHear": "Tap to hear Farmer's Friend",
+  "ff.tapToHear": "Tap to hear Sakhi",
   "ff.settings": "Settings",
   "ff.autoVoice": "Speak replies automatically",
   "ff.replayWelcome": "Replay welcome",
-  "ff.hide": "Hide Farmer's Friend",
-  "ff.show": "Farmer's Friend",
+  "ff.hide": "Hide Sakhi",
+  "ff.show": "Sakhi",
   "ff.minimise": "Minimise",
   "ff.privacy": "Your voice stays private",
   "ff.lowConfidence": "I'm not sure I heard that right. Check the text, then tap “Use this”.",
   "ff.sessionExpired": "Your session ended, please sign in again.",
 
-  "ff.welcome.title": "Namaskara! I'm Farmer's Friend.",
+  "ff.welcome.title": "Namaskara! I'm Sakhi.",
   "ff.welcome.body": "Talk to me to list your harvest, check your earnings and answer restaurant orders. You stay in control, I always ask before changing anything.",
   "ff.welcome.pickLang": "Which language should I speak?",
   "ff.welcome.suggested": "Suggested for your area",
   "ff.welcome.start": "Let's start",
-  "ff.welcome.spoken": "Namaskara! I'm Farmer's Friend. Tell me what you harvested today, or ask me how much you earned this week.",
+  "ff.welcome.spoken": "Namaskara! I'm Sakhi. Tell me what you harvested today, or ask me how much you earned this week.",
 
   "ff.card.draft": "Harvest draft",
   "ff.card.crop": "Crop",
@@ -180,7 +180,7 @@ export const assistantEn = {
 
   // Seller sign-up guide
   "ff.join.banner.title": "Talk instead of typing?",
-  "ff.join.banner.body": "Farmer's Friend can guide you through sign-up in your language and fill in the form as you speak.",
+  "ff.join.banner.body": "Sakhi can guide you through sign-up in your language and fill in the form as you speak.",
   "ff.join.start": "Guide me by voice",
   "ff.join.title": "Sign-up guide",
   "ff.join.close": "Close guide",
@@ -192,7 +192,6 @@ export const assistantEn = {
   "ff.sttLanguage": "This browser can't listen in this language. Chrome can, or you can type.",
   "ff.voice.borrowed": "No Kannada voice on this device, so a Hindi voice is reading the Kannada. Microsoft Edge has a real Kannada voice.",
   "ff.voice.gender": "Voice type",
-  "ff.voice.any": "Best",
   "ff.voice.female": "Female",
   "ff.voice.male": "Male",
   "ff.handsFree": "Open the mic after my questions",

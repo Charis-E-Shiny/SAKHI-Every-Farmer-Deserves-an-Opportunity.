@@ -1,4 +1,4 @@
-// Farmer's Friend: the floating sprout button and its panel — a right-side
+// Sakhi: the floating sprout button and its panel — a right-side
 // drawer on desktop, an 85vh bottom sheet on phones. Talk or type; the
 // sprout answers with real data, asks before changing anything, and
 // greets new farmers once in their language. After a voice sign-up it opens

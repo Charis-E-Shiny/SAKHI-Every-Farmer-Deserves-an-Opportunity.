@@ -1,4 +1,4 @@
-// Read-only Farmer's Friend intents: earnings, payments, stock, prices,
+// Read-only Sakhi intents: earnings, payments, stock, prices,
 // harvest status and deliveries. Every query is scoped to the signed-in
 // farmer; numbers come from the database, phrasing from templates.
 import "server-only";

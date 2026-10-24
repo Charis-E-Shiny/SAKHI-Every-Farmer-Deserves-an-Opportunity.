@@ -1,4 +1,4 @@
-// Multilingual vocabulary for Farmer's Friend: crop names (English,
+// Multilingual vocabulary for Sakhi: crop names (English,
 // Hindi Devanagari + romanised, Kannada script + romanised) mapped to the
 // canonical crop slugs in lib/crops.ts, plus units, currency, "per kilo"
 // markers, dates and earnings periods.

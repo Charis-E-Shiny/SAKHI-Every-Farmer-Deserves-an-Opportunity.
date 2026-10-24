@@ -1,4 +1,4 @@
-// /api/assistant/settings — Farmer's Friend preferences on the farmer
+// /api/assistant/settings — Sakhi preferences on the farmer
 // profile: whether the welcome was shown, auto voice, and the suggested
 // language order for the farmer's registered location.
 import { db } from "@/lib/db";

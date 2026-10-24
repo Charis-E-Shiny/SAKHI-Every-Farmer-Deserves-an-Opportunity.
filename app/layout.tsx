@@ -30,7 +30,7 @@ const knda = Noto_Sans_Kannada({ variable: "--font-knda", subsets: ["kannada"], 
 export const metadata: Metadata = {
   title: { default: "FoodFlow: from every harvest to every table", template: "%s · FoodFlow" },
   description:
-    "AI-assisted fresh-produce marketplace connecting farmers directly with households, restaurants and community kitchens.",
+    "AI-assisted fresh-produce marketplace connecting farmers directly with households, restaurants and community kitchens, with Sakhi, a voice companion for farmers in Kannada, Hindi and English.",
   applicationName: "FoodFlow",
 };
 

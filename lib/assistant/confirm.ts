@@ -1,4 +1,4 @@
-// Confirmation tokens for Farmer's Friend. A consequential action is first
+// Confirmation tokens for Sakhi. A consequential action is first
 // returned as a short-lived signed token that encodes the exact payload the
 // farmer saw; confirming runs it once. Replays return the stored result.
 import "server-only";

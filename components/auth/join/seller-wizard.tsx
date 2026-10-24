@@ -6,7 +6,7 @@
 // set up later through a payment provider's own secure flow. The account is
 // created, and the answers stored as structured preferences, on the last
 // screen. Picking ಕನ್ನಡ or हिंदी shows the screens in that language, and
-// Farmer's Friend can talk the seller through every question.
+// Sakhi can talk the seller through every question.
 "use client";
 
 import { ArrowLeft, ArrowRight, Loader2, ShieldCheck } from "lucide-react";
@@ -179,7 +179,7 @@ export function SellerWizard({ google }: { google?: { name: string; email: strin
     return true;
   }
 
-  // Farmer's Friend can talk the seller through every question on these screens.
+  // Sakhi can talk the seller through every question on these screens.
   const guide = useSignupGuide({
     step,
     lang: d.language,

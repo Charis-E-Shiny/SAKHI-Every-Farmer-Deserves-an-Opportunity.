@@ -1,4 +1,4 @@
-// Deterministic intent + entity parser for Farmer's Friend. Runs on every
+// Deterministic intent + entity parser for Sakhi. Runs on every
 // utterance (English, Hindi, Kannada, code-mixed); the model is only asked
 // when this parser isn't confident. Never touches the database.
 import { CROPS, type CropSlug } from "@/lib/crops";

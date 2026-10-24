@@ -1,4 +1,4 @@
-// Farmer's Friend intent vocabulary: a fixed whitelist, the entity shape
+// Sakhi intent vocabulary: a fixed whitelist, the entity shape
 // every parser (rules or model) must produce, and which intents change
 // data and therefore need an explicit confirmation.
 import { z } from "zod";

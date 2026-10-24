@@ -1,4 +1,4 @@
-// Spoken-number normaliser for Farmer's Friend (English, Hindi, Kannada —
+// Spoken-number normaliser for Sakhi (English, Hindi, Kannada —
 // native script and romanised). Turns "पचास", "ಐವತ್ತು", "fifty",
 // "dedh sau", "do sau pachaas", "saadhe teen" and ೫೦ / ५० into digits so
 // the intent parser only ever sees plain numbers.
