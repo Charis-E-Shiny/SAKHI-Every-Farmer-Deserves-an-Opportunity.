@@ -1,6 +1,9 @@
 // English UI strings — the source of truth for i18n keys. Farmer-facing
 // screens read every label through `t()`; other roles use English.
+import { assistantEn } from "./assistant-en";
+
 export const en = {
+  ...assistantEn,
   "nav.home": "Home",
   "nav.newBatch": "New harvest",
   "nav.batches": "Harvests",

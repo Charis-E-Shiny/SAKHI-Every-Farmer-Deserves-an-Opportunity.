@@ -1,7 +1,10 @@
 // Hindi UI strings for the farmer interface. Missing keys fall back to English.
 import type { MessageKey } from "./en";
 
+import { assistantHi } from "./assistant-hi";
+
 export const hi: Partial<Record<MessageKey, string>> = {
+  ...assistantHi,
   "nav.home": "होम",
   "nav.newBatch": "नई फ़सल",
   "nav.batches": "फ़सलें",

@@ -1,7 +1,10 @@
 // Kannada UI strings for the farmer interface. Missing keys fall back to English.
 import type { MessageKey } from "./en";
 
+import { assistantKn } from "./assistant-kn";
+
 export const kn: Partial<Record<MessageKey, string>> = {
+  ...assistantKn,
   "nav.home": "ಮುಖಪುಟ",
   "nav.newBatch": "ಹೊಸ ಬೆಳೆ",
   "nav.batches": "ಬೆಳೆಗಳು",
