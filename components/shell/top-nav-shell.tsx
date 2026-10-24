@@ -6,10 +6,11 @@
 "use client";
 
 import { LayoutGroup, motion } from "framer-motion";
-import { LogOut, Menu, Search, ShoppingBag, X } from "lucide-react";
+import { LogOut, Menu, Search, ShoppingBag, Sprout, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import { FarmerFriend, openFarmerFriend } from "@/components/assistant/farmer-friend";
 import { Logo } from "@/components/brand/logo";
 import { SiteFooter } from "@/components/common/site-footer";
 import { ThemeToggle } from "@/components/common/theme-toggle";
@@ -61,6 +62,7 @@ export function TopNavShell({
       <ShellInner role={role} user={user} village={village}>
         {children}
       </ShellInner>
+      {role === "FARMER" && <FarmerFriend />}
     </I18nProvider>
   );
 }
@@ -320,6 +322,19 @@ function MobileMenu({
               })}
             </ul>
           </nav>
+
+          {role === "FARMER" && (
+            <Button
+              variant="outline"
+              className="min-h-14 w-full justify-start gap-3 rounded-2xl text-base"
+              onClick={() => {
+                close();
+                openFarmerFriend();
+              }}
+            >
+              <Sprout className="size-5" /> {t("ff.show")}
+            </Button>
+          )}
 
           {SHELL[role].localised && (
             <section>
