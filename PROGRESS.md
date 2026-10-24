@@ -18,10 +18,25 @@ Status of each build phase, what's next, and the decisions made along the way.
   live nav badges, page transitions, EN/HI/KN i18n layer for the farmer UI
 - `scripts/screenshots.mjs` — Playwright QA at 360/768/1280 that flags horizontal overflow and console errors
 
-## Next — Phase 1 (core marketplace)
+## Phase 1 — Core marketplace ✅
 
-AI provider layer + fallbacks → batch creation with media hashing → `/api/ai/quality` with frame
-extraction → voice listing → price advisor → admin review queue.
+- AI layer (`lib/ai`): Gemini over REST behind an `AIProvider` interface, 8s timeout, strict JSON
+  validated with Zod, and a deterministic fallback for every capability (sharp-based visual
+  heuristic, multilingual listing + grocery parsers, template price explanations). Every result is
+  tagged `ai` or `fallback` and the UI labels it.
+- Harvest wizard (`/farmer/batches/new`): voice or typed details → photos/video → price → review.
+  DRAFT batch after step 1; each upload hashed (SHA-256), duplicate-checked across batches, EXIF
+  stamped; video frames extracted client-side; submit re-runs the visual check server-side.
+- `/api/ai/quality`, `/api/ai/parse-listing`, `/api/ai/price-advice` (numbers from DB, AI only words)
+- Admin review queue with evidence gallery, duplicate source, farmer record, audit trail;
+  approve creates the Listing in the same transaction; reject/resubmit need a note.
+- SSE `/api/events` + `useLive` hook (5s polling fallback); Harvests list with resume.
+- Tests: parsers + visual heuristic (13 passing).
+
+## Next — Phase 2 (consumer shopping)
+
+Browse/search/filter + listing detail → cart + checkout + simulated payments → atomic inventory
+reservation (+ race test) → AI grocery assistant + smart basket → live order tracking.
 
 ## Decisions
 
@@ -37,3 +52,8 @@ extraction → voice listing → price advisor → admin review queue.
 | Demo personas | One-tap login only works for seeded accounts (`90000…` phones) and can be disabled with `DEMO_MODE=false`. |
 | Demo farmer in English | Ramesh starts in English so judges can follow; the EN/हि/ಕ switch shows the localisation. |
 | Seed photos | CC0 / Public Domain images from Openverse (credits in `public/seed/CREDITS.md`). Each seeded batch gets a distinct file so real SHA-256 hashes only collide on the intentional duplicate. |
+| Per-file uploads | Each photo/video uploads in its own request (works under serverless body limits, gives per-file progress and an immediate duplicate warning). |
+| Visual fallback is a real heuristic | Without a model key, sharp measures saturation, exposure, brown/dark blotches and detail — labelled "Offline estimate", never presented as AI. |
+| Frames for AI, video for humans | Videos are stored as evidence for admins; three client-extracted JPEG frames feed the visual check. |
+| Quality is recomputed on submit | The wizard's preview isn't trusted; submit re-runs the check on stored media (cached, so it's consistent and free). |
+| Test DB | Vitest builds a throwaway `prisma/test.db` by deleting the file and pushing the schema (no destructive reset of any real database). |
