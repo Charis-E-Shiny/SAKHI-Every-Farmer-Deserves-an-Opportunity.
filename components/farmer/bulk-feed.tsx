@@ -13,7 +13,8 @@ import { Countdown } from "@/components/bulk/deadline";
 import { QtyStepper } from "@/components/common/qty-stepper";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
-import { StatusBadge, offerStatusLabel } from "@/components/common/status-badge";
+import { offerStatusLabel } from "@/components/common/status-badge";
+import { FarmerStatusBadge } from "@/components/farmer/farmer-status-badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
@@ -41,10 +42,10 @@ export function BulkFeed() {
 
   return (
     <div>
-      <PageHeader title={t("bulk.title")} description="Kitchens and canteens near you. Offer from your live stock — nothing is reserved until they accept." />
+      <PageHeader title={t("bulk.title")} description={t("bulk.desc")} />
       {isLoading && <SkeletonRows count={3} />}
       {error && <ErrorState message={error.message} onRetry={() => mutate()} />}
-      {data?.length === 0 && <EmptyState icon={Handshake} title="No open requirements right now" body="We'll show new ones here the moment they're posted." />}
+      {data?.length === 0 && <EmptyState icon={Handshake} title={t("bulk.emptyTitle")} body={t("bulk.emptyBody")} />}
       <ul className="grid gap-3 lg:grid-cols-2">
         {data?.map((d, i) => {
           const Icon = ORG_ICON[d.buyer.orgType ?? ""] ?? ChefHat;
@@ -141,7 +142,7 @@ function MyOffer({ demand, onChange, onRevise }: { demand: FeedItem; onChange: (
         <p className="text-sm">
           Your offer: <b>{o.qtyKg} kg</b> at <b>{formatINR(o.pricePerKg)}/kg</b> · {o.etaHours} h
         </p>
-        <StatusBadge status={o.status} label={offerStatusLabel(o.status, o.lastActor, "FARMER")} pulse={buyerCountered} />
+        <FarmerStatusBadge status={o.status} label={offerStatusLabel(o.status, o.lastActor, "FARMER")} pulse={buyerCountered} />
       </div>
       {o.status === "ACCEPTED" && o.order && <p className="mt-2 text-sm text-success">Accepted — order {o.order.code} is in your Orders.</p>}
       {buyerCountered && (

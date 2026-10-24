@@ -10,7 +10,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
-import { StatusBadge } from "@/components/common/status-badge";
+import { FarmerStatusBadge } from "@/components/farmer/farmer-status-badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
@@ -22,9 +22,9 @@ import type { SerializedOrder } from "@/lib/orders/queries";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { key: "pack", label: "To pack", statuses: ["PLACED", "CONFIRMED"] },
-  { key: "moving", label: "Ready / on the way", statuses: ["PACKED", "OUT_FOR_DELIVERY", "READY_FOR_PICKUP"] },
-  { key: "done", label: "Done", statuses: ["DELIVERED", "COLLECTED", "CANCELLED", "DISPUTED"] },
+  { key: "pack", labelKey: "orders.colPack", statuses: ["PLACED", "CONFIRMED"] },
+  { key: "moving", labelKey: "orders.colMoving", statuses: ["PACKED", "OUT_FOR_DELIVERY", "READY_FOR_PICKUP"] },
+  { key: "done", labelKey: "orders.colDone", statuses: ["DELIVERED", "COLLECTED", "CANCELLED", "DISPUTED"] },
 ] as const;
 
 /** What the farmer keeps: same formula as the real settlement (commission + capped courier share). */
@@ -32,6 +32,11 @@ export function farmerNet(o: SerializedOrder): { net: number; final: boolean } {
   if (o.settlement) return { net: o.settlement.net, final: true };
   const est = settlementFor({ subtotal: o.subtotal, platformFee: o.platformFee, buyerDeliveryFee: o.deliveryFee, actualCourierCost: o.delivery?.cost ?? 0 });
   return { net: est.net, final: false };
+}
+
+/** Commission % actually charged on this order (frozen at checkout). */
+function commissionOf(o: SerializedOrder): number {
+  return o.subtotal > 0 ? Math.round((o.platformFee / o.subtotal) * 1000) / 10 : 0;
 }
 
 /** The /farmer/orders board. */
@@ -61,13 +66,13 @@ export function OrdersBoard() {
 
   return (
     <div>
-      <PageHeader title={t("orders.title")} description="Pack, hand over, get paid. Riders verify every delivery with the buyer's OTP." />
+      <PageHeader title={t("orders.title")} description={t("orders.desc")} />
       <LayoutGroup id="farmer-orders-tabs">
         <div className="mb-4 flex flex-wrap gap-2">
           {TABS.map((x) => (
-            <button key={x.key} type="button" onClick={() => setTab(x.key)} className={cn("relative h-10 rounded-full px-4 text-sm font-medium", tab === x.key ? "text-background" : "border text-muted-foreground")}>
+            <button key={x.key} type="button" onClick={() => setTab(x.key)} className={cn("relative h-11 rounded-full px-4 text-sm font-medium", tab === x.key ? "text-background" : "border text-muted-foreground")}>
               {tab === x.key && <motion.span layoutId="fo-pill" className="absolute inset-0 -z-10 rounded-full bg-foreground" />}
-              {x.label}
+              {t(x.labelKey)}
               {count(x.key) > 0 && <span className={cn("ml-1.5 rounded-full px-1.5 text-xs", tab === x.key ? "bg-background/20" : "bg-muted")}>{count(x.key)}</span>}
             </button>
           ))}
@@ -94,9 +99,9 @@ export function OrdersBoard() {
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className="inline-flex h-6 items-center gap-1 rounded-full border px-2 text-xs">
                     {o.fulfilment === "PICKUP" ? <Store className="size-3" /> : <Bike className="size-3" />}
-                    {o.fulfilment === "PICKUP" ? "Pickup" : "Delivery"}
+                    {o.fulfilment === "PICKUP" ? t("orders.pickup") : t("orders.delivery")}
                   </span>
-                  <StatusBadge status={o.status} pulse={["CONFIRMED", "OUT_FOR_DELIVERY", "READY_FOR_PICKUP"].includes(o.status)} />
+                  <FarmerStatusBadge status={o.status} pulse={["CONFIRMED", "OUT_FOR_DELIVERY", "READY_FOR_PICKUP"].includes(o.status)} />
                 </div>
               </div>
               <ul className="mt-3 space-y-1 text-sm">
@@ -125,8 +130,8 @@ export function OrdersBoard() {
               </div>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-muted/50 px-3 py-2 text-sm">
                 <span className="text-muted-foreground">
-                  {final ? "Your payout" : "Est. payout"}
-                  <span className="block text-[11px]">after 5% fee{o.delivery?.cost ? " & delivery share" : ""}</span>
+                  {final ? t("orders.yourPayout") : t("orders.estPayout")}
+                  <span className="block text-[11px]">{t(o.delivery?.cost ? "orders.afterFeeDelivery" : "orders.afterFee", { pct: commissionOf(o) })}</span>
                 </span>
                 <span className="tabular text-lg font-semibold">{formatINR(net, true)}</span>
               </div>

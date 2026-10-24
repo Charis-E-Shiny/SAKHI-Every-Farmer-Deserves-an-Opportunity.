@@ -8,7 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 import useSWR from "swr";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
-import { StatusBadge } from "@/components/common/status-badge";
+import { FarmerStatusBadge } from "@/components/farmer/farmer-status-badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ export function BatchList() {
     <div>
       <PageHeader
         title={t("nav.batches")}
-        description="Every harvest you've sent, and where it is in verification."
+        description={t("batches.desc")}
         actions={
           <Button asChild variant="brand">
             <Link href="/farmer/batches/new">{t("dash.newHarvest")}</Link>
@@ -39,7 +39,7 @@ export function BatchList() {
       {isLoading && <SkeletonRows count={4} />}
       {error && <ErrorState message={error.message} onRetry={() => mutate()} />}
       {data && data.length === 0 && (
-        <EmptyState icon={Sprout} title={t("common.empty")} body="List your first harvest — it takes about a minute." />
+        <EmptyState icon={Sprout} title={t("common.empty")} body={t("batches.emptyBody")} />
       )}
       <ul className="space-y-3">
         {data?.map((b, i) => {
@@ -65,8 +65,8 @@ export function BatchList() {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-semibold">{cropName(b.crop, lang)}</p>
-                  <StatusBadge status={b.status} pulse={b.status === "PENDING_REVIEW"} />
-                  {b.media.some((m) => m.isDuplicate) && <StatusBadge status="FLAG" label="Duplicate flag" className="bg-warning/20" />}
+                  <FarmerStatusBadge status={b.status} pulse={b.status === "PENDING_REVIEW"} />
+                  {b.media.some((m) => m.isDuplicate) && <FarmerStatusBadge status="FLAG" label="Duplicate flag" className="bg-warning/20" />}
                 </div>
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   {formatQty(b.quantity, b.unit)}

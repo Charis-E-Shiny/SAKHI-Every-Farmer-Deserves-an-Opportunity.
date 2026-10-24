@@ -6,6 +6,7 @@ import "server-only";
 import type { Prisma } from "@prisma/client";
 import { coordsFor, haversineKm } from "@/lib/areas";
 import { db } from "@/lib/db";
+import { caseVariants } from "@/lib/search";
 import { round2 } from "@/lib/fees";
 
 /** Categories a buyer in `area` may see (special ones need an explicit enable). */
@@ -126,10 +127,8 @@ export async function browseListings(buyer: { area: string | null; lat: number |
     ...(f.freshDays && { harvestDate: { gte: new Date(Date.now() - f.freshDays * 86_400_000) } }),
     ...(f.q && {
       OR: [
-        { title: { contains: f.q } },
         { crop: { contains: f.q.toLowerCase() } },
-        { farmer: { name: { contains: f.q } } },
-        { farmer: { farmerProfile: { village: { contains: f.q } } } },
+        ...caseVariants(f.q).flatMap((v) => [{ title: { contains: v } }, { farmer: { name: { contains: v } } }, { farmer: { farmerProfile: { village: { contains: v } } } }]),
       ],
     }),
   };

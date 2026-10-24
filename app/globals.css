@@ -70,6 +70,7 @@
   --animate-marquee: marquee var(--marquee-duration, 40s) linear infinite;
   --animate-shimmer: shimmer 1.6s ease-in-out infinite;
   --animate-scan: scan 1.8s ease-in-out infinite;
+  --animate-roll: roll 2.4s ease-in-out infinite;
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-ring: pulse-ring 1.8s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
   --animate-spin-y: spin-y var(--spin-duration, 36s) linear infinite;
@@ -110,6 +111,15 @@
     }
     100% {
       background-position: 200% 0;
+    }
+  }
+  @keyframes roll {
+    0%,
+    100% {
+      transform: translateX(0) rotate(0deg);
+    }
+    50% {
+      transform: translateX(8.5rem) rotate(300deg);
     }
   }
   @keyframes scan {

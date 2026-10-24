@@ -69,7 +69,7 @@ export function PickupVerify() {
 
   return (
     <div>
-      <PageHeader title={t("pickup.title")} description="Hand over only after the QR or code checks out — that's what releases your payout." />
+      <PageHeader title={t("pickup.title")} description={t("pickup.desc")} />
 
       <AnimatePresence mode="wait">
         {done ? (

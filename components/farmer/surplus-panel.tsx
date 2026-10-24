@@ -33,10 +33,10 @@ export function SurplusPanel() {
 
   return (
     <div>
-      <PageHeader title={t("surplus.title")} description="Produce that's selling slower than it keeps. Find it a table before it's wasted — you choose every move." />
+      <PageHeader title={t("surplus.title")} description={t("surplus.desc")} />
       {isLoading && <SkeletonRows count={3} />}
       {error && <ErrorState message={error.message} onRetry={() => mutate()} />}
-      {data && atRisk.length === 0 && <EmptyState icon={Leaf} title="Nothing at risk" body="All your listings are selling in time. We'll flag anything that slows down." />}
+      {data && atRisk.length === 0 && <EmptyState icon={Leaf} title={t("surplus.emptyTitle")} body={t("surplus.emptyBody")} />}
       <ul className="space-y-4">
         {atRisk.map((item, i) => (
           <SurplusCard key={item.listingId} item={item} index={i} onChange={() => mutate()} />

@@ -11,6 +11,7 @@ import useSWR from "swr";
 import { EmptyState, ErrorState, SkeletonBlock } from "@/components/common/states";
 import { CountUp } from "@/components/motion/count-up";
 import { useI18n } from "@/components/providers/i18n-provider";
+import type { MessageKey } from "@/lib/i18n";
 import { PageHeader } from "@/components/shell/page-header";
 import { useLive } from "@/hooks/use-live";
 import { formatDate, formatDateTime, formatINR } from "@/lib/format";
@@ -45,10 +46,10 @@ interface Data {
   rows: Row[];
 }
 
-const STAGES: { key: Stage; title: string; sub: string; tone: string; icon: typeof Wallet }[] = [
-  { key: "AWAITING", title: "Awaiting delivery", sub: "Buyer has paid FoodFlow. Yours once the handover is verified.", tone: "bg-info/12 text-info", icon: Clock },
-  { key: "PENDING", title: "Settlement pending", sub: "Delivered. Paid out in the next daily batch.", tone: "bg-warning/20", icon: Wallet },
-  { key: "SETTLED", title: "Settled · 30 days", sub: "Transferred to your UPI account.", tone: "bg-lime/40", icon: Landmark },
+const STAGES: { key: Stage; title: MessageKey; sub: MessageKey; tone: string; icon: typeof Wallet }[] = [
+  { key: "AWAITING", title: "payments.awaiting", sub: "payments.awaitingSub", tone: "bg-info/12 text-info", icon: Clock },
+  { key: "PENDING", title: "payments.pending", sub: "payments.pendingSub", tone: "bg-warning/20", icon: Wallet },
+  { key: "SETTLED", title: "payments.settled", sub: "payments.settledSub", tone: "bg-lime/40", icon: Landmark },
 ];
 
 /** /farmer/payments */
@@ -71,7 +72,7 @@ export function Payments() {
 
   return (
     <div>
-      <PageHeader title={t("payments.title")} description="Only the Settled column is money in your bank — everything else is on its way." />
+      <PageHeader title={t("payments.title")} description={t("payments.desc")} />
 
       {/* Money pipeline */}
       <div className="grid gap-3 md:grid-cols-3">
@@ -81,12 +82,12 @@ export function Payments() {
               <span className={cn("inline-grid size-10 place-items-center rounded-2xl", st.tone)}>
                 <st.icon className="size-5" />
               </span>
-              <p className="mt-3 text-sm font-medium text-muted-foreground">{st.title}</p>
+              <p className="mt-3 text-sm font-medium text-muted-foreground">{t(st.title)}</p>
               <p className="tabular mt-1 text-3xl font-semibold tracking-tight">
                 <CountUp value={amounts[st.key].net} format={(n) => formatINR(n)} />
               </p>
               <p className="text-xs text-muted-foreground">
-                {amounts[st.key].count} order{amounts[st.key].count === 1 ? "" : "s"} · {st.sub}
+                {amounts[st.key].count === 1 ? t("payments.order") : t("payments.orders", { count: amounts[st.key].count })} · {t(st.sub)}
               </p>
             </motion.div>
             {i < STAGES.length - 1 && <FlowConnector />}
@@ -123,14 +124,14 @@ export function Payments() {
       <LayoutGroup id="pay-filter">
         <div className="mt-6 mb-3 flex flex-wrap gap-2">
           {(["ALL", "AWAITING", "PENDING", "SETTLED"] as const).map((f) => (
-            <button key={f} type="button" onClick={() => setFilter(f)} className={cn("relative h-10 rounded-full px-4 text-sm font-medium", filter === f ? "text-background" : "border text-muted-foreground")}>
+            <button key={f} type="button" onClick={() => setFilter(f)} className={cn("relative h-11 rounded-full px-4 text-sm font-medium", filter === f ? "text-background" : "border text-muted-foreground")}>
               {filter === f && <motion.span layoutId="pay-pill" className="absolute inset-0 -z-10 rounded-full bg-foreground" />}
-              {f === "ALL" ? "All" : STAGES.find((x) => x.key === f)!.title.split(" ·")[0]}
+              {f === "ALL" ? t("payments.all") : t(STAGES.find((x) => x.key === f)!.title).split(" ·")[0]}
             </button>
           ))}
         </div>
       </LayoutGroup>
-      {rows.length === 0 && <EmptyState icon={Wallet} title="Nothing here yet" />}
+      {rows.length === 0 && <EmptyState icon={Wallet} title={t("common.empty")} />}
       <ul className="space-y-2">
         {rows.map((r) => (
           <PaymentRow key={`${r.stage}-${r.orderId}`} row={r} />

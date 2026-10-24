@@ -11,7 +11,7 @@ import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Too
 import useSWR from "swr";
 import { ChartCard, ChartTooltip, shortDay } from "@/components/charts/chart-card";
 import { ErrorState, SkeletonBlock } from "@/components/common/states";
-import { StatusBadge } from "@/components/common/status-badge";
+import { FarmerStatusBadge, statusText } from "@/components/farmer/farmer-status-badge";
 import { CountUp } from "@/components/motion/count-up";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
@@ -58,10 +58,10 @@ export function FarmerDashboard() {
 
   const first = data.name.split(" ")[0];
   const kpis = [
-    { k: t("dash.todaySales"), v: data.today.sales, sub: `${data.today.orders} order${data.today.orders === 1 ? "" : "s"}` },
-    { k: t("dash.revenue"), v: data.last30.gross, sub: `${data.last30.kgSold} kg sold` },
-    { k: t("dash.fees"), v: data.last30.fees, sub: "5% commission" },
-    { k: t("dash.deliveryCosts"), v: data.last30.deliveryCosts, sub: "your share of courier" },
+    { k: t("dash.todaySales"), v: data.today.sales, sub: data.today.orders === 1 ? t("payments.order") : t("payments.orders", { count: data.today.orders }) },
+    { k: t("dash.revenue"), v: data.last30.gross, sub: t("dash.kgSold", { kg: data.last30.kgSold }) },
+    { k: t("dash.fees"), v: data.last30.fees, sub: t("dash.commission", { pct: data.last30.gross > 0 ? Math.round((data.last30.fees / data.last30.gross) * 1000) / 10 : 0 }) },
+    { k: t("dash.deliveryCosts"), v: data.last30.deliveryCosts, sub: t("dash.courierShare") },
   ];
 
   return (
@@ -74,7 +74,7 @@ export function FarmerDashboard() {
           <div>
             <p className="text-sm text-muted-foreground">{t("dash.subtitle")}</p>
             <h1 className="mt-1 text-3xl font-semibold tracking-tight sm:text-4xl">{t("dash.greeting", { name: first })}</h1>
-            <p className="mt-4 text-xs text-muted-foreground">{t("dash.netEstimate")} · 30 days</p>
+            <p className="mt-4 text-xs text-muted-foreground">{t("dash.netEstimate")} · {t("dash.days30")}</p>
             <p className="tabular text-5xl font-semibold tracking-tight text-lime">
               <CountUp value={data.last30.net} format={(n) => formatINR(n)} />
             </p>
@@ -95,7 +95,7 @@ export function FarmerDashboard() {
           </span>
           <span className="flex-1 text-sm">
             <b>{t("dash.surplusAlert", { count: data.surplus.count })}</b>
-            <span className="block text-muted-foreground">See who needs it — kitchens and buyers nearby.</span>
+            <span className="block text-muted-foreground">{t("dash.surplusHint")}</span>
           </span>
           <ArrowUpRight className="size-5" />
         </Link>
@@ -117,7 +117,7 @@ export function FarmerDashboard() {
       {/* Money states */}
       <Link href="/farmer/payments" className="grid grid-cols-3 divide-x rounded-3xl border bg-card text-center transition-colors hover:border-foreground/30">
         {[
-          { k: "Awaiting delivery", v: data.money.awaiting },
+          { k: t("payments.awaiting"), v: data.money.awaiting },
           { k: t("dash.pendingSettlement"), v: data.money.pending },
           { k: t("dash.settled"), v: data.money.settled, strong: true },
         ].map((m) => (
@@ -228,7 +228,7 @@ export function FarmerDashboard() {
             {Object.entries(data.statusCounts)
               .filter(([, n]) => n > 0)
               .map(([s, n]) => (
-                <StatusBadge key={s} status={s} label={`${n} ${s.replace(/_/g, " ").toLowerCase()}`} />
+                <FarmerStatusBadge key={s} status={s} label={`${n} · ${statusText(t, s)}`} />
               ))}
           </div>
           <ul className="mt-3 divide-y">

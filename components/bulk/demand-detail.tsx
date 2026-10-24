@@ -244,16 +244,22 @@ function OfferCard({
             </p>
           )}
           {ranked && (
-            <div className="mt-2 grid grid-cols-6 gap-1.5">
-              {(Object.keys(FACTOR_LABEL) as (keyof Ranked["factors"])[]).map((k) => (
-                <div key={k} title={`${FACTOR_LABEL[k]} ${Math.round(ranked.factors[k] * 100)}%`}>
-                  <div className="flex h-8 flex-col justify-end overflow-hidden rounded-md bg-muted">
-                    <motion.div className="w-full rounded-md bg-foreground/70" initial={{ height: 0 }} animate={{ height: `${ranked.factors[k] * 100}%` }} transition={{ duration: 0.7 }} />
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2.5 sm:grid-cols-3">
+              {(Object.keys(FACTOR_LABEL) as (keyof Ranked["factors"])[]).map((k) => {
+                const v = Math.round(ranked.factors[k] * 100);
+                return (
+                  <div key={k} className="min-w-0">
+                    <div className="flex items-baseline justify-between gap-2 text-xs">
+                      <dt className="truncate text-muted-foreground">{FACTOR_LABEL[k]}</dt>
+                      <dd className="tabular font-medium">{v}</dd>
+                    </div>
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
+                      <motion.div className="h-full rounded-full bg-foreground/70" initial={{ width: 0 }} animate={{ width: `${v}%` }} transition={{ duration: 0.7 }} />
+                    </div>
                   </div>
-                  <p className="mt-0.5 text-center text-[9px] text-muted-foreground">{FACTOR_LABEL[k]}</p>
-                </div>
-              ))}
-            </div>
+                );
+              })}
+            </dl>
           )}
         </div>
       )}

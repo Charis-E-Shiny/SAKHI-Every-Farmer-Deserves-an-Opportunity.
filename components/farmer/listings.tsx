@@ -13,7 +13,7 @@ import { QtyStepper } from "@/components/common/qty-stepper";
 import { MediaImage } from "@/components/common/media-image";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
-import { StatusBadge } from "@/components/common/status-badge";
+import { FarmerStatusBadge } from "@/components/farmer/farmer-status-badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
@@ -104,7 +104,7 @@ export function FarmerListings() {
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-semibold">{cropName(r.crop, lang)}</p>
-                  <StatusBadge status={r.status} />
+                  <FarmerStatusBadge status={r.status} />
                   {r.quality !== null && <span className="text-xs text-muted-foreground">visual {r.quality}</span>}
                 </div>
                 <p className="mt-0.5 text-sm">
