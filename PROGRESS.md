@@ -97,10 +97,33 @@ Status of each build phase, what's next, and the decisions made along the way.
 - One-command setup for fresh clones (`npm run setup`)
 - Tests: 45 passing
 
-## Next — Phase 6 (polish & ship)
+## Phase 6 — Polish & ship ✅
 
-Subscriptions → farmer UI i18n → responsive / states QA on every page → README with architecture
-and SDG mapping → deploy config (Vercel + Postgres) → final build → demo script at 360px.
+- Subscriptions (`/shop/subscriptions`, "Get this on repeat" on listings): daily / weekly plans with
+  IST delivery slots, pause / resume, edit, cancel, deliver-now; `run-due` claims each plan
+  atomically (no double orders), falls back to the same farmer then any farm when stock runs out;
+  admin queue + run button in Controls; daily Vercel cron
+- Cold-chain categories (milk / eggs / chicken) per area — in Controls
+- Farmer UI fully in English, Hindi and Kannada: descriptions, empty states, tabs, payment stages,
+  dashboard and translated status badges; commission shown as the rate actually charged
+- Responsive QA of every page at 360 / 768 / 1280 (no overflow, no console errors); fixed subscription
+  cards and offer factor bars
+- 404, route error boundary, global fallback and per-role loading skeletons
+- Date-driven forms (harvest wizard, demand form) use the user's local date and render client-only
+- Search matches names case-insensitively on Postgres as well as SQLite
+- Deploy: `vercel.json`, `npm run vercel-build` (Postgres switch + schema push), `CRON_SECRET`
+- README with architecture, order lifecycle, SDG mapping, screenshots, demo script and deploy guide
+- Demo script run end-to-end through the UI at 360px: all 7 steps pass with no console errors
+- Tests: 56 passing (+ subscriptions, search)
+
+### Full QA pass (every role, real UI, 360px)
+
+Scripted walkthroughs of every role's actions (not just page loads) found and fixed: the farmer
+pickup page crashing when switching from QR to code entry (camera never started), bulk list-posting
+pricing every row with one crop's price and silently dropping incomplete rows, "0% commission" and a
+hard-coded 5% for farmers with no sales, an empty mandi chart for new farmers, the out-of-area
+message naming paused areas, sign-up offering languages the UI doesn't ship, an unlabelled slider,
+a tight sign-up rate limit for shared Wi-Fi, and remaining untranslated farmer labels and relative times.
 
 ## Decisions
 
@@ -131,5 +154,8 @@ and SDG mapping → deploy config (Vercel + Postgres) → final build → demo s
 | Bulk nav | Five phone tab slots; the bulk buyer's cart is reached via the floating cart bar. |
 | Trust flags are advisory | Duplicate photos, complaint rates and price outliers only surface items for a person; nothing is suspended or paused automatically. |
 | Suspension | Blocks PIN and demo sign-in, ends live sessions on the next request, and pauses the farmer's live listings. Reinstating leaves listings paused so the admin resumes them deliberately. |
+| Subscription runs | Claimed with a conditional update on `nextRunAt` before ordering, so overlapping schedulers (cron + admin button) can't double-order. A skipped run (no stock) advances the schedule and is audit-logged. |
+| Daily cron | Vercel Hobby allows one cron per day, so the bundled schedule runs at 04:00 IST; any external scheduler can call `run-due` more often with `CRON_SECRET`. |
+| Client-only date forms | "Today" must be the farmer's today. Server rendering used the server's clock (UTC on Vercel), so the two date-driven forms render in the browser only. |
 | Live landing numbers | The landing page reads impact counters and the mandi ticker from the database on each request and shows zeros (not invented numbers) if the DB is unreachable. |
 | Smart basket weights | Price 0.30, ETA 0.27, freshness 0.25, visual score 0.18, +0.12 per extra item a farm covers — so a marginally cheaper lot 60 km away loses to a nearby fresher one. |

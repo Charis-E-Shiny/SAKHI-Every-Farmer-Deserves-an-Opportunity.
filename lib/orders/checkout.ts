@@ -6,7 +6,7 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import type { User } from "@prisma/client";
 import { z } from "zod";
-import { coordsFor, SERVICE_AREAS } from "@/lib/areas";
+import { coordsFor } from "@/lib/areas";
 import { db } from "@/lib/db";
 import { HttpError } from "@/lib/api";
 import { orderTotals, round2 } from "@/lib/fees";
@@ -44,6 +44,8 @@ export async function quoteCheckout(buyer: User, input: CheckoutInput) {
   const area = input.fulfilment === "DELIVERY" ? await serviceArea(input.area ?? buyer.area) : null;
   if (input.fulfilment === "DELIVERY" && !area) {
     const place = input.area || buyer.area || "that address";
+    // Name only the areas an admin currently has switched on.
+    const open = (await db.serviceArea.findMany({ where: { active: true }, orderBy: { name: "asc" }, select: { name: true } })).map((a) => a.name);
     return {
       area: place,
       fulfilment: input.fulfilment,
@@ -55,7 +57,7 @@ export async function quoteCheckout(buyer: User, input: CheckoutInput) {
       total: 0,
       blocked: {
         code: "OUT_OF_AREA" as const,
-        message: `We don't deliver to ${place} yet — FoodFlow is piloting in ${SERVICE_AREAS.map((a) => a.name).join(", ")}. Choose one of those areas or switch to self-pickup.`,
+        message: `We don't deliver to ${place} yet — FoodFlow currently delivers in ${open.join(", ")}. Choose one of those areas or switch to self-pickup.`,
       },
     };
   }

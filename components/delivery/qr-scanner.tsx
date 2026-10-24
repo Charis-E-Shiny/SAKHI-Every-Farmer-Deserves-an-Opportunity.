@@ -6,6 +6,27 @@
 import { CameraOff } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
+type Scanner = import("html5-qrcode").Html5Qrcode;
+
+/**
+ * Stops and clears a scanner in any state. html5-qrcode's stop() throws
+ * synchronously when the camera never started (permission pending or
+ * denied, no camera), which would otherwise crash the page on unmount.
+ */
+async function release(scanner: Scanner | null) {
+  if (!scanner) return;
+  try {
+    if (scanner.isScanning) await scanner.stop();
+  } catch {
+    /* not running */
+  }
+  try {
+    scanner.clear();
+  } catch {
+    /* already cleared */
+  }
+}
+
 /**
  * @param onResult - called once with the decoded text (scanner then stops)
  */
@@ -19,7 +40,7 @@ export function QrScanner({ onResult }: { onResult: (text: string) => void }) {
   });
 
   useEffect(() => {
-    let scanner: import("html5-qrcode").Html5Qrcode | null = null;
+    let scanner: Scanner | null = null;
     let cancelled = false;
     (async () => {
       try {
@@ -34,26 +55,19 @@ export function QrScanner({ onResult }: { onResult: (text: string) => void }) {
             done.current = true;
             navigator.vibrate?.(60);
             cb.current(text);
-            scanner?.stop().catch(() => {});
+            void release(scanner);
           },
           () => {},
         );
+        // Unmounted while the camera was still starting: turn it off again.
+        if (cancelled) void release(scanner);
       } catch {
         if (!cancelled) setError("Camera unavailable — allow camera access, or type the code instead.");
       }
     })();
     return () => {
       cancelled = true;
-      scanner
-        ?.stop()
-        .catch(() => {})
-        .finally(() => {
-          try {
-            scanner?.clear();
-          } catch {
-            /* already cleared */
-          }
-        });
+      void release(scanner);
     };
   }, [id]);
 

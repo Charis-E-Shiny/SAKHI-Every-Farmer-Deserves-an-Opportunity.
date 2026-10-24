@@ -7,6 +7,7 @@ import { db } from "@/lib/db";
 import { handler } from "@/lib/api";
 import { round2, settlementFor } from "@/lib/fees";
 import { HOLDS_STOCK } from "@/lib/orders/state";
+import { commissionPct } from "@/lib/settings";
 
 /** Summary + per-order timeline for the signed-in farmer. */
 export const GET = handler({ roles: ["FARMER"] }, async ({ user }) => {
@@ -60,6 +61,7 @@ export const GET = handler({ roles: ["FARMER"] }, async ({ user }) => {
   const pending = settledRows.filter((r) => r.stage === "PENDING");
   const settled = settledRows.filter((r) => r.stage === "SETTLED");
   return {
+    commissionPct: await commissionPct(),
     summary: {
       awaiting: { count: awaitingRows.length, net: sum(awaitingRows) },
       pending: { count: pending.length, net: sum(pending) },

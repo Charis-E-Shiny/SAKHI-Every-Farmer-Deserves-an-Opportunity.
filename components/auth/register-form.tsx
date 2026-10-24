@@ -24,12 +24,12 @@ const ROLES: { value: SignupRole; label: string }[] = [
   { value: "BULK_BUYER", label: "Bulk buyer" },
 ];
 
+// Only languages the app UI ships in; Tamil and Telugu voice input is
+// chosen inside the harvest wizard.
 const LANGS = [
   { value: "en", label: "English" },
   { value: "hi", label: "हिन्दी" },
   { value: "kn", label: "ಕನ್ನಡ" },
-  { value: "ta", label: "தமிழ்" },
-  { value: "te", label: "తెలుగు" },
 ];
 
 /** Registration form; signs the new user in on success. */
@@ -127,7 +127,7 @@ export function RegisterForm() {
             onChange={(e) => set("pin")(e.target.value.replace(/\D/g, ""))}
           />
         </Field>
-        <Field label="Language" id="lang">
+        <Field label="App language" id="lang">
           <Select value={form.language} onValueChange={set("language")}>
             <SelectTrigger id="lang" className="w-full">
               <SelectValue />

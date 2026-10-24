@@ -35,6 +35,7 @@ interface Row {
   createdAt: string;
 }
 interface Data {
+  commissionPct: number;
   summary: {
     awaiting: { count: number; net: number };
     pending: { count: number; net: number };
@@ -65,9 +66,9 @@ export function Payments() {
   const amounts: Record<Stage, { count: number; net: number }> = { AWAITING: s.awaiting, PENDING: s.pending, SETTLED: s.settled30d };
   const rows = data.rows.filter((r) => filter === "ALL" || r.stage === filter);
   const parts = [
-    { k: "Your net", v: Math.max(0, s.gross30d - s.fees30d - s.deliveryCosts30d), c: "bg-lime" },
-    { k: "Platform fee (5%)", v: s.fees30d, c: "bg-foreground/70" },
-    { k: "Delivery share", v: s.deliveryCosts30d, c: "bg-tomato/80" },
+    { k: t("payments.yourNet"), v: Math.max(0, s.gross30d - s.fees30d - s.deliveryCosts30d), c: "bg-lime" },
+    { k: t("payments.platformFee", { pct: s.gross30d > 0 ? Math.round((s.fees30d / s.gross30d) * 1000) / 10 : data.commissionPct }), v: s.fees30d, c: "bg-foreground/70" },
+    { k: t("payments.deliveryShare"), v: s.deliveryCosts30d, c: "bg-tomato/80" },
   ];
 
   return (
@@ -98,9 +99,9 @@ export function Payments() {
       {/* 30-day breakdown */}
       <section className="mt-5 rounded-3xl border bg-card p-5">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <p className="font-semibold">Last 30 days</p>
+          <p className="font-semibold">{t("payments.last30")}</p>
           <p className="text-sm text-muted-foreground">
-            Gross <span className="tabular font-semibold text-foreground">{formatINR(s.gross30d)}</span>
+            {t("payments.gross")} <span className="tabular font-semibold text-foreground">{formatINR(s.gross30d)}</span>
           </p>
         </div>
         <div className="mt-3 flex h-3 overflow-hidden rounded-full bg-muted">

@@ -59,13 +59,14 @@ const DEADLINES = [
   { label: "In 3 days", value: () => at(3, 9) },
 ];
 
-const EMPTY: Draft = { crop: null, qtyKg: "50", grade: "ANY", targetPrice: "", deadline: at(1, 10), urgent: false, recurring: false, frequency: "WEEKLY", notes: "" };
+/** Blank draft; the deadline is computed when the form opens. */
+const emptyDraft = (): Draft => ({ crop: null, qtyKg: "50", grade: "ANY", targetPrice: "", deadline: at(1, 10), urgent: false, recurring: false, frequency: "WEEKLY", notes: "" });
 
 /** /bulk/demands/new */
 export function PostDemand() {
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("form");
-  const [draft, setDraft] = useState<Draft>(EMPTY);
+  const [draft, setDraft] = useState<Draft>(emptyDraft);
   const [missing, setMissing] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [voiceInfo, setVoiceInfo] = useState<{ transcript: string; source: string } | null>(null);
@@ -146,7 +147,7 @@ export function PostDemand() {
           }}
         />
       )}
-      {mode === "list" && <ListDemand market={market?.suggested} />}
+      {mode === "list" && <ListDemand />}
 
       {mode === "form" && (
         <div className="space-y-7">
@@ -321,7 +322,17 @@ interface ListRow {
   targetPrice: string;
 }
 
-function ListDemand({ market }: { market?: number }) {
+/** Indicative bulk target for a crop: today's mandi modal + 5% (same basis as the form's hint). */
+async function marketTarget(crop: CropSlug): Promise<string> {
+  try {
+    const m = await sendJSON<{ modalToday: number }>("/api/ai/price-advice", { crop });
+    return m.modalToday ? String(Math.round(m.modalToday * 1.05)) : "";
+  } catch {
+    return "";
+  }
+}
+
+function ListDemand() {
   const router = useRouter();
   const [rows, setRows] = useState<ListRow[]>([]);
   const [text, setText] = useState("");
@@ -330,13 +341,17 @@ function ListDemand({ market }: { market?: number }) {
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  function accept(items: { name: string; qty: number; unit: string }[]) {
-    setRows(items.map((i) => ({ crop: matchCrop(i.name), name: i.name, qtyKg: String(i.unit === "kg" ? i.qty : i.qty), targetPrice: market ? String(market) : "" })));
+  async function accept(items: { name: string; qty: number; unit: string }[]) {
+    const parsed = items.map((i) => ({ crop: matchCrop(i.name), name: i.name, qtyKg: String(i.unit === "g" ? i.qty / 1000 : i.qty), targetPrice: "" }));
+    // Each row gets its own crop's indicative target; the buyer can edit any of them.
+    const crops = [...new Set(parsed.map((r) => r.crop).filter((c): c is CropSlug => Boolean(c)))];
+    const targets = Object.fromEntries(await Promise.all(crops.map(async (c) => [c, await marketTarget(c)] as const)));
+    setRows(parsed.map((r) => ({ ...r, targetPrice: r.crop ? (targets[r.crop] ?? "") : "" })));
   }
   async function readText() {
     setBusy(true);
     try {
-      accept((await sendJSON<{ items: { name: string; qty: number; unit: string }[] }>("/api/ai/parse-grocery-list", { text })).items);
+      await accept((await sendJSON<{ items: { name: string; qty: number; unit: string }[] }>("/api/ai/parse-grocery-list", { text })).items);
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -350,7 +365,7 @@ function ListDemand({ market }: { market?: number }) {
       form.append("image", f);
       const r = await sendForm<{ items: { name: string; qty: number; unit: string }[]; sample: boolean }>("/api/ai/parse-grocery-list", form);
       if (r.sample) toast("Photo reading needs the AI service — showing a sample list to edit");
-      accept(r.items);
+      await accept(r.items);
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -358,14 +373,19 @@ function ListDemand({ market }: { market?: number }) {
     }
   }
   async function postAll() {
-    const valid = rows.filter((r) => r.crop && Number(r.qtyKg) > 0 && Number(r.targetPrice) > 0);
-    if (!valid.length) return toast.error("Each row needs a known crop, quantity and target price");
+    // Never drop a row silently: name every incomplete one and post nothing.
+    const incomplete = rows.filter((r) => !(r.crop && Number(r.qtyKg) > 0 && Number(r.targetPrice) > 0));
+    if (incomplete.length) {
+      return toast.error(`Add a known crop, quantity and target price for: ${incomplete.map((r) => (r.crop ? cropName(r.crop) : r.name || "an empty row")).join(", ")}`);
+    }
+    const valid = rows;
+    if (!valid.length) return toast.error("Add at least one item");
     setBusy(true);
     try {
       await sendJSON("/api/demands", {
         demands: valid.map((r) => ({ crop: r.crop, qtyKg: Number(r.qtyKg), grade: "ANY", targetPrice: Number(r.targetPrice), deadline: new Date(deadline).toISOString(), urgent, recurring: false, source: "LIST" })),
       });
-      toast.success(`${valid.length} requirements posted`);
+      toast.success(valid.length === 1 ? "Requirement posted" : `${valid.length} requirements posted`);
       router.push("/bulk");
     } catch (e) {
       toast.error((e as Error).message);

@@ -46,10 +46,20 @@ export function formatDateTime(d: Date | string): string {
   return date.toLocaleString("en-IN", { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 }
 
-/** "just now", "5 min ago", "3 h ago", "2 days ago". */
-export function timeAgo(d: Date | string): string {
+/**
+ * "just now", "5 min ago", "3 h ago", "2 days ago".
+ * @param lang - UI language; Hindi / Kannada use the browser's relative-time wording
+ */
+export function timeAgo(d: Date | string, lang: string = "en"): string {
   const date = typeof d === "string" ? new Date(d) : d;
   const s = Math.round((Date.now() - date.getTime()) / 1000);
+  if (lang !== "en") {
+    const rtf = new Intl.RelativeTimeFormat(lang, { numeric: "auto" });
+    if (s < 45) return rtf.format(0, "second");
+    if (s < 3600) return rtf.format(-Math.round(s / 60), "minute");
+    if (s < 86_400) return rtf.format(-Math.round(s / 3600), "hour");
+    return rtf.format(-Math.round(s / 86_400), "day");
+  }
   if (s < 45) return "just now";
   if (s < 3600) return `${Math.round(s / 60)} min ago`;
   if (s < 86_400) return `${Math.round(s / 3600)} h ago`;
@@ -57,10 +67,15 @@ export function timeAgo(d: Date | string): string {
   return days === 1 ? "yesterday" : `${days} days ago`;
 }
 
+/** Whole calendar days since the harvest date (0 = today). */
+export function harvestDays(d: Date | string): number {
+  const date = typeof d === "string" ? new Date(d) : d;
+  return Math.max(0, Math.floor((startOfDay(new Date()).getTime() - startOfDay(date).getTime()) / 86_400_000));
+}
+
 /** Harvest age label: "Picked today", "Picked yesterday", "Picked 3 days ago". */
 export function harvestAge(d: Date | string): string {
-  const date = typeof d === "string" ? new Date(d) : d;
-  const days = Math.floor((startOfDay(new Date()).getTime() - startOfDay(date).getTime()) / 86_400_000);
+  const days = harvestDays(d);
   if (days <= 0) return "Picked today";
   if (days === 1) return "Picked yesterday";
   return `Picked ${days} days ago`;

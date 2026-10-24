@@ -28,16 +28,19 @@ import { StepIndicator } from "./step-indicator";
 import { VoiceCapture, type ParsedListingResult } from "./voice-capture";
 import { isoDaysAgo, type DraftFields, type UploadTile } from "./types";
 
-const EMPTY: DraftFields = {
-  crop: null,
-  quantity: "",
-  unit: "kg",
-  harvestDate: isoDaysAgo(0),
-  price: "",
-  notes: "",
-  transcript: "",
-  inputLanguage: "",
-};
+/** Blank form; computed per use so "today" is the farmer's today, not the module-load day. */
+function emptyFields(): DraftFields {
+  return {
+    crop: null,
+    quantity: "",
+    unit: "kg",
+    harvestDate: isoDaysAgo(0),
+    price: "",
+    notes: "",
+    transcript: "",
+    inputLanguage: "",
+  };
+}
 
 /** Maps draft field names to the names used in `missing` lists. */
 const MISSING_KEY: Partial<Record<keyof DraftFields, string>> = { quantity: "qty", crop: "crop", harvestDate: "harvestDate", price: "price", unit: "unit" };
@@ -78,7 +81,7 @@ export function NewBatchWizard({ farmerCrops, initial }: { farmerCrops: CropSlug
   const resumed = initial ? fromBatch(initial) : null;
   const [step, setStep] = useState(0);
   const [dir, setDir] = useState(1);
-  const [fields, setFields] = useState<DraftFields>(resumed?.fields ?? EMPTY);
+  const [fields, setFields] = useState<DraftFields>(() => resumed?.fields ?? emptyFields());
   const [batchId, setBatchId] = useState<string | null>(initial?.id ?? null);
   const [tiles, setTiles] = useState<UploadTile[]>(resumed?.tiles ?? []);
   const [missing, setMissing] = useState<string[]>([]);
@@ -243,7 +246,7 @@ export function NewBatchWizard({ farmerCrops, initial }: { farmerCrops: CropSlug
 
   if (submitted) return <SuccessView batch={submitted} onAnother={() => {
     setSubmitted(null);
-    setFields(EMPTY);
+    setFields(emptyFields());
     setTiles([]);
     setBatchId(null);
     setQuality(null);

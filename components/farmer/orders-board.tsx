@@ -41,7 +41,7 @@ function commissionOf(o: SerializedOrder): number {
 
 /** The /farmer/orders board. */
 export function OrdersBoard() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [tab, setTab] = useState<(typeof TABS)[number]["key"]>("pack");
   const { data, error, isLoading, mutate } = useSWR<SerializedOrder[]>("/api/orders?limit=100");
   useLive(["order.updated", "delivery.updated"], () => mutate());
@@ -126,7 +126,7 @@ export function OrdersBoard() {
                     <MapPin className="size-3.5" /> {o.addressLine}
                   </span>
                 )}
-                <span>{timeAgo(o.createdAt)}</span>
+                <span>{timeAgo(o.createdAt, lang)}</span>
               </div>
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-muted/50 px-3 py-2 text-sm">
                 <span className="text-muted-foreground">

@@ -6,7 +6,7 @@ import { coordsFor } from "@/lib/areas";
 import { hashPin } from "@/lib/auth/password";
 import { startSession } from "@/lib/auth/session";
 import { ROLE_HOME } from "@/lib/auth/token";
-import { rateLimit } from "@/lib/rate-limit";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { registerSchema } from "@/lib/validators/auth";
 
 /**
@@ -14,7 +14,8 @@ import { registerSchema } from "@/lib/validators/auth";
  * @returns the new user and the role's home route
  */
 export const POST = handler({ body: registerSchema }, async ({ body, req }) => {
-  rateLimit(`register:${req.headers.get("x-forwarded-for") ?? "local"}`, 10, 60 * 60_000);
+  // Generous per-IP cap: a whole venue on one Wi-Fi shares a public IP.
+  rateLimit(`register:${clientIp(req.headers)}`, 30, 60 * 60_000);
   const exists = await db.user.findUnique({ where: { phone: body.phone } });
   if (exists) throw new HttpError(409, "An account with this phone number already exists");
 

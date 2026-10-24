@@ -66,32 +66,32 @@ export function BatchList() {
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-semibold">{cropName(b.crop, lang)}</p>
                   <FarmerStatusBadge status={b.status} pulse={b.status === "PENDING_REVIEW"} />
-                  {b.media.some((m) => m.isDuplicate) && <FarmerStatusBadge status="FLAG" label="Duplicate flag" className="bg-warning/20" />}
+                  {b.media.some((m) => m.isDuplicate) && <FarmerStatusBadge status="FLAG" label={t("batches.duplicate")} className="bg-warning/20" />}
                 </div>
                 <p className="mt-0.5 text-sm text-muted-foreground">
                   {formatQty(b.quantity, b.unit)}
-                  {b.proposedPrice ? ` · ₹${b.proposedPrice}/${b.unit}` : ""} · {timeAgo(b.createdAt)}
+                  {b.proposedPrice ? ` · ₹${b.proposedPrice}/${b.unit}` : ""} · {timeAgo(b.createdAt, lang)}
                 </p>
                 {b.aiQualityScore !== null && (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    Visual score <span className="tabular font-semibold text-foreground">{b.aiQualityScore}</span> · Grade {b.grade}
+                    {t("batches.visualScore")} <span className="tabular font-semibold text-foreground">{b.aiQualityScore}</span> · {t("batches.grade", { grade: b.grade ?? "—" })}
                   </p>
                 )}
                 {b.adminNote && (b.status === "RESUBMIT" || b.status === "REJECTED") && (
-                  <p className="mt-2 rounded-xl bg-muted/70 px-3 py-2 text-sm">Admin: “{b.adminNote}”</p>
+                  <p className="mt-2 rounded-xl bg-muted/70 px-3 py-2 text-sm">{t("batches.adminNote", { note: b.adminNote })}</p>
                 )}
                 <div className="mt-2 flex flex-wrap gap-2">
                   {editable && (
                     <Button asChild size="sm" variant="outline">
                       <Link href={`/farmer/batches/new?batch=${b.id}`}>
-                        {b.status === "RESUBMIT" ? "Fix & resubmit" : "Continue"} <ArrowUpRight />
+                        {b.status === "RESUBMIT" ? t("batches.fix") : t("batches.continue")} <ArrowUpRight />
                       </Link>
                     </Button>
                   )}
                   {b.listing && (
                     <Button asChild size="sm" variant="ghost">
                       <Link href="/farmer/listings">
-                        View listing <ArrowUpRight />
+                        {t("batches.viewListing")} <ArrowUpRight />
                       </Link>
                     </Button>
                   )}

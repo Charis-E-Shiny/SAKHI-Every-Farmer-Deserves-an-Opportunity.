@@ -13,14 +13,15 @@ import { QtyStepper } from "@/components/common/qty-stepper";
 import { MediaImage } from "@/components/common/media-image";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
-import { FarmerStatusBadge } from "@/components/farmer/farmer-status-badge";
+import { FarmerStatusBadge, statusText } from "@/components/farmer/farmer-status-badge";
 import { useI18n } from "@/components/providers/i18n-provider";
+import type { MessageKey } from "@/lib/i18n";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { useLive } from "@/hooks/use-live";
 import { cropName } from "@/lib/crops";
 import { sendJSON } from "@/lib/fetcher";
-import { formatINR, formatQty, harvestAge } from "@/lib/format";
+import { formatINR, formatQty, harvestDays } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface Row {
@@ -42,6 +43,12 @@ interface Row {
   grade: string | null;
 }
 
+/** "Picked today / yesterday / N days ago" in the farmer's language. */
+function pickedLabel(t: (key: MessageKey, vars?: Record<string, string | number>) => string, d: string): string {
+  const days = harvestDays(d);
+  return days === 0 ? t("listings.pickedToday") : days === 1 ? t("listings.pickedYesterday") : t("listings.pickedDays", { n: days });
+}
+
 /** /farmer/listings */
 export function FarmerListings() {
   const { t, lang } = useI18n();
@@ -53,9 +60,9 @@ export function FarmerListings() {
 
   const rows = data?.filter((r) => r.status === tab) ?? [];
   const tabs: { k: Row["status"]; l: string }[] = [
-    { k: "ACTIVE", l: "Live" },
-    { k: "PAUSED", l: "Paused" },
-    { k: "SOLD_OUT", l: "Sold out" },
+    { k: "ACTIVE", l: statusText(t, "ACTIVE") },
+    { k: "PAUSED", l: statusText(t, "PAUSED") },
+    { k: "SOLD_OUT", l: statusText(t, "SOLD_OUT") },
   ];
 
   async function patch(r: Row, body: { price?: number; status?: "ACTIVE" | "PAUSED" }) {
@@ -105,11 +112,11 @@ export function FarmerListings() {
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-semibold">{cropName(r.crop, lang)}</p>
                   <FarmerStatusBadge status={r.status} />
-                  {r.quality !== null && <span className="text-xs text-muted-foreground">visual {r.quality}</span>}
+                  {r.quality !== null && <span className="text-xs text-muted-foreground">{t("listings.visual", { score: r.quality })}</span>}
                 </div>
                 <p className="mt-0.5 text-sm">
                   <b className="tabular">{formatINR(r.price)}</b>/{r.unit}
-                  {r.suggestedPrice ? <span className="text-xs text-muted-foreground"> · suggested {formatINR(r.suggestedPrice)}</span> : null}
+                  {r.suggestedPrice ? <span className="text-xs text-muted-foreground"> · {t("listings.suggested", { price: formatINR(r.suggestedPrice) })}</span> : null}
                 </p>
                 <div className="mt-2 flex h-2 gap-0.5 overflow-hidden rounded-full">
                   <span className="bg-foreground" style={{ width: pct(r.sold) }} />
@@ -117,7 +124,7 @@ export function FarmerListings() {
                   <span className="flex-1 bg-muted" />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {formatQty(r.available, r.unit)} {t("listings.available")} · {formatQty(r.reserved, r.unit)} {t("listings.reserved")} · {formatQty(r.sold, r.unit)} {t("listings.sold")} · {harvestAge(r.harvestDate)}
+                  {formatQty(r.available, r.unit)} {t("listings.available")} · {formatQty(r.reserved, r.unit)} {t("listings.reserved")} · {formatQty(r.sold, r.unit)} {t("listings.sold")} · {pickedLabel(t, r.harvestDate)}
                 </p>
                 {r.status !== "SOLD_OUT" && (
                   <div className="mt-2 flex flex-wrap gap-2">

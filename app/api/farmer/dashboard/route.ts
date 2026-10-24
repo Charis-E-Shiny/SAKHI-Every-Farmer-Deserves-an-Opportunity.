@@ -9,6 +9,7 @@ import { isCropSlug } from "@/lib/crops";
 import { round2, settlementFor } from "@/lib/fees";
 import { soldQty } from "@/lib/inventory";
 import { HOLDS_STOCK, IN_FLIGHT } from "@/lib/orders/state";
+import { commissionPct } from "@/lib/settings";
 import { detectSurplus } from "@/lib/surplus";
 
 const DAY = 86_400_000;
@@ -56,6 +57,8 @@ export const GET = handler({ roles: ["FARMER"] }, async ({ user }) => {
 
   // Mandi trend for the farmer's crops (up to 3), from their reference mandi.
   const crops = [...new Set([...(((profile?.crops as string[] | null) ?? []).filter(isCropSlug)), ...listings.map((l) => l.crop)])].slice(0, 3);
+  // A new farmer with no crops yet still sees the staples' trend.
+  if (!crops.length) crops.push("tomato", "onion", "potato");
   const mandi = (user.area && MANDI_FOR_AREA[user.area]) || MANDIS[0];
   const prices = await db.marketPrice.findMany({ where: { crop: { in: crops }, area: mandi, date: { gte: since14 } }, orderBy: { date: "asc" } });
   const trendMap = new Map<string, Record<string, number | string>>();
@@ -71,6 +74,7 @@ export const GET = handler({ roles: ["FARMER"] }, async ({ user }) => {
 
   return {
     name: user.name,
+    commissionPct: await commissionPct(),
     today: { orders: today.length, sales: sum(today.map((o) => o.subtotal)) },
     last30: {
       gross: sum(settlements.map((s) => s.gross)),

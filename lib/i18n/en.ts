@@ -169,6 +169,23 @@ export const en = {
   "dash.courierShare": "your share of courier",
   "dash.days30": "30 days",
   "dash.surplusHint": "See who needs it — kitchens and buyers nearby.",
+  "batches.duplicate": "Duplicate flag",
+  "batches.visualScore": "Visual score",
+  "batches.grade": "Grade {grade}",
+  "batches.adminNote": "Admin: “{note}”",
+  "batches.fix": "Fix & resubmit",
+  "batches.continue": "Continue",
+  "batches.viewListing": "View listing",
+  "payments.yourNet": "Your net",
+  "payments.platformFee": "Platform fee ({pct}%)",
+  "payments.deliveryShare": "Delivery share",
+  "payments.last30": "Last 30 days",
+  "payments.gross": "Gross",
+  "listings.pickedToday": "Picked today",
+  "listings.pickedYesterday": "Picked yesterday",
+  "listings.pickedDays": "Picked {n} days ago",
+  "listings.visual": "visual {score}",
+  "listings.suggested": "suggested {price}",
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -21,6 +21,7 @@ import { formatINR, formatINRCompact, formatQty, timeAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface Dashboard {
+  commissionPct: number;
   name: string;
   today: { orders: number; sales: number };
   last30: { gross: number; fees: number; deliveryCosts: number; net: number; kgSold: number; orders: number };
@@ -60,7 +61,7 @@ export function FarmerDashboard() {
   const kpis = [
     { k: t("dash.todaySales"), v: data.today.sales, sub: data.today.orders === 1 ? t("payments.order") : t("payments.orders", { count: data.today.orders }) },
     { k: t("dash.revenue"), v: data.last30.gross, sub: t("dash.kgSold", { kg: data.last30.kgSold }) },
-    { k: t("dash.fees"), v: data.last30.fees, sub: t("dash.commission", { pct: data.last30.gross > 0 ? Math.round((data.last30.fees / data.last30.gross) * 1000) / 10 : 0 }) },
+    { k: t("dash.fees"), v: data.last30.fees, sub: t("dash.commission", { pct: data.last30.gross > 0 ? Math.round((data.last30.fees / data.last30.gross) * 1000) / 10 : data.commissionPct }) },
     { k: t("dash.deliveryCosts"), v: data.last30.deliveryCosts, sub: t("dash.courierShare") },
   ];
 
@@ -231,6 +232,7 @@ export function FarmerDashboard() {
                 <FarmerStatusBadge key={s} status={s} label={`${n} · ${statusText(t, s)}`} />
               ))}
           </div>
+          {data.recent.length === 0 && <p className="mt-3 text-sm text-muted-foreground">{t("common.empty")}</p>}
           <ul className="mt-3 divide-y">
             {data.recent.map((o) => (
               <li key={o.id} className="flex items-center gap-3 py-2.5 text-sm">
@@ -238,7 +240,7 @@ export function FarmerDashboard() {
                 <span className="min-w-0 flex-1">
                   <span className="block font-mono text-xs font-semibold">{o.code}</span>
                   <span className="block text-xs break-words text-muted-foreground">
-                    {o.buyer} · {timeAgo(o.createdAt)}
+                    {o.buyer} · {timeAgo(o.createdAt, lang)}
                   </span>
                 </span>
                 <span className="tabular font-medium">{formatINR(o.total)}</span>
