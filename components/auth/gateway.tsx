@@ -40,7 +40,7 @@ export function Gateway({ next, google, error }: { next?: string; google?: { nam
   return (
     <>
       <h1 className="text-[2.4rem] leading-[1] font-semibold tracking-tight sm:text-5xl">
-        <WordReveal text="Welcome to *SAKHI.*" />
+        <WordReveal text="Welcome to *FoodFlow.*" />
       </h1>
       <p className="mt-3 max-w-md text-lg text-muted-foreground">Who are you joining as?</p>
       {error && ERRORS[error] && (

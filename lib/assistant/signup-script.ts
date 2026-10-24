@@ -137,7 +137,7 @@ export const CHOICES: Record<DisplayField, Choice[]> = {
   fulfilment: [
     c("PICKUP", "buyers pick it up", "ಖರೀದಿದಾರರೇ ಬಂದು ತೆಗೆದುಕೊಳ್ಳುತ್ತಾರೆ", "खरीदार ख़ुद आकर ले जाए", ["pickup", "pick up", "pick it up", "collect*", "come and take", "ಬಂದು", "ಪಿಕಪ್", "ಪಿಕ್ ಅಪ್", "ले जाए", "ले जाएं", "ले जाएँ", "आकर", "पिकअप"]),
     c("OWN_DELIVERY", "you deliver", "ನಾವೇ ತಲುಪಿಸುತ್ತೇವೆ", "मैं ख़ुद पहुँचाऊँगा", ["i deliver", "we deliver", "i can deliver", "we can deliver", "my vehicle", "my team", "ನಾವೇ", "ನಾನೇ", "ತಲುಪಿಸುತ್ತೇನೆ", "ತಲುಪಿಸುತ್ತೇವೆ", "ನಮ್ಮ ವಾಹನ", "पहुँचाऊँ", "पहुंचाऊं", "मैं ख़ुद", "मैं खुद", "अपनी गाड़ी"]),
-    c("SAKHI_DELIVERY", "SAKHI delivery", "ಸಖಿ ಡೆಲಿವರಿ ಮಾಡಲಿ", "सखी डिलीवरी करे", ["sakhi", "sakhee", "ಸಖಿ", "ಸಖೀ", "सखी", "सखि", "you arrange", "platform", "ಫುಡ್‌ಫ್ಲೋ", "ಫುಡ್ ಫ್ಲೋ", "ಫುಡ್ಫ್ಲೋ", "फ़ूडफ़्लो", "फूड फ्लो", "फूडफ्लो"]),
+    c("FOODFLOW_DELIVERY", "FoodFlow delivery", "FoodFlow ಡೆಲಿವರಿ ಮಾಡಲಿ", "FoodFlow डिलीवरी करे", ["foodflow", "food flow", "you arrange", "platform", "ಫುಡ್‌ಫ್ಲೋ", "ಫುಡ್ ಫ್ಲೋ", "ಫುಡ್ಫ್ಲೋ", "फ़ूडफ़्लो", "फूड फ्लो", "फूडफ्लो"]),
     c("EXTERNAL", "another delivery service", "ಬೇರೆ ಡೆಲಿವರಿ ಸೇವೆ", "कोई और डिलीवरी सर्विस", ["external", "courier", "porter", "dunzo", "other service", "third party", "ಕೊರಿಯರ್", "ಬೇರೆ ಸೇವೆ", "कूरियर", "दूसरी सर्विस"]),
   ],
   vehicle: [
@@ -179,7 +179,7 @@ export const CHOICES: Record<DisplayField, Choice[]> = {
   ],
   paymentMethods: [
     c("UPI", "UPI", "ಯುಪಿಐ", "यूपीआई", ["upi", "phonepe", "phone pe", "gpay", "google pay", "paytm", "ಯುಪಿಐ", "ಫೋನ್ ಪೇ", "ಗೂಗಲ್ ಪೇ", "यूपीआई", "फ़ोनपे", "फोनपे", "गूगल पे", "पेटीएम"]),
-    c("ONLINE", "online through SAKHI", "ಸಖಿ ಮೂಲಕ ಆನ್‌ಲೈನ್", "सखी से ऑनलाइन", ["online", "card", "ಆನ್‌ಲೈನ್", "ಆನ್ಲೈನ್", "ऑनलाइन"]),
+    c("ONLINE", "online through FoodFlow", "FoodFlow ಮೂಲಕ ಆನ್‌ಲೈನ್", "FoodFlow से ऑनलाइन", ["online", "card", "ಆನ್‌ಲೈನ್", "ಆನ್ಲೈನ್", "ऑनलाइन"]),
     c("CASH", "cash", "ನಗದು", "नक़द", ["cash", "ನಗದು", "ಕ್ಯಾಶ್", "नक़द", "नकद", "कैश", "nagadu", "nakad"]),
     c("BANK", "bank transfer", "ಬ್ಯಾಂಕ್ ವರ್ಗಾವಣೆ", "बैंक ट्रांसफ़र", ["bank", "neft", "imps", "transfer", "ಬ್ಯಾಂಕ್", "बैंक"]),
     c("TERMS", "credit terms for businesses", "ವ್ಯಾಪಾರಿಗಳಿಗೆ ಒಪ್ಪಿದ ಸಾಲದ ಅವಧಿ", "व्यापारियों के लिए उधार की शर्तें", ["terms", "credit", "later payment", "ಸಾಲ", "ಉದ್ರಿ", "उधार", "क्रेडिट"]),
@@ -324,7 +324,7 @@ export const SCRIPT: Question[][] = [
     q({ kind: "text", field: "district", ask: { en: "Which district is that in?", kn: "ಅದು ಯಾವ ಜಿಲ್ಲೆಯಲ್ಲಿದೆ?", hi: "वह किस ज़िले में है?" } }),
     q({ kind: "pincode", field: "pincode", ask: { en: "What's the 6-digit PIN code there?", kn: "ಅಲ್ಲಿಯ 6 ಅಂಕಿಯ ಪಿನ್ ಕೋಡ್ ಏನು?", hi: "वहाँ का 6 अंकों का पिन कोड क्या है?" } }),
     q({ kind: "text", field: "addressLine", ask: { en: "Tell me the farm address, or a landmark where buyers can collect.", kn: "ತೋಟದ ವಿಳಾಸ ಹೇಳಿ, ಅಥವಾ ಖರೀದಿದಾರರು ಬಂದು ತೆಗೆದುಕೊಳ್ಳಬಹುದಾದ ಗುರುತಿನ ಸ್ಥಳ ಹೇಳಿ.", hi: "खेत का पता बताइए, या कोई पहचान की जगह जहाँ से खरीदार सामान ले सकें।" } }),
-    q({ kind: "one", field: "area", ask: { en: "Which SAKHI area is nearest to you: Yelahanka, Hebbal or Jayanagar?", kn: "ನಿಮಗೆ ಹತ್ತಿರದ ಸಖಿ ಪ್ರದೇಶ ಯಾವುದು: ಯಲಹಂಕ, ಹೆಬ್ಬಾಳ, ಅಥವಾ ಜಯನಗರ?", hi: "आपके सबसे पास कौन सा सखी इलाक़ा है: येलहंका, हेब्बाल या जयनगर?" } }),
+    q({ kind: "one", field: "area", ask: { en: "Which FoodFlow area is nearest to you: Yelahanka, Hebbal or Jayanagar?", kn: "ನಿಮಗೆ ಹತ್ತಿರದ FoodFlow ಪ್ರದೇಶ ಯಾವುದು: ಯಲಹಂಕ, ಹೆಬ್ಬಾಳ, ಅಥವಾ ಜಯನಗರ?", hi: "आपके सबसे पास कौन सा FoodFlow इलाक़ा है: येलहंका, हेब्बाल या जयनगर?" } }),
     q({ kind: "one", field: "ownership", ask: { en: "Is it your own land, leased land, or do you buy from other farmers?", kn: "ಇದು ನಿಮ್ಮ ಸ್ವಂತ ಜಮೀನೇ, ಗುತ್ತಿಗೆ ಜಮೀನೇ, ಅಥವಾ ಬೇರೆ ರೈತರಿಂದ ಖರೀದಿಸುತ್ತೀರಾ?", hi: "यह आपकी अपनी ज़मीन है, किराये की, या आप दूसरे किसानों से खरीदते हैं?" } }),
   ],
   [
@@ -338,12 +338,12 @@ export const SCRIPT: Question[][] = [
     q({ kind: "one", field: "orderSizes", ask: { en: "What order sizes suit you: small orders from homes, medium orders, bulk orders, or all sizes?", kn: "ಯಾವ ಆರ್ಡರ್ ನಿಮಗೆ ಸರಿ: ಮನೆಗಳ ಸಣ್ಣ ಆರ್ಡರ್, ಮಧ್ಯಮ, ದೊಡ್ಡ ಆರ್ಡರ್, ಅಥವಾ ಎಲ್ಲಾ?", hi: "कैसे ऑर्डर ठीक लगते हैं: घरों के छोटे, मध्यम, बड़े थोक ऑर्डर, या सभी?" } }),
   ],
   [
-    q({ kind: "many", field: "fulfilment", ask: { en: "How can buyers get your produce? They pick it up, you deliver, SAKHI arranges delivery, or another delivery service? You can say more than one.", kn: "ಖರೀದಿದಾರರು ಬೆಳೆಯನ್ನು ಹೇಗೆ ಪಡೆಯುತ್ತಾರೆ? ಅವರೇ ಬಂದು ತೆಗೆದುಕೊಳ್ಳುತ್ತಾರೆ, ನೀವೇ ತಲುಪಿಸುತ್ತೀರಿ, ಸಖಿ ಡೆಲಿವರಿ ಮಾಡುತ್ತದೆ, ಅಥವಾ ಬೇರೆ ಡೆಲಿವರಿ ಸೇವೆ? ಒಂದಕ್ಕಿಂತ ಹೆಚ್ಚು ಹೇಳಬಹುದು.", hi: "खरीदार उपज कैसे लेंगे? ख़ुद आकर ले जाएँ, आप पहुँचाएँ, सखी डिलीवरी करे, या कोई और डिलीवरी सर्विस? एक से ज़्यादा बोल सकते हैं।" } }),
+    q({ kind: "many", field: "fulfilment", ask: { en: "How can buyers get your produce? They pick it up, you deliver, FoodFlow arranges delivery, or another delivery service? You can say more than one.", kn: "ಖರೀದಿದಾರರು ಬೆಳೆಯನ್ನು ಹೇಗೆ ಪಡೆಯುತ್ತಾರೆ? ಅವರೇ ಬಂದು ತೆಗೆದುಕೊಳ್ಳುತ್ತಾರೆ, ನೀವೇ ತಲುಪಿಸುತ್ತೀರಿ, FoodFlow ಡೆಲಿವರಿ ಮಾಡುತ್ತದೆ, ಅಥವಾ ಬೇರೆ ಡೆಲಿವರಿ ಸೇವೆ? ಒಂದಕ್ಕಿಂತ ಹೆಚ್ಚು ಹೇಳಬಹುದು.", hi: "खरीदार उपज कैसे लेंगे? ख़ुद आकर ले जाएँ, आप पहुँचाएँ, FoodFlow डिलीवरी करे, या कोई और डिलीवरी सर्विस? एक से ज़्यादा बोल सकते हैं।" } }),
     q({ kind: "one", field: "radius", ask: { en: "How far can you serve? 5, 10, 25 or 50 kilometres, or further?", kn: "ಎಷ್ಟು ದೂರದವರೆಗೆ ಕೊಡಬಲ್ಲಿರಿ? 5, 10, 25, ಅಥವಾ 50 ಕಿಲೋಮೀಟರ್, ಅಥವಾ ಇನ್ನೂ ದೂರ?", hi: "आप कितनी दूर तक दे सकते हैं? 5, 10, 25 या 50 किलोमीटर, या और दूर?" } }),
     q({ kind: "one", field: "deliveryFee", ask: { en: "Who should pay for delivery: the buyer, you, half and half, or does it depend?", kn: "ಡೆಲಿವರಿ ಶುಲ್ಕ ಯಾರು ಕೊಡಬೇಕು: ಖರೀದಿದಾರರು, ನೀವು, ಅರ್ಧ ಅರ್ಧ, ಅಥವಾ ಆರ್ಡರ್ ಮೇಲೆ ಅವಲಂಬಿತ?", hi: "डिलीवरी का पैसा कौन देगा: खरीदार, आप, आधा-आधा, या ऑर्डर पर निर्भर?" } }),
     q({ kind: "one", field: "packing", ask: { en: "Who packs the order: you, the buyer with their own bags, or the delivery partner?", kn: "ಆರ್ಡರ್ ಅನ್ನು ಯಾರು ಪ್ಯಾಕ್ ಮಾಡುತ್ತಾರೆ: ನೀವು, ಚೀಲ ತರುವ ಖರೀದಿದಾರರು, ಅಥವಾ ಡೆಲಿವರಿ ಪಾಲುದಾರರು?", hi: "ऑर्डर कौन पैक करेगा: आप, अपना थैला लाने वाला खरीदार, या डिलीवरी पार्टनर?" } }),
   ],
-  [q({ kind: "many", field: "paymentMethods", ask: { en: "How will you take payment: UPI, online through SAKHI, cash, or bank transfer? Say all that work for you.", kn: "ಹಣ ಹೇಗೆ ಪಡೆಯುತ್ತೀರಿ: ಯುಪಿಐ, ಸಖಿ ಮೂಲಕ ಆನ್‌ಲೈನ್, ನಗದು, ಅಥವಾ ಬ್ಯಾಂಕ್ ವರ್ಗಾವಣೆ? ಸರಿಹೊಂದುವ ಎಲ್ಲವನ್ನೂ ಹೇಳಿ.", hi: "भुगतान कैसे लेंगे: यूपीआई, सखी से ऑनलाइन, नक़द, या बैंक ट्रांसफ़र? जो भी ठीक हों, सब बोलें।" } })],
+  [q({ kind: "many", field: "paymentMethods", ask: { en: "How will you take payment: UPI, online through FoodFlow, cash, or bank transfer? Say all that work for you.", kn: "ಹಣ ಹೇಗೆ ಪಡೆಯುತ್ತೀರಿ: ಯುಪಿಐ, FoodFlow ಮೂಲಕ ಆನ್‌ಲೈನ್, ನಗದು, ಅಥವಾ ಬ್ಯಾಂಕ್ ವರ್ಗಾವಣೆ? ಸರಿಹೊಂದುವ ಎಲ್ಲವನ್ನೂ ಹೇಳಿ.", hi: "भुगतान कैसे लेंगे: यूपीआई, FoodFlow से ऑनलाइन, नक़द, या बैंक ट्रांसफ़र? जो भी ठीक हों, सब बोलें।" } })],
   [
     q({ kind: "one", field: "entityType", ask: { en: "How are you registered: as an individual, a partnership, a cooperative, or a company?", kn: "ನೀವು ಹೇಗೆ ನೋಂದಾಯಿಸಿಕೊಂಡಿದ್ದೀರಿ: ವೈಯಕ್ತಿಕ, ಪಾಲುದಾರಿಕೆ, ಸಹಕಾರ ಸಂಘ, ಅಥವಾ ಕಂಪನಿ?", hi: "आप किस रूप में रजिस्टर्ड हैं: व्यक्तिगत, साझेदारी, सहकारी संस्था, या कंपनी?" } }),
     q({ kind: "yesno", field: "authorised", ask: { en: "Are you allowed to sell this produce for this farm? Say yes to confirm.", kn: "ಈ ತೋಟದ ಬೆಳೆಯನ್ನು ಮಾರಲು ನಿಮಗೆ ಅಧಿಕಾರ ಇದೆಯೇ? ಖಚಿತಪಡಿಸಲು ಹೌದು ಎನ್ನಿ.", hi: "क्या आपको इस खेत की उपज बेचने का अधिकार है? पक्का करने के लिए हाँ बोलें।" } }),
@@ -372,8 +372,8 @@ export const LINES = {
     { en: "Noted, {value}.", kn: "ಆಯ್ತು, {value}.", hi: "{value}, नोट कर लिया।" },
   ] as L3[],
   farmSame: { en: "Okay, the farm is {value} too.", kn: "ಸರಿ, ತೋಟದ ಹೆಸರೂ {value}.", hi: "ठीक है, खेत का नाम भी {value}।" },
-  village: { en: "{village}, in {district} district. Your nearest SAKHI area is {area}.", kn: "{village}, {district} ಜಿಲ್ಲೆ. ನಿಮಗೆ ಹತ್ತಿರದ ಸಖಿ ಪ್ರದೇಶ {area}.", hi: "{village}, {district} ज़िला। आपके सबसे पास का सखी इलाक़ा {area} है।" },
-  villageArea: { en: "{village}. Your nearest SAKHI area is {area}.", kn: "{village}. ನಿಮಗೆ ಹತ್ತಿರದ ಸಖಿ ಪ್ರದೇಶ {area}.", hi: "{village}। आपके सबसे पास का सखी इलाक़ा {area} है।" },
+  village: { en: "{village}, in {district} district. Your nearest FoodFlow area is {area}.", kn: "{village}, {district} ಜಿಲ್ಲೆ. ನಿಮಗೆ ಹತ್ತಿರದ FoodFlow ಪ್ರದೇಶ {area}.", hi: "{village}, {district} ज़िला। आपके सबसे पास का FoodFlow इलाक़ा {area} है।" },
+  villageArea: { en: "{village}. Your nearest FoodFlow area is {area}.", kn: "{village}. ನಿಮಗೆ ಹತ್ತಿರದ FoodFlow ಪ್ರದೇಶ {area}.", hi: "{village}। आपके सबसे पास का FoodFlow इलाक़ा {area} है।" },
   pinCheck: { en: "Is the PIN code {pin}?", kn: "ಪಿನ್ ಕೋಡ್ {pin}, ಸರಿಯೇ?", hi: "पिन कोड {pin} है, सही?" },
   badPhone: { en: "I heard {n} digits. Please say all 10 digits of your mobile number again.", kn: "ನಾನು {n} ಅಂಕಿಗಳನ್ನು ಕೇಳಿದೆ. ದಯವಿಟ್ಟು ಮೊಬೈಲ್ ನಂಬರ್‌ನ ಎಲ್ಲಾ 10 ಅಂಕಿಗಳನ್ನು ಮತ್ತೆ ಹೇಳಿ.", hi: "मैंने {n} अंक सुने। कृपया मोबाइल नंबर के सभी 10 अंक फिर से बोलें।" },
   badPin: { en: "A PIN code has 6 digits, and I heard {n}. Please say it again.", kn: "ಪಿನ್ ಕೋಡ್‌ನಲ್ಲಿ 6 ಅಂಕಿಗಳಿರುತ್ತವೆ, ನಾನು {n} ಕೇಳಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಹೇಳಿ.", hi: "पिन कोड में 6 अंक होते हैं, मैंने {n} सुने। कृपया फिर से बोलें।" },

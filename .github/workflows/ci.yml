@@ -1,4 +1,4 @@
-# CI/CD for SAKHI.
+# CI/CD for FoodFlow.
 #   CI — every pull request and every push to main: lint, type-check, unit
 #        tests, migration/schema checks and a production build.
 #   CD — pushes to main that pass CI are deployed to Vercel production.

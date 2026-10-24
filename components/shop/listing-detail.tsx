@@ -102,7 +102,7 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
             {data.grade && <span className="rounded-lg bg-lime/40 px-2 py-0.5 text-sm font-semibold">Grade {data.grade}</span>}
           </div>
           <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">
-            <BadgeCheck className="size-3.5" /> Verified by SAKHI {data.quality.verifiedAt ? `on ${formatDate(data.quality.verifiedAt)}` : ""}
+            <BadgeCheck className="size-3.5" /> Verified by FoodFlow {data.quality.verifiedAt ? `on ${formatDate(data.quality.verifiedAt)}` : ""}
           </p>
 
           <div className="mt-5 flex flex-wrap items-end gap-x-4 gap-y-1">

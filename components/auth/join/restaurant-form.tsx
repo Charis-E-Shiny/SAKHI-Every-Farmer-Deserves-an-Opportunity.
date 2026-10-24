@@ -39,7 +39,7 @@ export function RestaurantForm({ google }: { google?: { name: string; email: str
         weeklyNeed: f.weeklyNeed || undefined,
         agreeTerms: agree ? true : undefined,
       });
-      toast.success("Your kitchen is set up. Welcome to SAKHI!");
+      toast.success("Your kitchen is set up. Welcome to FoodFlow!");
       router.push(res.redirect);
       router.refresh();
     } catch (err) {

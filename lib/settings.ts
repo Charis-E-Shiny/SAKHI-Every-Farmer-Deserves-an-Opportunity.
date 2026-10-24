@@ -77,7 +77,7 @@ export function commissionPct(): Promise<number> {
 }
 
 /**
- * Active service area by name (case-insensitive), or null when SAKHI
+ * Active service area by name (case-insensitive), or null when FoodFlow
  * doesn't deliver there yet.
  */
 export async function serviceArea(name: string | null | undefined) {

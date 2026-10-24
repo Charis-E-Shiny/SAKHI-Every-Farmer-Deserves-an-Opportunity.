@@ -1,4 +1,4 @@
-// shadcn/ui primitive (switch) — shared UI kit used by every SAKHI interface.
+// shadcn/ui primitive (switch) — shared UI kit used by every FoodFlow interface.
 "use client"
 
 import * as React from "react"

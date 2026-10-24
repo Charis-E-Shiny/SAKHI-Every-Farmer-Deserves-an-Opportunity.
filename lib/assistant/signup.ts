@@ -145,7 +145,7 @@ const PLACE_FACTS: Record<string, { district?: string; pin: string }> = {
   Jayanagar: { district: "Bengaluru Urban", pin: "560011" },
 };
 
-/** A pilot town or village in any script, with its nearest SAKHI service area, district and usual PIN code. */
+/** A pilot town or village in any script, with its nearest FoodFlow service area, district and usual PIN code. */
 export function matchVillage(text: string): { village: string; area: string; district?: string; pin?: string } | null {
   const flat = text.toLowerCase().normalize("NFC").replace(/[\s.,-]+/g, "");
   const places = [...VILLAGES.map((v) => ({ name: v.name, area: v.nearestArea })), ...SERVICE_AREAS.map((a) => ({ name: a.name, area: a.name }))];

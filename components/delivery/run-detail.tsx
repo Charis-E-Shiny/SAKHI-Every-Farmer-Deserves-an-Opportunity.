@@ -77,7 +77,7 @@ export function RunDetail({ id }: { id: string }) {
   async function report(reason: string) {
     try {
       await sendJSON(`/api/deliveries/${id}/problem`, { reason });
-      toast("Reported to SAKHI support");
+      toast("Reported to FoodFlow support");
       setProblemOpen(false);
     } catch (e) {
       toast.error((e as Error).message);

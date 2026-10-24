@@ -94,7 +94,7 @@ export const ALLOCATION = opts([
 export const FULFILMENT = opts([
   { value: "PICKUP", label: "Buyer picks up from my farm / shop" },
   { value: "OWN_DELIVERY", label: "I or my team can deliver" },
-  { value: "SAKHI_DELIVERY", label: "I want SAKHI to arrange delivery" },
+  { value: "FOODFLOW_DELIVERY", label: "I want FOODFLOW to arrange delivery" },
   { value: "EXTERNAL", label: "I can use an external delivery service" },
 ] as const);
 
@@ -144,7 +144,7 @@ export const SHORTAGE = opts([
 
 export const PAYMENT_METHODS = opts([
   { value: "UPI", label: "UPI" },
-  { value: "ONLINE", label: "Online payment through SAKHI" },
+  { value: "ONLINE", label: "Online payment through FOODFLOW" },
   { value: "CASH", label: "Cash at pickup / delivery" },
   { value: "BANK", label: "Bank transfer" },
   { value: "TERMS", label: "Agreed payment terms for verified business buyers" },

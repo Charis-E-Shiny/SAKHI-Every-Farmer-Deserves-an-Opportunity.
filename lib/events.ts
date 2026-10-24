@@ -25,11 +25,11 @@ export interface LiveEvent {
   at: number;
 }
 
-const globalForBus = globalThis as unknown as { sakhiBus?: EventEmitter };
+const globalForBus = globalThis as unknown as { foodflowBus?: EventEmitter };
 /** Survives dev hot reloads so open SSE connections keep receiving events. */
-export const bus = globalForBus.sakhiBus ?? new EventEmitter();
+export const bus = globalForBus.foodflowBus ?? new EventEmitter();
 bus.setMaxListeners(500);
-globalForBus.sakhiBus = bus;
+globalForBus.foodflowBus = bus;
 
 /**
  * Broadcasts a change to subscribed SSE clients.

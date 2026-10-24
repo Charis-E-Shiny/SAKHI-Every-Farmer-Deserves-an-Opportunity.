@@ -17,7 +17,7 @@ import "./globals.css";
 const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"] });
 const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-// The landing page keeps the original pairing: Geist with an Instrument Serif italic. The SAKHI wordmark uses Fredoka.
+// The FoodFlow wordmark and the landing page keep the original pairing: Geist with an Instrument Serif italic.
 const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
 const instrument = Instrument_Serif({ variable: "--font-instrument", subsets: ["latin"], weight: "400", style: ["normal", "italic"] });
 const deva = Noto_Sans_Devanagari({
@@ -28,9 +28,10 @@ const deva = Noto_Sans_Devanagari({
 const knda = Noto_Sans_Kannada({ variable: "--font-knda", subsets: ["kannada"], preload: false });
 
 export const metadata: Metadata = {
-  title: { default: "SAKHI: Your harvest. Your choices. Your future.", template: "%s · SAKHI" },
-  description: "A trusted companion connecting farmers, buyers and communities. Farmers sell direct, in their own language, to households, restaurants and community kitchens.",
-  applicationName: "SAKHI",
+  title: { default: "FoodFlow: from every harvest to every table", template: "%s · FoodFlow" },
+  description:
+    "AI-assisted fresh-produce marketplace connecting farmers directly with households, restaurants and community kitchens.",
+  applicationName: "FoodFlow",
 };
 
 export const viewport: Viewport = {

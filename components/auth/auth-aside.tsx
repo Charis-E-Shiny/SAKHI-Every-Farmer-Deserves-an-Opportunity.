@@ -1,5 +1,5 @@
 // Decorative left panel on the login/register screens (desktop only):
-// drifting light orbs, a farm photo and the SAKHI tagline.
+// drifting light orbs, a farm photo and the mission line.
 import { Photo } from "@/components/common/photo";
 
 /** Always-dark brand panel; the `dark` class re-themes its subtree. */
@@ -16,10 +16,10 @@ export function AuthAside() {
 
       <div className="relative">
         <p className="max-w-md text-4xl leading-[1.05] font-semibold tracking-tight xl:text-5xl">
-          Your harvest. Your choices. Your <span className="font-serif font-normal text-lime italic">future.</span>
+          Every harvest deserves a <span className="font-serif font-normal text-lime italic">table.</span>
         </p>
         <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-          A trusted companion connecting farmers, buyers and communities. Farmers sell by voice, in their own language, and nothing goes to waste.
+          Farmers list by voice. AI checks the harvest. Buyers get it fresh, and nothing goes to waste.
         </p>
       </div>
     </aside>

@@ -52,10 +52,9 @@ export interface Normalised {
 export function normaliseUtterance(raw: string): Normalised {
   let t = asciiDigits(raw.normalize("NFC").toLowerCase());
   let orderCode: string | null = null;
-  // "SK-7K2QA", "sk 7k2qa", "order 7K2QA"; a code with no digit needs the SK and a separator ("skipped" is not a code).
-  t = t.replace(/\b(?:s\s?k([\s-]?)|order\s+(?:no\.?\s*|number\s*)?)([a-z0-9]{5})\b/i, (m, sep: string | undefined, code: string) => {
-    if (!/\d/.test(code) && !sep) return m;
-    orderCode = `SK-${code.toUpperCase()}`;
+  t = t.replace(/\b(?:ff[\s-]?|order\s+(?:no\.?\s*|number\s*)?)([a-z0-9]{5})\b/i, (m, code: string) => {
+    if (!/\d/.test(code) && !/^ff/i.test(m)) return m;
+    orderCode = `FF-${code.toUpperCase()}`;
     return " ";
   });
   t = t.replace(/(\d)[.](\d)/g, "$1DOT$2");

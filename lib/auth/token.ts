@@ -2,7 +2,7 @@
 // next/headers so both route handlers and proxy.ts can import it.
 import { SignJWT, jwtVerify } from "jose";
 
-export const SESSION_COOKIE = "sakhi_session";
+export const SESSION_COOKIE = "ff_session";
 export const SESSION_TTL_SECONDS = 60 * 60 * 24 * 7;
 
 export type Role = "FARMER" | "CONSUMER" | "BULK_BUYER" | "ADMIN" | "DELIVERY";

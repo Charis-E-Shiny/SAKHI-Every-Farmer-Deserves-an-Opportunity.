@@ -7,7 +7,7 @@
 //  • Farmer receives net = subtotal − platformFee − deliveryCost, where
 //    platformFee = commission% × subtotal and deliveryCost is the part of
 //    the actual courier cost that the buyer's delivery fee did not cover,
-//    capped at FARMER_DELIVERY_SHARE_CAP of the order value (SAKHI absorbs
+//    capped at FARMER_DELIVERY_SHARE_CAP of the order value (FoodFlow absorbs
 //    the rest) so a small order can never leave a farmer out of pocket.
 
 export const DEFAULT_COMMISSION_PCT = 5;

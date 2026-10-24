@@ -18,7 +18,7 @@ export async function accountCredentials(pin: string | undefined) {
   if (!pin && !google) throw new HttpError(400, "Create a 4 to 6 digit PIN");
   if (google && (await db.user.findFirst({ where: { OR: [{ googleId: google.sub }, { email: google.email }] }, select: { id: true } }))) {
     await clearPendingGoogle();
-    throw new HttpError(409, "This Google account already has a SAKHI account, sign in with Google instead");
+    throw new HttpError(409, "This Google account already has a FoodFlow account, sign in with Google instead");
   }
   return {
     pinHash: await hashPin(pin ?? unusablePin()),

@@ -1,4 +1,4 @@
-// AI capabilities used across SAKHI. Each function tries the configured
+// AI capabilities used across FoodFlow. Each function tries the configured
 // model (Gemini), validates its JSON, and on ANY problem — no key, timeout,
 // HTTP error, invalid JSON — returns the deterministic fallback instead.
 // Results always say which path produced them so the UI can label it.

@@ -1,4 +1,4 @@
-// GET /api/deliveries/find?code=SK-XXXXX — rider looks up an order by its
+// GET /api/deliveries/find?code=FF-XXXXX — rider looks up an order by its
 // typed, scanned or spoken code. Finding an order only OPENS it; handing
 // over still needs the recipient's OTP.
 import { z } from "zod";

@@ -31,7 +31,7 @@ function dayLabel(d: Date): string {
  */
 async function pickListing(sub: Subscription, buyer: User): Promise<{ listing: Listing; switched: boolean } | { reason: string }> {
   const area = (await serviceArea(buyer.area))?.name;
-  if (!area) return { reason: `SAKHI doesn't deliver to ${buyer.area ?? "your area"} yet` };
+  if (!area) return { reason: `FoodFlow doesn't deliver to ${buyer.area ?? "your area"} yet` };
   const cats = await visibleCategories(area);
   const usable = (l: Listing | null): l is Listing => Boolean(l && l.status === "ACTIVE" && l.availableQty >= sub.qty && sub.qty >= l.minOrderQty && cats.includes(l.category));
 

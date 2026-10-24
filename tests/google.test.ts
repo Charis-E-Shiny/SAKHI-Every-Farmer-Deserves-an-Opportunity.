@@ -30,8 +30,8 @@ describe("configuration and URLs", () => {
   });
 
   it("uses the configured app URL for the callback when there is one", () => {
-    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://sakhi.example/");
-    expect(googleRedirectUri("http://internal:3000")).toBe("https://sakhi.example/api/auth/google/callback");
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://foodflow.example/");
+    expect(googleRedirectUri("http://internal:3000")).toBe("https://foodflow.example/api/auth/google/callback");
   });
 
   it("only allows same-site destinations after sign-in", () => {

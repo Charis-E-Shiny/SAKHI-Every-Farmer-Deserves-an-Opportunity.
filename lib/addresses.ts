@@ -6,7 +6,7 @@ import type { Address } from "@prisma/client";
 import { db } from "@/lib/db";
 import { haversineKm, SERVICE_AREAS, type AreaSeed } from "@/lib/areas";
 
-/** Nearest SAKHI service area to a point, and whether the point is inside (or just beside) one. */
+/** Nearest FoodFlow service area to a point, and whether the point is inside (or just beside) one. */
 export function nearestArea(lat: number, lng: number): { area: AreaSeed; distanceKm: number; inService: boolean } {
   let best = SERVICE_AREAS[0];
   let bestKm = Infinity;

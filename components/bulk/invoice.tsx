@@ -16,7 +16,7 @@ import type { SerializedOrder } from "@/lib/orders/queries";
  * @param buyerAddress - billing address line
  */
 export function Invoice({ order, backHref, buyerAddress }: { order: SerializedOrder; backHref: string; buyerAddress: string | null }) {
-  const number = `INV-${order.code.replace("SK-", "")}`;
+  const number = `INV-${order.code.replace("FF-", "")}`;
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2 print:hidden">
@@ -33,7 +33,7 @@ export function Invoice({ order, backHref, buyerAddress }: { order: SerializedOr
           <div className="flex items-center gap-2">
             <LogoMark className="size-9" />
             <div>
-              <p className="text-lg font-semibold">SAKHI</p>
+              <p className="text-lg font-semibold">FoodFlow</p>
               <p className="text-xs text-muted-foreground">Farm-to-table marketplace · Bengaluru pilot</p>
             </div>
           </div>
@@ -109,7 +109,7 @@ export function Invoice({ order, backHref, buyerAddress }: { order: SerializedOr
               </p>
             )}
           </div>
-          <p className="sm:text-right">SAKHI&apos;s 5% platform commission is withheld from the seller&apos;s payout and is not charged to the buyer. Prices are inclusive of applicable taxes for fresh produce.</p>
+          <p className="sm:text-right">FoodFlow&apos;s 5% platform commission is withheld from the seller&apos;s payout and is not charged to the buyer. Prices are inclusive of applicable taxes for fresh produce.</p>
         </footer>
       </article>
     </div>

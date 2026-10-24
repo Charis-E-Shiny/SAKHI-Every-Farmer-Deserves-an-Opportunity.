@@ -31,7 +31,7 @@ export async function getCurrentUser() {
 
 /**
  * Issues a session cookie for a user (HTTP-only, SameSite=Lax, Secure in prod).
- * Side effect: sets `sakhi_session` on the outgoing response.
+ * Side effect: sets `ff_session` on the outgoing response.
  */
 export async function startSession(user: { id: string; role: SessionPayload["role"]; name: string }) {
   const token = await signSession({ sub: user.id, role: user.role, name: user.name });

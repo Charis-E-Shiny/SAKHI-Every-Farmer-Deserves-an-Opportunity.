@@ -5,7 +5,7 @@ import { getPendingGoogle } from "@/lib/auth/google";
 import { BackLink } from "@/components/auth/join/back-link";
 import { SellerWizard } from "@/components/auth/join/seller-wizard";
 
-export const metadata: Metadata = { title: "Sell on SAKHI" };
+export const metadata: Metadata = { title: "Sell on FoodFlow" };
 
 /** Seller setup screen. */
 export default async function SellerJoinPage() {

@@ -1,5 +1,5 @@
 // Landing page: photographic hero, live mandi ticker, the scroll-driven farm-to-table story, who
-// SAKHI is for, how it works, a field-to-plate photo story, a contact form and
+// FoodFlow is for, how it works, a field-to-plate photo story, a contact form and
 // the footer. Data is read live from the database on each request.
 import { SiteFooter } from "@/components/common/site-footer";
 import { ContactSection } from "@/components/landing/contact";

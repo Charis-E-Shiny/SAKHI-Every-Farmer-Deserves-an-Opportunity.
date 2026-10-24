@@ -1,4 +1,4 @@
-// Pilot geography: the three Bengaluru service areas SAKHI launches in,
+// Pilot geography: the three Bengaluru service areas FoodFlow launches in,
 // plus nearby places customers commonly type that are NOT yet served (so
 // checkout can block them with a friendly message), and distance helpers.
 

@@ -8,7 +8,7 @@ export default function GlobalError({ reset }: { error: Error & { digest?: strin
     <html lang="en">
       <body style={{ margin: 0, minHeight: "100vh", display: "grid", placeItems: "center", background: "#faf9f4", color: "#0d1611", fontFamily: "system-ui, sans-serif", padding: 16, textAlign: "center" }}>
         <div>
-          <h1 style={{ fontSize: 28, margin: "0 0 8px" }}>SAKHI hit a snag</h1>
+          <h1 style={{ fontSize: 28, margin: "0 0 8px" }}>FoodFlow hit a snag</h1>
           <p style={{ margin: "0 0 24px", opacity: 0.7 }}>Please try again in a moment.</p>
           <button onClick={reset} style={{ minHeight: 48, padding: "0 24px", borderRadius: 999, border: 0, background: "#0d1611", color: "#faf9f4", fontSize: 16, cursor: "pointer" }}>
             Try again

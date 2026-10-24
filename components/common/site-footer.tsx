@@ -9,7 +9,7 @@ const COLUMNS: { title: string; links: { href: string; label: string }[] }[] = [
   {
     title: "Marketplace",
     links: [
-      { href: "/join/seller", label: "Sell on SAKHI" },
+      { href: "/join/seller", label: "Sell on FoodFlow" },
       { href: "/join/buyer/household", label: "Shop as a household" },
       { href: "/join/buyer/restaurant", label: "Register your kitchen" },
       { href: "/login", label: "Sign in" },
@@ -62,8 +62,8 @@ export function SiteFooter({ variant = "full", className }: { variant?: "full" |
     <footer className={cn("dark border-t bg-background text-foreground", className)}>
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)] lg:px-8">
         <div>
-          <p className="max-w-xs text-lg leading-snug font-semibold tracking-tight">Your harvest. Your choices. Your future.</p>
-          <p className="mt-3 max-w-xs text-sm text-muted-foreground">A trusted companion connecting farmers, buyers and communities: farmers sell direct to households, restaurants and community kitchens.</p>
+          <p className="max-w-xs text-lg leading-snug font-semibold tracking-tight">From every harvest to every table.</p>
+          <p className="mt-3 max-w-xs text-sm text-muted-foreground">A farm-to-table marketplace that connects farmers directly with households, restaurants and community kitchens.</p>
           <p className="mt-4 text-sm text-muted-foreground">Bengaluru, Karnataka, India</p>
         </div>
         {COLUMNS.map((c) => (

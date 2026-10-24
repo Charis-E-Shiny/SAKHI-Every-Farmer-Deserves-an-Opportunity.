@@ -1,6 +1,6 @@
 // Post-delivery feedback: animated star rating, quality-issue chips,
 // comment and optional photo. A low rating with an issue opens a dispute
-// that SAKHI's team reviews (refunds are handled by admins).
+// that FoodFlow's team reviews (refunds are handled by admins).
 "use client";
 
 import { Camera, Check, Loader2, Star, X } from "lucide-react";
@@ -132,7 +132,7 @@ export function FeedbackPanel({ order, onDone }: { order: SerializedOrder; onDon
                 {busy ? <Loader2 className="animate-spin" /> : <Check />} Submit
               </Button>
             </div>
-            {rating <= 2 && issue !== "NONE" && <p className="mt-2 text-xs text-muted-foreground">This opens a case with SAKHI. If the produce wasn&apos;t right, we refund you.</p>}
+            {rating <= 2 && issue !== "NONE" && <p className="mt-2 text-xs text-muted-foreground">This opens a case with FoodFlow. If the produce wasn&apos;t right, we refund you.</p>}
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,5 +1,5 @@
 // Locally stored farm-to-table photography (public/photos), cropped from the
-// SAKHI reference shots. `color` is the photo's average colour (used while
+// FoodFlow reference shots. `color` is the photo's average colour (used while
 // it loads) and `blur` a 16px placeholder. Never hot-link images: add the
 // file to public/photos and an entry here.
 export interface Photo {

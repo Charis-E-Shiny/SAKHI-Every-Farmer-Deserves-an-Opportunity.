@@ -11,8 +11,8 @@ import { SignJWT, jwtVerify } from "jose";
 import { db } from "@/lib/db";
 import { secretKey } from "@/lib/auth/token";
 
-const STATE_COOKIE = "sakhi_google_state";
-const PENDING_COOKIE = "sakhi_google_pending";
+const STATE_COOKIE = "ff_google_state";
+const PENDING_COOKIE = "ff_google_pending";
 const STATE_TTL = 10 * 60;
 const PENDING_TTL = 30 * 60;
 

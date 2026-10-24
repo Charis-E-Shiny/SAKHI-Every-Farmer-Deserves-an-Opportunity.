@@ -43,7 +43,7 @@ describe("Kannada read by a Hindi voice", () => {
   });
   it("uses the long e / o a Hindi voice knows, and keeps other text", () => {
     expect(kannadaToDevanagari("ಎರಡು ಒಂದು")).toBe("एरडु ओंदु");
-    expect(kannadaToDevanagari("SAKHI ಡೆಲಿವರಿ")).toBe("SAKHI डेलिवरि");
+    expect(kannadaToDevanagari("FoodFlow ಡೆಲಿವರಿ")).toBe("FoodFlow डेलिवरि");
   });
   it("speaks numbers in Kannada, not Hindi", () => {
     expect(kannadaForHindiVoice("ಕಿಲೋಗೆ 25 ರೂಪಾಯಿ")).toBe("किलोगे इप्पत्तैदु रूपायि");
