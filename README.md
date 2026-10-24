@@ -38,6 +38,40 @@ One marketplace, five apps — each built mobile-first at 360px and scaling up t
 - **OTP or it didn't happen.** Only the customer's one-time code marks an order delivered and releases a payout.
 - **Works without a key.** Every AI feature has a deterministic fallback (multilingual parsers, an image heuristic, template text), labelled *Offline estimate* in the UI.
 
+### Farmer's Friend: ask by voice, in your language
+
+A helper button on every farmer screen opens **Farmer's Friend** (ರೈತ ಮಿತ್ರ / किसान मित्र): a side panel on
+desktop, a bottom sheet on phones. Farmers speak or type in Kannada, Hindi, English or a mix:
+
+- *"ಐವತ್ತು ಕಿಲೋ ಟೊಮೇಟೊ, ಕಿಲೋಗೆ ಇಪ್ಪತ್ತೈದು ರೂಪಾಯಿ"* → a harvest draft card, ready for a photo and review
+- *"इस हफ्ते मैंने कितना कमाया?"* → confirmed order value, fee, estimated net, and what is paid vs. still pending
+- *"tomato price 32 karo"*, *"show restaurant orders"*, *"book delivery for FF-ABC12"*, *"my payments"*
+
+How it stays trustworthy:
+
+- **Rules first.** A parser for spoken numbers (*sava do sau*, *ಎರಡೂವರೆ ಸಾವಿರ*), units, crop names and
+  dates in all three languages handles most requests; the model is asked only when the rules are unsure,
+  returns a schema-checked intent, and never touches the database. Without a key it works the same.
+- **You see what was heard.** Speech becomes editable text first; low-confidence speech waits for *Use this*.
+- **Nothing changes without a tap.** Publishing, price, stock, offers and deliveries show a card; the
+  confirmation is signed, tied to the farmer, single-use and expires in five minutes. Publishing only sends
+  the harvest to the admin queue.
+- **Natural, honest voice.** Indian English first (names, places and crops pronounced the way farmers say
+  them), then the most natural voice on the device (Edge's *Natural* voices, Google and Apple enhanced
+  voices), with a female / male choice. Amounts are read the Indian way (*1 lakh 25 thousand*, *ಎರಡು ಸಾವಿರದ
+  ಐನೂರು*), order codes letter by letter, and replies sentence by sentence. Replies are fixed templates with
+  numbers from the database. Kannada is never read by an English voice: where a device has no Kannada voice
+  (desktop Chrome), a Hindi voice reads it from Devanagari letters, and the panel says so.
+- **From sign-up to first listing, by voice.** On seller sign-up, Farmer's Friend asks every question out loud
+  in Kannada, Hindi or English (the screens switch language too) and fills the form from the answers:
+  *"ನನ್ನ ಹೆಸರು ರಮೇಶ್"*, *"ದೊಡ್ಡಬಳ್ಳಾಪುರ"* (district, nearest service area and PIN code follow), *"ಟೊಮೇಟೊ
+  ಮತ್ತು ಈರುಳ್ಳಿ"*, *"about 200 kilo a week"*, *"UPI and cash"*. The PIN is typed, never spoken; a spoken
+  "yes" then creates the account. Farmer's Friend carries straight on in the farmer app, hands-free: the
+  harvest, a photo, *"send it for review?"*, *"ಹೌದು"*. The first harvest is in the admin queue without the
+  farmer touching a form.
+
+What happens to voice and text: [docs/assistant-privacy.md](docs/assistant-privacy.md).
+
 ## Screenshots
 
 | | |
@@ -99,6 +133,7 @@ To start over with fresh sample data at any time: `npm run db:reset`.
 5. **Restaurant** (The Green Ladle) → *Post* an urgent 50 kg onion demand → as farmers, make two offers → back as the restaurant, the offers are ranked → accept one.
 6. **Farmer** → *Surplus* → a slow-selling spinach lot is flagged → offer it to Annapurna's open demand in one tap.
 7. **Admin** → *Overview* shows the new orders and kg rescued; *Trust* and *Controls* show flags, commission, service areas and payouts.
+8. **New farmer, by voice** → *Get started* → *Seller* → choose ಕನ್ನಡ → *Guide me by voice* → answer each question out loud (or type) and watch the form fill in → type a PIN → say *"ಹೌದು"* → in the farmer app say *"ಐವತ್ತು ಕಿಲೋ ಟೊಮೇಟೊ, ಕಿಲೋಗೆ ಇಪ್ಪತ್ತೈದು ರೂಪಾಯಿ"* → add a photo → *"ಹೌದು"*. As Ramesh, tap the sprout button and ask *"ಈ ವಾರ ಎಷ್ಟು ಗಳಿಸಿದೆ?"* or *"show restaurant orders"*.
 
 Every step works at a 360px phone width and on desktop.
 
@@ -196,6 +231,7 @@ Copy `.env.example` to `.env` (`npm run setup` does this for you).
 | `GEMINI_MODEL`, `AI_TIMEOUT_MS` | no | Model name and per-call timeout before falling back |
 | `STORAGE_DRIVER` | no | `local` (default) writes uploads to `public/uploads`; falls back to inline on read-only hosts |
 | `CRON_SECRET` | no | Lets a scheduler call `/api/subscriptions/run-due` |
+| `NEXT_PUBLIC_STT_PROVIDER` | no | `browser` (default) uses the browser's speech recognition for Farmer's Friend. `server` is reserved for a self-hosted Indic model and is not implemented yet |
 | `DEMO_MODE` | no | One-tap sign-in as seeded accounts (API only). Off in production unless set to `true`; keep it off on a live site |
 | `DIRECT_URL` | no | Direct (unpooled) Postgres URL for Neon / Supabase |
 
