@@ -177,11 +177,15 @@
   --border: oklch(0.91 0.01 100);
   --input: oklch(0.88 0.012 100);
   --ring: oklch(0.72 0.17 124);
-  --chart-1: oklch(0.78 0.2 124);
-  --chart-2: oklch(0.66 0.2 33);
-  --chart-3: oklch(0.55 0.1 160);
-  --chart-4: oklch(0.75 0.13 75);
-  --chart-5: oklch(0.6 0.12 250);
+  /* Categorical chart slots (fixed order), validated with the dataviz checker on
+     the paper surface: green, blue, tomato, violet, amber. Amber is < 3:1, so
+     charts using it carry direct labels / a data table. */
+  --chart-1: #3f8a2a;
+  --chart-2: #2a78d6;
+  --chart-3: #e5552f;
+  --chart-4: #7b5bd6;
+  --chart-5: #eda100;
+  --chart-grid: oklch(0.21 0.03 155 / 8%);
   --radius: 0.75rem;
   --sidebar: oklch(0.975 0.008 100);
   --sidebar-foreground: var(--ink);
@@ -218,6 +222,13 @@
   --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 14%);
   --ring: oklch(0.85 0.19 124);
+  /* Same hues stepped for the dark surface (validated separately). */
+  --chart-1: #4f9a2c;
+  --chart-2: #3987e5;
+  --chart-3: #e8623f;
+  --chart-4: #9085e9;
+  --chart-5: #c98500;
+  --chart-grid: oklch(1 0 0 / 8%);
   --sidebar: oklch(0.17 0.017 155);
   --sidebar-foreground: oklch(0.96 0.008 100);
   --sidebar-primary: oklch(0.9 0.21 124);

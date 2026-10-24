@@ -6,6 +6,7 @@ import { z } from "zod";
 import { handler, HttpError } from "@/lib/api";
 import { cancelOrder } from "@/lib/orders/lifecycle";
 import { loadOrderFor } from "@/lib/orders/queries";
+import { recomputeReliability } from "@/lib/reliability";
 
 type Params = { id: string };
 const body = z.object({ reason: z.string().trim().min(3, "Tell us why").max(200) });
@@ -21,5 +22,6 @@ export const POST = handler<z.infer<typeof body>, undefined, Params>({ roles: []
     throw new HttpError(409, user.id === order.buyerId ? "Your farmer has already packed this order — contact support to cancel" : "This order can no longer be cancelled");
   }
   await cancelOrder(order.id, user.id, body.reason);
+  if (user.id === order.farmerId) await recomputeReliability(order.farmerId);
   return { cancelled: true };
 });

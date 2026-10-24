@@ -1,7 +1,10 @@
-// Admin home — the full view is built in a later step of the plan.
-import { PageHeader } from "@/components/shell/page-header";
+// /admin — marketplace analytics overview.
+import type { Metadata } from "next";
+import { AdminOverview } from "@/components/admin/overview";
 
-/** Admin landing view. */
+export const metadata: Metadata = { title: "Overview" };
+
+/** Admin home. */
 export default function AdminHome() {
-  return <PageHeader title="Marketplace *pulse*" description="Loading your workspace…" />;
+  return <AdminOverview />;
 }

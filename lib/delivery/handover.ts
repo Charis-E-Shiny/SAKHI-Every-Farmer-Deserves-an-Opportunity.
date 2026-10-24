@@ -21,6 +21,7 @@ import { settlementFor } from "@/lib/fees";
 import { commitItems, withTxRetry } from "@/lib/inventory";
 import { notify } from "@/lib/orders/lifecycle";
 import { moveOrder } from "@/lib/orders/state";
+import { recomputeReliability } from "@/lib/reliability";
 import { OTP_MAX_ATTEMPTS, otpMatches, readPickupToken } from "@/lib/otp";
 
 export type HandoverResult =
@@ -112,6 +113,7 @@ export async function verifyHandover(orderId: string, actor: Pick<User, "id" | "
   });
   if (!completed) return { ok: true, already: true, status: finalStatus };
 
+  await recomputeReliability(order.farmerId);
   publish({ type: "settlement.updated", id: order.id, userIds: [order.farmerId], roles: ["ADMIN"] });
   publish({ type: "delivery.updated", id: order.id, userIds: [order.buyerId, order.farmerId, ...(d.workerId ? [d.workerId] : [])], roles: ["ADMIN"] });
   await notify(order.id);

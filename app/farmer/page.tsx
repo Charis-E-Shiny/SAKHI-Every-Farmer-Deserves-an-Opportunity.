@@ -1,7 +1,10 @@
-// Farmer home — the full view is built in a later step of the plan.
-import { PageHeader } from "@/components/shell/page-header";
+// /farmer — farmer home dashboard.
+import type { Metadata } from "next";
+import { FarmerDashboard } from "@/components/farmer/dashboard";
 
-/** Farmer landing view. */
+export const metadata: Metadata = { title: "Home" };
+
+/** Farmer dashboard. */
 export default function FarmerHome() {
-  return <PageHeader title="Your *harvest* hub" description="Loading your workspace…" />;
+  return <FarmerDashboard />;
 }

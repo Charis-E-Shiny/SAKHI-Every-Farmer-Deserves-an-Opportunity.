@@ -626,7 +626,8 @@ async function main() {
       data: { buyerId: buyer.id, crop, qtyKg: qty, grade: "A", targetPrice: Math.round(l.price * 0.92), deadline: new Date(placed.getTime() + 2 * 86_400_000), area: buyer.area!, status: "AWARDED", createdAt: new Date(placed.getTime() - 86_400_000) },
     });
     const offer = await prisma.offer.create({
-      data: { demandId: demand.id, farmerId: farmers[fi].user.id, qtyKg: qty, pricePerKg: Math.round(l.price * 0.95), etaHours: 24, status: "ACCEPTED", aiScore: round2(between(78, 92)), aiRank: 1, aiReason: "Best delivered cost with full quantity coverage", createdAt: placed },
+      // Community-kitchen orders of perishables came through the surplus-rescue flow.
+      data: { demandId: demand.id, farmerId: farmers[fi].user.id, qtyKg: qty, pricePerKg: Math.round(l.price * 0.95), etaHours: 24, status: "ACCEPTED", fromSurplus: bi === 2, aiScore: round2(between(78, 92)), aiRank: 1, aiReason: "Best delivered cost with full quantity coverage", createdAt: placed },
     });
     await createOrder({ buyer: buyerShape(buyer), farmerIdx: fi, items: [{ listing: { ...l, price: offer.pricePerKg }, qty }], status: "DELIVERED", fulfilment: "DELIVERY", placedAt: placed, type: "BULK", offerId: offer.id, workerIdx: buyer.area === "Jayanagar" ? 1 : 0, settled: true });
   }
