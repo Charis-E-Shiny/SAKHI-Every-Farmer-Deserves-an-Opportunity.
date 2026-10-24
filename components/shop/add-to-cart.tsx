@@ -7,6 +7,8 @@ import { Minus, Plus } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useRef, useSyncExternalStore } from "react";
 import { toast } from "sonner";
+import { useI18n } from "@/components/providers/i18n-provider";
+import { cropName } from "@/lib/crops";
 import { flyToCart } from "@/lib/fly-to-cart";
 import type { SerializedListing } from "@/lib/listings";
 import { useCart } from "@/lib/store/cart";
@@ -36,6 +38,7 @@ export function AddToCart({
   size?: "sm" | "lg";
   className?: string;
 }) {
+  const { tx, lang } = useI18n();
   const ref = useRef<HTMLButtonElement>(null);
   const mounted = useSyncExternalStore(noop, () => true, () => false);
   const line = useCart((s) => s.items.find((i) => i.listingId === listing.id));
@@ -74,7 +77,7 @@ export function AddToCart({
     e.stopPropagation();
     const next = Math.round((qty + delta) * 100) / 100;
     if (next < min) return remove(listing.id);
-    if (next > listing.availableQty) return toast(`Only ${listing.availableQty} ${listing.unit} available`);
+    if (next > listing.availableQty) return toast(tx("Only {qty} {unit} available", { qty: listing.availableQty, unit: tx(listing.unit === "litre" ? "L" : listing.unit) }));
     setQty(listing.id, next);
   }
 
@@ -96,9 +99,9 @@ export function AddToCart({
               h,
               size === "lg" ? "w-full justify-center text-base" : "text-sm",
             )}
-            aria-label={`Add ${listing.title} to cart`}
+            aria-label={tx("Add {item} to cart", { item: lang === "en" ? listing.title : cropName(listing.crop, lang) })}
           >
-            <Plus className="size-4" /> Add
+            <Plus className="size-4" /> {tx("Add")}
           </motion.button>
         ) : (
           <motion.div
@@ -108,13 +111,13 @@ export function AddToCart({
             exit={{ opacity: 0, scale: 0.8 }}
             className={cn("flex items-center rounded-full bg-lime text-lime-foreground shadow-lg", h, size === "lg" && "w-full justify-between")}
           >
-            <button type="button" onClick={(e) => change(e, -step)} className={cn("grid place-items-center", h, size === "lg" ? "w-14" : "w-10")} aria-label="Less">
+            <button type="button" onClick={(e) => change(e, -step)} className={cn("grid place-items-center", h, size === "lg" ? "w-14" : "w-10")} aria-label={tx("Less")}>
               <Minus className="size-4" />
             </button>
             <motion.span key={qty} initial={{ y: -8, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="tabular min-w-12 text-center text-sm font-semibold">
-              {qty} {listing.unit === "kg" ? "kg" : listing.unit === "litre" ? "L" : "dz"}
+              {qty} {tx(listing.unit === "kg" ? "kg" : listing.unit === "litre" ? "L" : "dz")}
             </motion.span>
-            <button type="button" onClick={(e) => change(e, step)} className={cn("grid place-items-center", h, size === "lg" ? "w-14" : "w-10")} aria-label="More">
+            <button type="button" onClick={(e) => change(e, step)} className={cn("grid place-items-center", h, size === "lg" ? "w-14" : "w-10")} aria-label={tx("More")}>
               <Plus className="size-4" />
             </button>
           </motion.div>

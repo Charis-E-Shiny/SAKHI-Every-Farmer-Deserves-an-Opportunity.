@@ -10,6 +10,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
 import { MediaImage } from "@/components/common/media-image";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { useLive } from "@/hooks/use-live";
 import type { SerializedBatch } from "@/lib/batches";
 import { CROPS, cropName, isCropSlug } from "@/lib/crops";
@@ -33,6 +34,7 @@ export const queueKey = (status: string) => `/api/admin/batches?status=${status}
 
 /** The queue list. */
 export function ReviewList() {
+  const { tx, lang } = useI18n();
   const pathname = usePathname();
   const [filter, setFilter] = useState<string>("PENDING_REVIEW");
   const { data, error, isLoading, mutate } = useSWR<QueueItem[]>(queueKey(filter));
@@ -50,7 +52,7 @@ export function ReviewList() {
               className={cn("relative h-10 rounded-full px-4 text-sm font-medium", filter === f.key ? "text-background" : "border text-muted-foreground")}
             >
               {filter === f.key && <motion.span layoutId="queue-filter-pill" className="absolute inset-0 -z-10 rounded-full bg-foreground" />}
-              {f.label}
+              {tx(f.label)}
             </button>
           ))}
         </LayoutGroup>
@@ -74,7 +76,7 @@ export function ReviewList() {
                 <div className="relative size-16 shrink-0 overflow-hidden rounded-xl bg-muted">{thumb && <MediaImage src={thumb} sizes="64px" />}</div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="font-semibold">{cropName(b.crop)}</p>
+                    <p className="font-semibold">{cropName(b.crop, lang)}</p>
                     {b.aiQualityScore !== null && (
                       <span
                         className={cn(
@@ -87,15 +89,15 @@ export function ReviewList() {
                     )}
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {b.farmer.name} · {b.farmer.village ?? b.farmer.area}
+                    {b.farmer.name} · {tx(b.farmer.village ?? b.farmer.area ?? "")}
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-                    <span>{formatQty(b.quantity, b.unit)}</span>
+                    <span>{formatQty(b.quantity, b.unit, lang)}</span>
                     <span>·</span>
-                    <span>{timeAgo(b.createdAt)}</span>
+                    <span>{timeAgo(b.createdAt, lang)}</span>
                     {b.duplicateCount > 0 && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-warning/25 px-2 py-0.5 font-medium text-foreground">
-                        <AlertTriangle className="size-3" /> Duplicate flag
+                        <AlertTriangle className="size-3" /> {tx("Duplicate flag")}
                       </span>
                     )}
                   </div>

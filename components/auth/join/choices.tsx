@@ -3,6 +3,7 @@
 "use client";
 
 import { Check } from "lucide-react";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Label } from "@/components/ui/label";
 import type { Option } from "@/lib/onboarding-options";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,7 @@ export function Choices<V extends string>({
   cols?: boolean;
   label?: string;
 }) {
+  const { tx } = useI18n();
   const selected = (v: V) => (multi ? ((value as V[] | undefined) ?? []).includes(v) : value === v);
   function pick(v: V) {
     if (!multi) return onChange(v);
@@ -52,8 +54,8 @@ export function Choices<V extends string>({
               {on && <Check className="size-3.5" strokeWidth={3} />}
             </span>
             <span className="min-w-0">
-              <span className="block leading-snug font-medium">{o.label}</span>
-              {o.hint && <span className="block text-sm text-muted-foreground">{o.hint}</span>}
+              <span className="block leading-snug font-medium">{tx(o.label)}</span>
+              {o.hint && <span className="block text-sm text-muted-foreground">{tx(o.hint)}</span>}
             </span>
           </button>
         );
@@ -64,10 +66,11 @@ export function Choices<V extends string>({
 
 /** A labelled question block. */
 export function Question({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+  const { tx } = useI18n();
   return (
     <div className="space-y-2">
-      <Label className="text-[15px] leading-snug">{label}</Label>
-      {hint && <p className="-mt-1 text-sm text-muted-foreground">{hint}</p>}
+      <Label className="text-[15px] leading-snug">{tx(label)}</Label>
+      {hint && <p className="-mt-1 text-sm text-muted-foreground">{tx(hint)}</p>}
       {children}
     </div>
   );
@@ -75,6 +78,7 @@ export function Question({ label, hint, children }: { label: string; hint?: stri
 
 /** A yes/no toggle row. */
 export function Toggle({ label, on, onChange }: { label: string; on: boolean; onChange: (v: boolean) => void }) {
+  const { tx } = useI18n();
   return (
     <button
       type="button"
@@ -83,7 +87,7 @@ export function Toggle({ label, on, onChange }: { label: string; on: boolean; on
       onClick={() => onChange(!on)}
       className={cn("flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl border px-4 py-2.5 text-left text-[15px] transition-colors", on ? "border-foreground bg-lime/25" : "hover:border-foreground/40")}
     >
-      <span className="font-medium">{label}</span>
+      <span className="font-medium">{tx(label)}</span>
       <span className={cn("relative h-6 w-10 shrink-0 rounded-full transition-colors", on ? "bg-foreground" : "bg-input")}>
         <span className={cn("absolute top-0.5 size-5 rounded-full bg-background transition-all", on ? "left-[18px]" : "left-0.5")} />
       </span>

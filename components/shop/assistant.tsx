@@ -10,6 +10,7 @@ import { useRef, useState } from "react";
 import { toast } from "sonner";
 import { AISourceBadge } from "@/components/ai/ai-labels";
 import { MediaImage } from "@/components/common/media-image";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ import type { BasketPick, WantedItem } from "@/lib/basket";
 import { cropName } from "@/lib/crops";
 import { sendForm, sendJSON } from "@/lib/fetcher";
 import { formatINR, formatQty } from "@/lib/format";
+import type { Lang } from "@/lib/i18n";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
 
@@ -39,8 +41,21 @@ type Pick = NonNullable<BasketPick["best"]>;
 
 const UNITS = ["kg", "litre", "dozen", "piece"];
 
+/** The basket's reason for a pick ("Arrives in ~3 h"), in the site's language. */
+function reasonText(reason: string, tx: (s: string, v?: Record<string, string | number>) => string) {
+  let m = /^Arrives in ~(\d+) h$/.exec(reason);
+  if (m) return tx("Arrives in ~{h} h", { h: m[1] });
+  m = /^Visual score (.+)$/.exec(reason);
+  if (m) return tx("Visual score {score}", { score: m[1] });
+  m = /^Same farm as (\d+) other items?, one delivery$/.exec(reason);
+  if (m) return tx(m[1] === "1" ? "Same farm as {n} other item, one delivery" : "Same farm as {n} other items, one delivery", { n: m[1] });
+  return tx(reason);
+}
+const unitLabel = (u: string, tx: (s: string) => string) => tx(u === "litre" ? "L" : u);
+
 /** The /shop/assistant experience. */
 export function GroceryAssistant() {
+  const { tx, lang: ui } = useI18n();
   const router = useRouter();
   const add = useCart((s) => s.add);
   const [mode, setMode] = useState<Mode>("photo");
@@ -60,7 +75,7 @@ export function GroceryAssistant() {
     setParsed(p);
     setItems(p.items);
     setBasket(null);
-    if (!p.items.length) toast("We couldn't find any items, add them below.");
+    if (!p.items.length) toast(tx("We couldn't find any items, add them below."));
   }
 
   async function parseImage(file: File) {
@@ -74,7 +89,7 @@ export function GroceryAssistant() {
       await new Promise((r) => setTimeout(r, Math.max(0, 1600 - (Date.now() - started))));
       accept(p);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setParsing(false);
     }
@@ -85,7 +100,7 @@ export function GroceryAssistant() {
     try {
       accept(await sendJSON<Parsed>("/api/ai/parse-grocery-list", { text: t }));
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setParsing(false);
     }
@@ -98,7 +113,7 @@ export function GroceryAssistant() {
 
   async function build() {
     const clean = items.filter((i) => i.name.trim() && i.qty > 0);
-    if (!clean.length) return toast.error("Add at least one item");
+    if (!clean.length) return toast.error(tx("Add at least one item"));
     setBuilding(true);
     try {
       const b = await sendJSON<BasketResult>("/api/basket/match", { items: clean });
@@ -106,7 +121,7 @@ export function GroceryAssistant() {
       setChoice({});
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBuilding(false);
     }
@@ -129,7 +144,7 @@ export function GroceryAssistant() {
         c.qty,
       );
     }
-    toast.success(`${chosenList?.length} items added to your cart`);
+    toast.success(tx("{n} items added to your cart", { n: chosenList?.length ?? 0 }));
     router.push("/shop/cart");
   }
 
@@ -137,7 +152,7 @@ export function GroceryAssistant() {
     <div className="pb-28 lg:pb-8">
       <PageHeader
         title="Your list → a *smart basket*"
-        description="Snap a handwritten list, say it, or type it. We find the best farm for each item, and you choose."
+        description={tx("Snap a handwritten list, say it, or type it. We find the best farm for each item, and you choose.")}
       />
 
       {!basket && (
@@ -151,7 +166,7 @@ export function GroceryAssistant() {
               ].map((m) => (
                 <button key={m.k} type="button" onClick={() => setMode(m.k)} className={cn("relative flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium", mode === m.k ? "text-background" : "text-muted-foreground")}>
                   {mode === m.k && <motion.span layoutId="assist-pill" className="absolute inset-0 -z-10 rounded-xl bg-foreground" />}
-                  <m.icon className="size-4" /> {m.l}
+                  <m.icon className="size-4" /> {tx(m.l)}
                 </button>
               ))}
             </div>
@@ -175,21 +190,21 @@ export function GroceryAssistant() {
                     <span className="mx-auto grid size-16 place-items-center rounded-2xl bg-lime/30">
                       <ShoppingBasket className="size-8" />
                     </span>
-                    <p className="mt-3 font-semibold">Photo of your shopping list</p>
-                    <p className="text-sm text-muted-foreground">Handwritten is fine. English or Indian languages.</p>
+                    <p className="mt-3 font-semibold">{tx("Photo of your shopping list")}</p>
+                    <p className="text-sm text-muted-foreground">{tx("Handwritten is fine. English or Indian languages.")}</p>
                   </div>
                 )}
                 <div className="mt-4 grid grid-cols-2 gap-3">
                   <Button variant="brand" size="lg" onClick={() => camRef.current?.click()} disabled={parsing}>
-                    <Camera /> Camera
+                    <Camera /> {tx("Camera")}
                   </Button>
                   <Button variant="outline" size="lg" onClick={() => fileRef.current?.click()} disabled={parsing}>
-                    <ImagePlus /> Upload
+                    <ImagePlus /> {tx("Upload")}
                   </Button>
                 </div>
                 {parsing && (
                   <p className="mt-3 inline-flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="size-4 animate-spin" /> Reading your list…
+                    <Loader2 className="size-4 animate-spin" /> {tx("Reading your list…")}
                   </p>
                 )}
                 <input ref={camRef} type="file" accept="image/*" capture="environment" className="sr-only" onChange={(e) => e.target.files?.[0] && parseImage(e.target.files[0])} />
@@ -207,18 +222,18 @@ export function GroceryAssistant() {
                   ))}
                 </div>
                 <div className="relative flex flex-col items-center">
-                  <MicOrb listening={speech.listening} onClick={() => (speech.listening ? speech.stop() : speech.start(lang))} disabled={!speech.supported || parsing} label="Dictate your list" />
+                  <MicOrb listening={speech.listening} onClick={() => (speech.listening ? speech.stop() : speech.start(lang))} disabled={!speech.supported || parsing} label={tx("Dictate your list")} />
                   <p className="-mt-3 min-h-12 max-w-md text-center">
-                    {speech.listening ? speech.interim || "Listening…" : parsing ? "Reading…" : !speech.supported ? "Voice isn't supported in this browser, use Type." : speech.error ?? "e.g. “two kilo onion, one kilo tomato, milk two litre”"}
+                    {speech.listening ? speech.interim || tx("Listening…") : parsing ? tx("Reading…") : !speech.supported ? tx("Voice isn't supported in this browser, use Type.") : speech.error ? tx(speech.error) : tx("e.g. “two kilo onion, one kilo tomato, milk two litre”")}
                   </p>
                 </div>
               </div>
             )}
             {mode === "type" && (
               <div className="space-y-3">
-                <Textarea rows={6} value={text} onChange={(e) => setText(e.target.value)} placeholder={"2 kg onion\n1 kg tomato\nmilk 2 L\npalak"} />
+                <Textarea rows={6} value={text} onChange={(e) => setText(e.target.value)} placeholder={tx("2 kg onion\n1 kg tomato\nmilk 2 L\npalak")} />
                 <Button variant="brand" size="lg" onClick={() => parseText(text)} disabled={parsing || text.trim().length < 2}>
-                  {parsing ? <Loader2 className="animate-spin" /> : <Wand2 />} Read my list
+                  {parsing ? <Loader2 className="animate-spin" /> : <Wand2 />} {tx("Read my list")}
                 </Button>
               </div>
             )}
@@ -228,26 +243,28 @@ export function GroceryAssistant() {
             {parsed && (
               <motion.section initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="mt-6 rounded-3xl border bg-card p-4 sm:p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="font-semibold">Your list</p>
+                  <p className="font-semibold">{tx("Your list")}</p>
                   <AISourceBadge source={parsed.source} />
                 </div>
                 {parsed.sample && (
                   <p className="mt-3 rounded-2xl bg-warning/12 p-3 text-sm">
-                    Reading photos needs the AI service, which isn&apos;t configured here, so this is a <b>sample list</b>. Edit it, or switch to Type/Speak.
+                    {tx("Reading photos needs the AI service, which isn't configured here, so this is a sample list. Edit it, or switch to Type or Speak.")}
                   </p>
                 )}
                 <ul className="mt-3 space-y-2">
                   <AnimatePresence initial={false}>
                     {items.map((it, i) => (
                       <motion.li key={i} layout initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, height: 0 }} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2 border-b pb-2 last:border-0 sm:grid-cols-[1fr_80px_100px_auto] sm:border-0 sm:pb-0">
-                        <Input aria-label="Item" className="col-span-3 sm:col-span-1" value={it.name} onChange={(e) => setItems((xs) => xs.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
-                        <Input aria-label="Quantity" inputMode="decimal" value={String(it.qty)} onChange={(e) => setItems((xs) => xs.map((x, j) => (j === i ? { ...x, qty: Number(e.target.value.replace(/[^\d.]/g, "")) || 0 } : x)))} className="px-2 text-center" />
-                        <select aria-label="Unit" value={it.unit} onChange={(e) => setItems((xs) => xs.map((x, j) => (j === i ? { ...x, unit: e.target.value } : x)))} className="h-11 rounded-xl border border-input bg-background/60 px-2 text-base">
+                        <Input aria-label={tx("Item")} className="col-span-3 sm:col-span-1" value={it.name} onChange={(e) => setItems((xs) => xs.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} />
+                        <Input aria-label={tx("Quantity")} inputMode="decimal" value={String(it.qty)} onChange={(e) => setItems((xs) => xs.map((x, j) => (j === i ? { ...x, qty: Number(e.target.value.replace(/[^\d.]/g, "")) || 0 } : x)))} className="px-2 text-center" />
+                        <select aria-label={tx("Unit")} value={it.unit} onChange={(e) => setItems((xs) => xs.map((x, j) => (j === i ? { ...x, unit: e.target.value } : x)))} className="h-11 rounded-xl border border-input bg-background/60 px-2 text-base">
                           {UNITS.map((u) => (
-                            <option key={u}>{u}</option>
+                            <option key={u} value={u}>
+                              {unitLabel(u, tx)}
+                            </option>
                           ))}
                         </select>
-                        <Button variant="ghost" size="icon" aria-label="Remove item" onClick={() => setItems((xs) => xs.filter((_, j) => j !== i))}>
+                        <Button variant="ghost" size="icon" aria-label={tx("Remove item")} onClick={() => setItems((xs) => xs.filter((_, j) => j !== i))}>
                           <Trash2 className="size-4" />
                         </Button>
                       </motion.li>
@@ -255,10 +272,10 @@ export function GroceryAssistant() {
                   </AnimatePresence>
                 </ul>
                 <Button variant="ghost" size="sm" className="mt-2" onClick={() => setItems((xs) => [...xs, { name: "", qty: 1, unit: "kg" }])}>
-                  <Plus /> Add item
+                  <Plus /> {tx("Add item")}
                 </Button>
                 <Button size="lg" variant="brand" className="mt-4 w-full" onClick={build} disabled={building}>
-                  {building ? <Loader2 className="animate-spin" /> : <Sparkles />} Build my smart basket
+                  {building ? <Loader2 className="animate-spin" /> : <Sparkles />} {tx("Build my smart basket")}
                 </Button>
               </motion.section>
             )}
@@ -270,24 +287,24 @@ export function GroceryAssistant() {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <div className="dark mb-5 flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-background p-5 text-foreground">
             <div>
-              <p className="text-sm text-muted-foreground">Smart basket</p>
+              <p className="text-sm text-muted-foreground">{tx("Smart basket")}</p>
               <p className="text-2xl font-semibold">
-                {chosenList?.length} items · {farms} farm{farms === 1 ? "" : "s"}
+                {tx("{n} items", { n: chosenList?.length ?? 0 })} · {tx(farms === 1 ? "{n} farm" : "{n} farms", { n: farms })}
               </p>
             </div>
             <Button variant="outline" onClick={() => setBasket(null)} className="border-white/20">
-              Edit list
+              {tx("Edit list")}
             </Button>
           </div>
           <ul className="space-y-3">
             {basket.picks.map((p, i) => (
-              <PickRow key={i} pick={p} current={chosen(i)} onChoose={(id) => setChoice((c) => ({ ...c, [i]: id }))} index={i} />
+              <PickRow key={i} pick={p} current={chosen(i)} onChoose={(id) => setChoice((c) => ({ ...c, [i]: id }))} index={i} ui={ui} />
             ))}
           </ul>
           {chosenList && chosenList.length > 0 && (
             <div className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md lg:static lg:mx-0 lg:mt-6 lg:max-w-none">
               <Button size="lg" variant="brand" className="h-14 w-full text-base shadow-xl" onClick={addAll}>
-                Add {chosenList.length} items to cart · {formatINR(total)} <ArrowRight />
+                {tx("Add {n} items to cart", { n: chosenList.length })} · {formatINR(total)} <ArrowRight />
               </Button>
             </div>
           )}
@@ -297,13 +314,14 @@ export function GroceryAssistant() {
   );
 }
 
-function PickRow({ pick, current, onChoose, index }: { pick: BasketPick; current: Pick | null; onChoose: (id: string) => void; index: number }) {
+function PickRow({ pick, current, onChoose, index, ui }: { pick: BasketPick; current: Pick | null; onChoose: (id: string) => void; index: number; ui: Lang }) {
+  const { tx } = useI18n();
   const [open, setOpen] = useState(false);
-  const label = `${formatQty(pick.item.qty, pick.item.unit)} ${pick.crop ? cropName(pick.crop) : pick.item.name}`;
+  const label = `${formatQty(pick.item.qty, pick.item.unit, ui)} ${pick.crop ? cropName(pick.crop, ui) : pick.item.name}`;
   if (!pick.best || !current) {
     return (
       <motion.li initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className="rounded-3xl border border-dashed p-4 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">{label}</span>, not on FoodFlow right now.
+        {tx("{item}, not on FoodFlow right now.", { item: label })}
       </motion.li>
     );
   }
@@ -313,22 +331,22 @@ function PickRow({ pick, current, onChoose, index }: { pick: BasketPick; current
       <div className="flex gap-3 p-3 sm:p-4">
         <div className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-muted">{current.imageUrl && <MediaImage src={current.imageUrl} sizes="64px" />}</div>
         <div className="min-w-0 flex-1">
-          <p className="text-xs text-muted-foreground">You asked for {label}</p>
+          <p className="text-xs text-muted-foreground">{tx("You asked for {item}", { item: label })}</p>
           <p className="font-semibold break-words">
-            {current.farmer.name} <span className="font-normal text-muted-foreground">· {current.farmer.village}</span>
+            {current.farmer.name} <span className="font-normal text-muted-foreground">· {current.farmer.village && tx(current.farmer.village)}</span>
           </p>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm">
             <span className="tabular font-medium">
-              {formatQty(current.qty, current.unit)} × {formatINR(current.price)} = {formatINR(current.qty * current.price)}
+              {formatQty(current.qty, current.unit, ui)} × {formatINR(current.price)} = {formatINR(current.qty * current.price)}
             </span>
-            <span className="rounded-full bg-lime/35 px-2 py-0.5 text-xs font-medium">{current.reason}</span>
+            <span className="rounded-full bg-lime/35 px-2 py-0.5 text-xs font-medium">{reasonText(current.reason, tx)}</span>
           </div>
         </div>
       </div>
       {pick.alternatives.length > 0 && (
         <>
           <button type="button" onClick={() => setOpen((o) => !o)} className="flex min-h-11 w-full items-center justify-between border-t px-4 text-sm text-muted-foreground hover:bg-muted/40">
-            {open ? "Hide options" : `${pick.alternatives.length} other farm${pick.alternatives.length > 1 ? "s" : ""}`}
+            {open ? tx("Hide options") : tx(pick.alternatives.length > 1 ? "{n} other farms" : "{n} other farm", { n: pick.alternatives.length })}
             <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
           </button>
           <AnimatePresence initial={false}>
@@ -340,10 +358,10 @@ function PickRow({ pick, current, onChoose, index }: { pick: BasketPick; current
                       <span className={cn("size-4 shrink-0 rounded-full border-2", o.id === current.id ? "border-foreground bg-foreground" : "border-muted-foreground/40")} />
                       <span className="min-w-0 flex-1">
                         <span className="block font-medium break-words">
-                          {o.farmer.name} · {formatINR(o.price)}/{o.unit}
+                          {o.farmer.name} · {formatINR(o.price)}/{unitLabel(o.unit, tx)}
                         </span>
                         <span className="block text-xs text-muted-foreground">
-                          {o.reason} · ~{o.etaHours ?? "?"} h · score {o.score}
+                          {reasonText(o.reason, tx)} · ~{o.etaHours ?? "?"} {tx("h")} · {tx("score {n}", { n: o.score })}
                         </span>
                       </span>
                     </button>

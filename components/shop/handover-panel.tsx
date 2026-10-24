@@ -8,6 +8,7 @@ import { KeyRound, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState, useSyncExternalStore } from "react";
 import { toast } from "sonner";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { sendJSON } from "@/lib/fetcher";
 import type { SerializedOrder } from "@/lib/orders/queries";
@@ -41,6 +42,7 @@ export function needsHandover(o: SerializedOrder) {
 /** OTP/QR card shown on the buyer's tracking page. */
 export function HandoverPanel({ order, onChange }: { order: SerializedOrder; onChange: () => void }) {
   const mounted = useSyncExternalStore(noop, () => true, () => false);
+  const { tx } = useI18n();
   const [data, setData] = useState<OtpData | null>(null);
   const [busy, setBusy] = useState(false);
   const [now, setNow] = useState(() => Date.now());
@@ -60,7 +62,7 @@ export function HandoverPanel({ order, onChange }: { order: SerializedOrder; onC
       setData(d);
       onChange();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -76,25 +78,25 @@ export function HandoverPanel({ order, onChange }: { order: SerializedOrder; onC
     <section className="relative overflow-hidden rounded-3xl border-2 border-lime bg-card p-5">
       <div className="flex items-center gap-2">
         <KeyRound className="size-5" />
-        <p className="font-semibold">{pickup ? "Pickup code" : "Delivery code"}</p>
+        <p className="font-semibold">{tx(pickup ? "Pickup code" : "Delivery code")}</p>
       </div>
       <p className="mt-1 text-sm text-muted-foreground">
-        {pickup ? "Show the QR or tell the farmer this code when you collect." : "Give this code to the rider only once the order is in your hands."}
+        {tx(pickup ? "Show the QR or tell the farmer this code when you collect." : "Give this code to the rider only once the order is in your hands.")}
       </p>
 
       {!current || expired ? (
         <Button size="lg" variant="brand" className="mt-4 w-full" onClick={generate} disabled={busy}>
-          {busy ? <Loader2 className="animate-spin" /> : <KeyRound />} {expired ? "Code expired, get a new one" : `Show ${pickup ? "QR & code" : "OTP"}`}
+          {busy ? <Loader2 className="animate-spin" /> : <KeyRound />} {tx(expired ? "Code expired, get a new one" : pickup ? "Show QR & code" : "Show OTP")}
         </Button>
       ) : (
         <div className="mt-4">
           {pickup && current.qr && (
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mx-auto mb-4 w-fit rounded-2xl bg-white p-3">
               {/* eslint-disable-next-line @next/next/no-img-element -- server-generated data URL */}
-              <img src={current.qr.dataUrl} alt="Pickup QR code" className="size-48" />
+              <img src={current.qr.dataUrl} alt={tx("Pickup QR code")} className="size-48" />
             </motion.div>
           )}
-          <div className="flex justify-center gap-1.5 sm:gap-2" aria-label={`Code ${current.otp.split("").join(" ")}`}>
+          <div className="flex justify-center gap-1.5 sm:gap-2" aria-label={tx("Code {code}", { code: current.otp.split("").join(" ") })}>
             <AnimatePresence mode="popLayout">
               {current.otp.split("").map((d, i) => (
                 <motion.span
@@ -111,13 +113,13 @@ export function HandoverPanel({ order, onChange }: { order: SerializedOrder; onC
           </div>
           <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-sm">
             <span className="inline-flex items-center gap-1.5 text-muted-foreground">
-              <ShieldCheck className="size-4" /> Expires in{" "}
+              <ShieldCheck className="size-4" /> {tx("Expires in")}{" "}
               <span className="tabular font-semibold text-foreground">
                 {mins}:{String(secs).padStart(2, "0")}
               </span>
             </span>
             <Button variant="ghost" size="sm" onClick={generate} disabled={busy}>
-              <RefreshCw className={busy ? "animate-spin" : ""} /> New code
+              <RefreshCw className={busy ? "animate-spin" : ""} /> {tx("New code")}
             </Button>
           </div>
           <div className="mt-2 h-1 overflow-hidden rounded-full bg-muted">
@@ -125,7 +127,7 @@ export function HandoverPanel({ order, onChange }: { order: SerializedOrder; onC
           </div>
           {(order.delivery?.otpAttempts ?? 0) > 0 && (
             <p className="mt-2 text-xs text-warning">
-              {order.delivery?.otpAttempts} wrong attempt{order.delivery?.otpAttempts === 1 ? "" : "s"} so far, generate a new code if you didn&apos;t share it.
+              {tx(order.delivery?.otpAttempts === 1 ? "{n} wrong attempt so far, generate a new code if you didn't share it." : "{n} wrong attempts so far, generate a new code if you didn't share it.", { n: order.delivery?.otpAttempts ?? 0 })}
             </p>
           )}
         </div>

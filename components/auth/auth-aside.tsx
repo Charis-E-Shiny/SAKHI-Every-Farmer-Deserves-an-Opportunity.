@@ -1,9 +1,12 @@
 // Decorative left panel on the login/register screens (desktop only):
 // drifting light orbs, a farm photo and the mission line.
+import { Emph } from "@/components/common/emph";
 import { Photo } from "@/components/common/photo";
+import { getI18n } from "@/lib/i18n/server";
 
 /** Always-dark brand panel; the `dark` class re-themes its subtree. */
-export function AuthAside() {
+export async function AuthAside() {
+  const { tx } = await getI18n();
   return (
     <aside className="dark relative hidden overflow-hidden bg-background p-10 text-foreground lg:flex lg:flex-col lg:justify-between">
       <div className="bg-grid absolute inset-0 opacity-40 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />
@@ -16,10 +19,10 @@ export function AuthAside() {
 
       <div className="relative">
         <p className="max-w-md text-4xl leading-[1.05] font-semibold tracking-tight xl:text-5xl">
-          Every harvest deserves a <span className="font-serif font-normal text-lime italic">table.</span>
+          <Emph text={tx("Every harvest deserves a *table.*")} className="font-serif font-normal text-lime italic" />
         </p>
         <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-          Farmers list by voice. AI checks the harvest. Buyers get it fresh, and nothing goes to waste.
+          {tx("Farmers list by voice. AI checks the harvest. Buyers get it fresh, and nothing goes to waste.")}
         </p>
       </div>
     </aside>

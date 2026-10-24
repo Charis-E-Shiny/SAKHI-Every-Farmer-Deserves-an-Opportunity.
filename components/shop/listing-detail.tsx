@@ -12,6 +12,7 @@ import useSWR from "swr";
 import { IndicativeTag } from "@/components/ai/ai-labels";
 import { MediaImage } from "@/components/common/media-image";
 import { ErrorState, SkeletonBlock } from "@/components/common/states";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { QualityCard } from "@/components/farmer/new-batch/quality-panel";
 import { useLive } from "@/hooks/use-live";
@@ -37,6 +38,7 @@ interface Detail extends SerializedListing {
  * @param bulk - bulk-buyer quantity steps
  */
 export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/listing", bulk = false }: { id: string; backHref?: string; detailBase?: string; bulk?: boolean }) {
+  const { tx, lang } = useI18n();
   const { data, error, isLoading, mutate } = useSWR<Detail>(`/api/listings/${id}`);
   const router = useRouter();
   useLive(["inventory.updated"], () => mutate());
@@ -59,12 +61,14 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
 
   const images = data.gallery.length ? data.gallery : data.imageUrl ? [data.imageUrl] : [];
   const pctLeft = Math.max(4, Math.round((data.availableQty / Math.max(1, data.totalQty)) * 100));
+  const unit = tx(data.unit === "litre" ? "L" : data.unit);
+  const village = data.farmer.village ? tx(data.farmer.village) : "";
   const vsMarket = data.market ? Math.round(((data.price - data.market.modalToday) / data.market.modalToday) * 100) : null;
 
   return (
     <div className="pb-20 lg:pb-0">
       <Link href={backHref} className="mb-4 inline-flex min-h-9 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" /> Back
+        <ArrowLeft className="size-4" /> {tx("Back")}
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_1fr] lg:gap-10">
@@ -76,7 +80,7 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
                 {images[shot] && <MediaImage src={images[shot]} sizes="(max-width: 1024px) 100vw, 640px" priority />}
               </motion.div>
             </AnimatePresence>
-            <span className="glass absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-medium">{harvestAge(data.harvestDate)}</span>
+            <span className="glass absolute top-3 left-3 rounded-full px-3 py-1 text-xs font-medium">{harvestAge(data.harvestDate, lang)}</span>
           </div>
           {images.length > 1 && (
             <div className="mt-2 grid grid-cols-5 gap-2">
@@ -86,7 +90,7 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
                   type="button"
                   onClick={() => setShot(i)}
                   className={cn("relative aspect-square overflow-hidden rounded-xl ring-offset-2 ring-offset-background", i === shot ? "ring-2 ring-foreground" : "ring-1 ring-border")}
-                  aria-label={`Photo ${i + 1}`}
+                  aria-label={tx("Photo {n}", { n: i + 1 })}
                 >
                   <MediaImage src={src} sizes="80px" />
                 </button>
@@ -98,22 +102,22 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
         {/* Buy box */}
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{cropName(data.crop)}</h1>
-            {data.grade && <span className="rounded-lg bg-lime/40 px-2 py-0.5 text-sm font-semibold">Grade {data.grade}</span>}
+            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">{cropName(data.crop, lang)}</h1>
+            {data.grade && <span className="rounded-lg bg-lime/40 px-2 py-0.5 text-sm font-semibold">{tx("Grade {grade}", { grade: data.grade })}</span>}
           </div>
           <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-foreground px-3 py-1 text-xs font-medium text-background">
-            <BadgeCheck className="size-3.5" /> Verified by FoodFlow {data.quality.verifiedAt ? `on ${formatDate(data.quality.verifiedAt)}` : ""}
+            <BadgeCheck className="size-3.5" /> {data.quality.verifiedAt ? tx("Verified by FoodFlow on {date}", { date: formatDate(data.quality.verifiedAt, lang) }) : tx("Verified by FoodFlow")}
           </p>
 
           <div className="mt-5 flex flex-wrap items-end gap-x-4 gap-y-1">
             <p className="tabular text-4xl font-semibold tracking-tight">
               {formatINR(data.price)}
-              <span className="text-base font-normal text-muted-foreground">/{data.unit}</span>
+              <span className="text-base font-normal text-muted-foreground">/{unit}</span>
             </p>
             {data.market && (
               <p className="flex flex-wrap items-center gap-1.5 pb-1 text-sm text-muted-foreground">
-                <TrendingUp className="size-4" /> {data.market.mandi} modal ₹{data.market.modalToday}
-                {vsMarket !== null && <span>({vsMarket >= 0 ? "+" : ""}{vsMarket}% retail margin)</span>}
+                <TrendingUp className="size-4" /> {tx("{mandi} mandi rate ₹{price}", { mandi: data.market.mandi, price: data.market.modalToday })}
+                {vsMarket !== null && <span>({tx("{pct}% retail margin", { pct: `${vsMarket >= 0 ? "+" : ""}${vsMarket}` })})</span>}
                 <IndicativeTag />
               </p>
             )}
@@ -122,9 +126,9 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
           <div className="mt-5">
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>
-                <span className="tabular font-semibold text-foreground">{data.availableQty} {data.unit}</span> left of {data.totalQty}
+                {tx("{left} of {total} left", { left: `${data.availableQty} ${unit}`, total: data.totalQty })}
               </span>
-              <span>{data.soldQty > 0 ? `${data.soldQty} ${data.unit} sold` : "Just listed"}</span>
+              <span>{data.soldQty > 0 ? tx("{qty} {unit} sold", { qty: data.soldQty, unit }) : tx("Just listed")}</span>
             </div>
             <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-muted">
               <motion.div className="h-full rounded-full bg-lime" initial={{ width: 0 }} animate={{ width: `${pctLeft}%` }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} />
@@ -133,11 +137,11 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
 
           <div className="mt-6">
             <AddToCart listing={data} bulk={bulk} size="lg" />
-            <p className="mt-2 text-center text-xs text-muted-foreground">Stock is reserved only when you confirm checkout.</p>
+            <p className="mt-2 text-center text-xs text-muted-foreground">{tx("Stock is reserved only when you confirm checkout.")}</p>
             {!bulk && (
               <>
                 <Button variant="outline" className="mt-3 min-h-11 w-full" onClick={() => setRepeat(true)}>
-                  <Repeat /> Get this on repeat
+                  <Repeat /> {tx("Get this on repeat")}
                 </Button>
                 <SubscribeSheet open={repeat} onOpenChange={setRepeat} listing={data} onCreated={() => router.push("/shop/subscriptions")} />
               </>
@@ -147,13 +151,13 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
           <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
             <div className="rounded-2xl border p-3">
               <Truck className="size-4 text-muted-foreground" />
-              <p className="mt-1.5 font-medium">{data.etaHours ? `~${data.etaHours} h delivery` : "Delivery available"}</p>
-              <p className="text-xs text-muted-foreground">{data.distanceKm !== null ? `${Math.round(data.distanceKm)} km from the farm` : data.area}</p>
+              <p className="mt-1.5 font-medium">{data.etaHours ? tx("~{h} h delivery", { h: data.etaHours }) : tx("Delivery available")}</p>
+              <p className="text-xs text-muted-foreground">{data.distanceKm !== null ? tx("{km} km from the farm", { km: Math.round(data.distanceKm) }) : data.area && tx(data.area)}</p>
             </div>
             <div className="rounded-2xl border p-3">
               <MapPin className="size-4 text-muted-foreground" />
-              <p className="mt-1.5 font-medium">Self-pickup</p>
-              <p className="text-xs text-muted-foreground">{data.farmer.village}. OTP or QR at handover</p>
+              <p className="mt-1.5 font-medium">{tx("Self-pickup")}</p>
+              <p className="text-xs text-muted-foreground">{village}. {tx("OTP or QR at handover")}</p>
             </div>
           </div>
         </div>
@@ -183,17 +187,17 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
             <div className="min-w-0">
               <p className="font-semibold">{data.farmer.farmName ?? data.farmer.name}</p>
               <p className="text-sm text-muted-foreground">
-                {data.farmer.name} · {data.farmer.village}
+                {data.farmer.name} · {village}
               </p>
             </div>
           </div>
           <dl className="mt-4 grid grid-cols-2 gap-3">
             <div className="rounded-2xl bg-muted/60 p-3">
-              <dt className="text-xs text-muted-foreground">Reliability</dt>
+              <dt className="text-xs text-muted-foreground">{tx("Reliability")}</dt>
               <dd className="tabular text-xl font-semibold">{Math.round(data.farmer.reliability * 100)}%</dd>
             </div>
             <div className="rounded-2xl bg-muted/60 p-3">
-              <dt className="text-xs text-muted-foreground">Buyer rating</dt>
+              <dt className="text-xs text-muted-foreground">{tx("Buyer rating")}</dt>
               <dd className="flex items-center gap-1 text-xl font-semibold">
                 {data.farmerRating.average ?? "-"} <Star className="size-4 fill-warning text-warning" />
                 <span className="text-xs font-normal text-muted-foreground">({data.farmerRating.count})</span>
@@ -201,13 +205,13 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
             </div>
           </dl>
           <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Timer className="size-3.5" /> Harvested {formatDate(data.harvestDate)} · listed {formatDate(data.createdAt)}
+            <Timer className="size-3.5" /> {tx("Harvested {date}", { date: formatDate(data.harvestDate, lang) })} · {tx("listed {date}", { date: formatDate(data.createdAt, lang) })}
           </p>
         </div>
       </div>
 
-      {data.moreFromFarmer.length > 0 && <Rail title={`More from ${data.farmer.name.split(" ")[0]}`} items={data.moreFromFarmer} detailBase={detailBase} bulk={bulk} />}
-      {data.similar.length > 0 && <Rail title="Same crop, other farms" items={data.similar} detailBase={detailBase} bulk={bulk} />}
+      {data.moreFromFarmer.length > 0 && <Rail title={tx("More from {name}", { name: data.farmer.name.split(" ")[0] })} items={data.moreFromFarmer} detailBase={detailBase} bulk={bulk} />}
+      {data.similar.length > 0 && <Rail title={tx("Same crop, other farms")} items={data.similar} detailBase={detailBase} bulk={bulk} />}
       <CartBar />
     </div>
   );

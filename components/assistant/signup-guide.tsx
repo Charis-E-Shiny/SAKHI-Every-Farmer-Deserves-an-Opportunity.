@@ -515,7 +515,6 @@ export function GuideBanner({ guide, compact }: { guide: SignupGuide; compact?: 
         <div className="min-w-0 flex-1">
           <p className="leading-snug font-semibold">{t("ff.join.banner.title")}</p>
           {!compact && <p className="mt-0.5 text-sm text-muted-foreground">{t("ff.join.banner.body")}</p>}
-          {guide.lang !== "en" && <p className="mt-0.5 text-xs text-muted-foreground">{translate("en", "ff.join.banner.title")}</p>}
         </div>
       </div>
       <div className="mt-3 grid grid-cols-3 gap-1.5" role="radiogroup" aria-label={t("ff.welcome.pickLang")}>

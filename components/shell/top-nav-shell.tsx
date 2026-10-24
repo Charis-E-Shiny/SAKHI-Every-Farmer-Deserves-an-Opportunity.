@@ -1,6 +1,6 @@
 // Two-bar app shell for farmers, households, bulk buyers and admins (the
 // delivery app keeps its phone shell). Bar one holds the brand, location,
-// search, language (farmers), cart (buyers) and account; bar two lists
+// search, language, cart (buyers) and account; bar two lists
 // every service. On phones both collapse into a hamburger drawer, while
 // the language icon, cart and avatar stay in the top bar.
 "use client";
@@ -14,7 +14,7 @@ import { FarmerFriend, openFarmerFriend } from "@/components/assistant/farmer-fr
 import { Logo } from "@/components/brand/logo";
 import { SiteFooter } from "@/components/common/site-footer";
 import { ThemeToggle } from "@/components/common/theme-toggle";
-import { I18nProvider, useI18n } from "@/components/providers/i18n-provider";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { LanguageMenu, LanguageSwitch } from "@/components/shell/language-switch";
 import { AutoLocation, LocationPicker } from "@/components/shell/location-picker";
 import { useNavBadges } from "@/components/shell/use-nav-badges";
@@ -23,18 +23,18 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
 import type { PublicUser } from "@/lib/auth/public-user";
 import type { Role } from "@/lib/auth/token";
-import { toLang, translate, type Lang, type MessageKey } from "@/lib/i18n";
+import { translate, type Lang, type MessageKey } from "@/lib/i18n";
 import { NAV, activeHref, type NavItem } from "@/lib/nav";
 import { cn } from "@/lib/utils";
 
 export type TopNavRole = Exclude<Role, "DELIVERY">;
 
-/** Per-role behaviour: where search lands, whether the UI is localised, and whether there's a cart. */
-const SHELL: Record<TopNavRole, { search: string; searchPh: MessageKey; localised: boolean; cart: boolean }> = {
-  FARMER: { search: "/farmer", searchPh: "shell.searchPh", localised: true, cart: false },
-  CONSUMER: { search: "/shop", searchPh: "shell.searchShop", localised: false, cart: true },
-  BULK_BUYER: { search: "/bulk/browse", searchPh: "shell.searchShop", localised: false, cart: true },
-  ADMIN: { search: "/admin/orders", searchPh: "shell.searchAdmin", localised: false, cart: false },
+/** Per-role behaviour: where search lands and whether there's a cart. */
+const SHELL: Record<TopNavRole, { search: string; searchPh: MessageKey; cart: boolean }> = {
+  FARMER: { search: "/farmer", searchPh: "shell.searchPh", cart: false },
+  CONSUMER: { search: "/shop", searchPh: "shell.searchShop", cart: true },
+  BULK_BUYER: { search: "/bulk/browse", searchPh: "shell.searchShop", cart: true },
+  ADMIN: { search: "/admin/orders", searchPh: "shell.searchAdmin", cart: false },
 };
 
 type Badges = ReturnType<typeof useNavBadges>;
@@ -55,15 +55,13 @@ export function TopNavShell({
   village?: string | null;
   children: React.ReactNode;
 }) {
-  // Only the farmer interface is localised; other roles stay in English.
-  const localised = SHELL[role].localised;
   return (
-    <I18nProvider initial={localised ? toLang(user.language) : "en"} persist={localised}>
+    <>
       <ShellInner role={role} user={user} village={village}>
         {children}
       </ShellInner>
       {role === "FARMER" && <FarmerFriend />}
-    </I18nProvider>
+    </>
   );
 }
 
@@ -101,7 +99,7 @@ function ShellInner({ role, user, village, children }: { role: TopNavRole; user:
               <SearchBox role={role} items={items} className="hidden flex-1 md:flex" />
             </Suspense>
             <div className="ml-auto flex items-center gap-1 md:ml-0 md:gap-2">
-              {config.localised && <LanguageMenu />}
+              <LanguageMenu />
               <ThemeToggle className="hidden md:inline-flex" />
               <UserMenu user={user} greeting />
               {config.cart && <CartLink count={badges.cart} />}
@@ -336,12 +334,10 @@ function MobileMenu({
             </Button>
           )}
 
-          {SHELL[role].localised && (
-            <section>
-              <p className="mb-2 px-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("menu.language")}</p>
-              <LanguageSwitch className="h-12" />
-            </section>
-          )}
+          <section>
+            <p className="mb-2 px-1 text-xs font-semibold tracking-wide text-muted-foreground uppercase">{t("menu.language")}</p>
+            <LanguageSwitch className="h-12" />
+          </section>
 
           <div className="flex items-center justify-between border-t pt-4">
             <ThemeToggle />

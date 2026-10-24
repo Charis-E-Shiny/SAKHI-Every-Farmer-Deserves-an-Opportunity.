@@ -1,6 +1,7 @@
 // /farmer/batches/new — the AI-assisted harvest listing wizard.
 // `?batch=<id>` resumes a draft or a batch the admin sent back for changes.
 import type { Metadata } from "next";
+import { getI18n } from "@/lib/i18n/server";
 import { ClientOnly } from "@/components/common/client-only";
 import { RouteLoading } from "@/components/common/route-loading";
 import { NewBatchWizard } from "@/components/farmer/new-batch/wizard";
@@ -9,7 +10,10 @@ import { getSession } from "@/lib/auth/session";
 import { serializeBatch } from "@/lib/batches";
 import { isCropSlug, type CropSlug } from "@/lib/crops";
 
-export const metadata: Metadata = { title: "New harvest" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { tx } = await getI18n();
+  return { title: tx("New harvest") };
+}
 
 /** Loads the farmer's usual crops (shown first) and an optional batch to resume. */
 export default async function NewBatchPage({

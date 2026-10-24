@@ -10,10 +10,12 @@ import useSWR from "swr";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
 import { MediaImage } from "@/components/common/media-image";
 import { StatusBadge } from "@/components/common/status-badge";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { useLive } from "@/hooks/use-live";
 import { formatINR, timeAgo } from "@/lib/format";
+import { localizeTitle } from "@/lib/i18n/titles";
 import type { SerializedOrder } from "@/lib/orders/queries";
 import { IN_FLIGHT } from "@/lib/orders/state";
 import { cn } from "@/lib/utils";
@@ -24,6 +26,7 @@ const STEP_PROGRESS: Record<string, number> = { PLACED: 10, CONFIRMED: 30, PACKE
  * @param basePath - detail route prefix (/shop/orders or /bulk/orders)
  */
 export function OrdersList({ basePath = "/shop/orders", title = "Your *orders*", shopHref = "/shop" }: { basePath?: string; title?: string; shopHref?: string }) {
+  const { tx, lang } = useI18n();
   const [scope, setScope] = useState<"active" | "past">("active");
   const { data, error, isLoading, mutate } = useSWR<SerializedOrder[]>(`/api/orders?scope=${scope}`);
   useLive(["order.updated"], () => mutate());
@@ -36,7 +39,7 @@ export function OrdersList({ basePath = "/shop/orders", title = "Your *orders*",
           {(["active", "past"] as const).map((s) => (
             <button key={s} type="button" onClick={() => setScope(s)} className={cn("relative h-10 rounded-full px-5 text-sm font-medium capitalize", scope === s ? "text-background" : "text-muted-foreground")}>
               {scope === s && <motion.span layoutId="scope-pill" className="absolute inset-0 -z-10 rounded-full bg-foreground" />}
-              {s}
+              {tx(s === "active" ? "Active" : "Past")}
             </button>
           ))}
         </div>
@@ -49,7 +52,7 @@ export function OrdersList({ basePath = "/shop/orders", title = "Your *orders*",
           title={scope === "active" ? "No orders on the way" : "No past orders yet"}
           action={
             <Button asChild variant="outline">
-              <Link href={shopHref}>Start shopping</Link>
+              <Link href={shopHref}>{tx("Start shopping")}</Link>
             </Button>
           }
         />
@@ -64,7 +67,7 @@ export function OrdersList({ basePath = "/shop/orders", title = "Your *orders*",
                   <div className="min-w-0">
                     <p className="font-mono text-sm font-semibold">{o.code}</p>
                     <p className="text-sm text-muted-foreground">
-                      {o.farmer.name} · {timeAgo(o.createdAt)}
+                      {o.farmer.name} · {timeAgo(o.createdAt, lang)}
                     </p>
                   </div>
                   <StatusBadge status={o.status} pulse={live} />
@@ -78,8 +81,8 @@ export function OrdersList({ basePath = "/shop/orders", title = "Your *orders*",
                     ))}
                   </div>
                   <p className="min-w-0 flex-1 text-sm leading-snug break-words text-muted-foreground">
-                    {o.items.slice(0, 2).map((it) => it.title).join(", ")}
-                    {o.items.length > 2 ? ` +${o.items.length - 2} more` : ""}
+                    {o.items.slice(0, 2).map((it) => localizeTitle(it.title, lang)).join(", ")}
+                    {o.items.length > 2 ? ` ${tx("+{n} more", { n: o.items.length - 2 })}` : ""}
                   </p>
                   <p className="tabular text-sm font-semibold">{formatINR(o.total)}</p>
                   <ArrowUpRight className="size-4 text-muted-foreground" />

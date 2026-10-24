@@ -15,6 +15,7 @@ import { rankedOffersSchema } from "@/lib/ai/schemas";
 import { CROPS, isCropSlug } from "@/lib/crops";
 import { publish } from "@/lib/events";
 import { orderTotals, round2 } from "@/lib/fees";
+import type { Lang } from "@/lib/i18n";
 import { confirmOrder, createPlacedOrder } from "@/lib/orders/lifecycle";
 import { rankOffersDeterministic, type RankInputOffer } from "@/lib/ranking";
 import { commissionPct, serviceArea } from "@/lib/settings";
@@ -216,7 +217,7 @@ export async function makeOffer(farmer: User, demandId: string, input: OfferInpu
  * a model is configured it may re-weigh and explain (validated: every
  * offer must be present). Results are stored on the offers.
  */
-export async function rankDemandOffers(demandId: string) {
+export async function rankDemandOffers(demandId: string, lang: Lang = "en") {
   const d = await loadDemand(demandId);
   const live = d.offers.filter((o) => ["PENDING", "COUNTERED"].includes(o.status));
   const inputs: RankInputOffer[] = live.map((o) => ({
@@ -254,6 +255,11 @@ export async function rankDemandOffers(demandId: string) {
   );
   const ranking = [...result.data].sort((a, b) => b.score - a.score);
   await db.$transaction(ranking.map((r, i) => db.offer.update({ where: { id: r.offerId }, data: { aiScore: r.score, aiRank: i + 1, aiReason: r.reason } })));
+  // Stored reasons stay in English; the buyer's screen gets them in their language.
+  if (lang !== "en" && result.source !== "ai") {
+    const local = new Map(rankOffersDeterministic({ qtyKg: d.qtyKg, grade: d.grade, deadline: d.deadline }, inputs, lang).map((r) => [r.offerId, r.reason]));
+    return { source: result.source, ranking: ranking.map((r) => ({ ...r, reason: local.get(r.offerId) ?? r.reason })) };
+  }
   return { source: result.source, ranking };
 }
 

@@ -1,5 +1,5 @@
-// Language pickers for the farmer interface: an EN / हि / ಕ segmented
-// switch, and a small globe-icon menu for the top bar.
+// Language pickers for the whole site: an EN / हि / ಕ segmented switch, and
+// a small language-icon menu for the top corner of every page.
 "use client";
 
 import { motion } from "framer-motion";

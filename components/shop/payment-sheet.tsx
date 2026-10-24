@@ -7,6 +7,7 @@
 import { Check, Loader2, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
 
 export type PayPhase = "authorising" | "reserving" | "opening" | "verifying" | "done" | "error";
@@ -50,10 +51,11 @@ export function PaymentSheet({
   mode?: PayMode;
   paymentRef?: string | null;
 }) {
+  const { tx } = useI18n();
   const steps = mode === "simulated" ? SIMULATED : RAZORPAY;
   const idx = phase === "error" ? -1 : steps.findIndex((s) => s.key === phase);
   return (
-    <ResponsiveModal open={phase !== null} onOpenChange={(o) => !o && (phase === "error" || phase === "done") && onClose()} title={`Paying ${amount}`} description={DESCRIPTION[mode]}>
+    <ResponsiveModal open={phase !== null} onOpenChange={(o) => !o && (phase === "error" || phase === "done") && onClose()} title={tx("Paying {amount}", { amount })} description={tx(DESCRIPTION[mode])}>
       <ol className="space-y-4 py-2">
         {steps.map((s, i) => {
           const state = phase === "error" ? (i === 0 ? "done" : "todo") : i < idx || phase === "done" ? "done" : i === idx ? "active" : "todo";
@@ -82,8 +84,8 @@ export function PaymentSheet({
                 </AnimatePresence>
               </span>
               <div className={cn("min-w-0", state === "todo" && "opacity-50")}>
-                <p className="font-medium">{s.label}</p>
-                <p className="text-sm text-muted-foreground">{s.sub}</p>
+                <p className="font-medium">{tx(s.label)}</p>
+                <p className="text-sm text-muted-foreground">{tx(s.sub)}</p>
               </div>
             </li>
           );
@@ -92,12 +94,12 @@ export function PaymentSheet({
           <li className="flex gap-3 rounded-2xl bg-destructive/10 p-3 text-sm">
             <X className="mt-0.5 size-4 shrink-0 text-destructive" />
             <span className="min-w-0 break-words">
-              {error ?? "Something went wrong."}{" "}
+              {error ?? tx("Something went wrong.")}{" "}
               {mode === "simulated"
-                ? "Your authorisation was released, you haven't been charged."
+                ? tx("Your authorisation was released, you haven't been charged.")
                 : paymentRef
-                  ? `Razorpay payment ${paymentRef}. If your orders don't appear under My orders shortly, keep this reference to trace the payment.`
-                  : "Nothing was charged."}
+                  ? tx("Razorpay payment {ref}. If your orders don't appear under My orders shortly, keep this reference to trace the payment.", { ref: paymentRef })
+                  : tx("Nothing was charged.")}
             </span>
           </li>
         )}

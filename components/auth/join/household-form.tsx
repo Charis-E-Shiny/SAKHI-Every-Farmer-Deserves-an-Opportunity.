@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { AreaField, LanguageField, PinField, TextField } from "@/components/auth/join/fields";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { UNSERVED_AREAS } from "@/lib/areas";
 import { sendJSON } from "@/lib/fetcher";
@@ -17,7 +18,8 @@ import { sendJSON } from "@/lib/fetcher";
  */
 export function HouseholdForm({ google }: { google?: { name: string; email: string } | null }) {
   const router = useRouter();
-  const [f, setF] = useState({ name: google?.name ?? "", phone: "", pin: "", language: "en", area: "", address: "" });
+  const { tx, lang } = useI18n();
+  const [f, setF] = useState({ name: google?.name ?? "", phone: "", pin: "", language: lang as string, area: "", address: "" });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const set = (k: keyof typeof f) => (v: string) => setF((s) => ({ ...s, [k]: v }));
@@ -36,7 +38,7 @@ export function HouseholdForm({ google }: { google?: { name: string; email: stri
         area: f.area,
         address: f.address || undefined,
       });
-      toast.success("Welcome to FoodFlow!");
+      toast.success(tx("Welcome to FoodFlow!"));
       router.push(res.redirect);
       router.refresh();
     } catch (err) {
@@ -55,22 +57,22 @@ export function HouseholdForm({ google }: { google?: { name: string; email: stri
         <AreaField value={f.area} onChange={set("area")} label="Where should we deliver?" />
         <TextField label="Street / landmark (optional)" id="address" autoComplete="street-address" value={f.address} onChange={set("address")} />
       </div>
-      {google && <p className="rounded-2xl bg-muted px-4 py-3 text-sm">Joining with Google ({google.email}). You&apos;ll use Google to sign in next time, so there&apos;s no PIN to remember.</p>}
+      {google && <p className="rounded-2xl bg-muted px-4 py-3 text-sm">{tx("Joining with Google ({email}). You'll use Google to sign in next time, so there's no PIN to remember.", { email: google.email })}</p>}
       {UNSERVED_AREAS.includes(f.area) && (
-        <p className="rounded-2xl bg-warning/15 px-4 py-3 text-sm">We&apos;re not delivering to {f.area} yet. You can still sign up and browse, and you&apos;ll be first to know when we arrive.</p>
+        <p className="rounded-2xl bg-warning/15 px-4 py-3 text-sm">{tx("We're not delivering to {area} yet. You can still sign up and browse, and you'll be first to know when we arrive.", { area: f.area })}</p>
       )}
       {error && (
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          {tx(error)}
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={busy}>
-        {busy ? <Loader2 className="animate-spin" /> : "Create account"}
+        {busy ? <Loader2 className="animate-spin" /> : tx("Create account")}
       </Button>
       <p className="text-sm text-muted-foreground">
-        Already have an account?{" "}
+        {tx("Already have an account?")}{" "}
         <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
-          Sign in
+          {tx("Sign in")}
         </Link>
       </p>
     </form>

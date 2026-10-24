@@ -7,6 +7,7 @@ import { BadgeCheck, Leaf } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { MediaImage } from "@/components/common/media-image";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { cropName } from "@/lib/crops";
 import { formatINR, harvestAge, harvestAgeShort } from "@/lib/format";
 import type { SerializedListing } from "@/lib/listings";
@@ -15,12 +16,13 @@ import { AddToCart } from "./add-to-cart";
 
 /** Small ring showing the visual score. */
 export function QualityRing({ score, className }: { score: number | null; className?: string }) {
+  const { tx } = useI18n();
   if (score === null) return null;
   const r = 9;
   const c = 2 * Math.PI * r;
   const color = score >= 85 ? "var(--lime)" : score >= 70 ? "var(--warning)" : "var(--tomato)";
   return (
-    <span className={cn("glass inline-flex h-7 items-center gap-1.5 rounded-full pr-2.5 pl-1 text-xs font-semibold", className)} title="Visual assessment score (not a certification)">
+    <span className={cn("glass inline-flex h-7 items-center gap-1.5 rounded-full pr-2.5 pl-1 text-xs font-semibold", className)} title={tx("Visual assessment score (not a certification)")}>
       <svg viewBox="0 0 24 24" className="size-5 -rotate-90">
         <circle cx="12" cy="12" r={r} fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="3" />
         <circle cx="12" cy="12" r={r} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - score / 100)} />
@@ -36,7 +38,10 @@ export function QualityRing({ score, className }: { score: number | null; classN
  * @param index - stagger order for the entrance animation
  */
 export function ListingCard({ listing, href, bulk = false, index = 0 }: { listing: SerializedListing; href: string; bulk?: boolean; index?: number }) {
+  const { tx, lang } = useI18n();
   const low = listing.availableQty <= (listing.unit === "kg" ? 10 : 5);
+  const name = cropName(listing.crop, lang);
+  const unit = tx(listing.unit === "litre" ? "L" : listing.unit);
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
@@ -45,7 +50,7 @@ export function ListingCard({ listing, href, bulk = false, index = 0 }: { listin
       whileHover={{ y: -4 }}
       className="group relative flex flex-col overflow-hidden rounded-3xl border bg-card transition-shadow hover:shadow-[0_24px_50px_-28px_rgba(0,0,0,0.35)]"
     >
-      <Link href={href} className="absolute inset-0 z-0" aria-label={`${listing.title} by ${listing.farmer.name}`} />
+      <Link href={href} className="absolute inset-0 z-0" aria-label={tx("{item} by {farmer}", { item: name, farmer: listing.farmer.name })} />
       <div data-fly-from className="relative aspect-[4/3] overflow-hidden bg-muted">
         {listing.imageUrl && (
           <MediaImage
@@ -54,22 +59,22 @@ export function ListingCard({ listing, href, bulk = false, index = 0 }: { listin
             className="transition-transform duration-700 group-hover:scale-105"
           />
         )}
-        <span className="glass absolute top-2 left-2 inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-[11px] font-medium" title={harvestAge(listing.harvestDate)}>
-          <Leaf className="size-3" /> {harvestAgeShort(listing.harvestDate)}
+        <span className="glass absolute top-2 left-2 inline-flex h-7 items-center gap-1 rounded-full px-2.5 text-[11px] font-medium" title={harvestAge(listing.harvestDate, lang)}>
+          <Leaf className="size-3" /> {harvestAgeShort(listing.harvestDate, lang)}
         </span>
         <QualityRing score={listing.quality.score} className="absolute top-2 right-2" />
         <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-full bg-foreground/85 px-2 py-0.5 text-[10px] font-medium text-background">
-          <BadgeCheck className="size-3" /> Verified
+          <BadgeCheck className="size-3" /> {tx("Verified")}
         </span>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-3 sm:p-4">
         <div className="min-w-0">
           <h3 className="leading-tight font-semibold break-words">
-            {cropName(listing.crop)}
+            {name}
             {listing.grade === "A" && <span className="ml-1.5 rounded-md bg-lime/40 px-1.5 text-[11px] font-semibold">A</span>}
           </h3>
           <p className="mt-0.5 text-xs leading-snug text-muted-foreground break-words">
-            {listing.farmer.name} · {listing.farmer.village}
+            {listing.farmer.name} · {listing.farmer.village && tx(listing.farmer.village)}
             {listing.distanceKm !== null && ` · ${Math.round(listing.distanceKm)} km`}
           </p>
         </div>
@@ -77,10 +82,10 @@ export function ListingCard({ listing, href, bulk = false, index = 0 }: { listin
           <div>
             <p className="tabular text-lg leading-none font-semibold">
               {formatINR(listing.price)}
-              <span className="text-xs font-normal text-muted-foreground">/{listing.unit}</span>
+              <span className="text-xs font-normal text-muted-foreground">/{unit}</span>
             </p>
             <p className={cn("mt-1 text-[11px]", low ? "font-medium text-tomato" : "text-muted-foreground")}>
-              {low ? `Only ${listing.availableQty} left` : `${listing.availableQty} ${listing.unit} left`}
+              {low ? tx("Only {qty} left", { qty: listing.availableQty }) : tx("{qty} {unit} left", { qty: listing.availableQty, unit })}
             </p>
           </div>
           <AddToCart listing={listing} bulk={bulk} className="relative z-10" />

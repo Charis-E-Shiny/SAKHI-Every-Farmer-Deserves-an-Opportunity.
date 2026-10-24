@@ -10,6 +10,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Choices, Question } from "@/components/auth/join/choices";
 import { AreaField, LanguageField, PinField, SelectField, TextField } from "@/components/auth/join/fields";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { UNSERVED_AREAS } from "@/lib/areas";
 import { sendJSON } from "@/lib/fetcher";
@@ -20,7 +21,8 @@ import { ORG_TYPES, WEEKLY_NEED } from "@/lib/onboarding-options";
  */
 export function RestaurantForm({ google }: { google?: { name: string; email: string } | null }) {
   const router = useRouter();
-  const [f, setF] = useState({ orgName: "", orgType: "RESTAURANT", contactName: google?.name ?? "", phone: "", pin: "", language: "en", addressLine: "", area: "", pincode: "", fssaiNumber: "", gstin: "", weeklyNeed: "" });
+  const { tx, lang } = useI18n();
+  const [f, setF] = useState({ orgName: "", orgType: "RESTAURANT", contactName: google?.name ?? "", phone: "", pin: "", language: lang as string, addressLine: "", area: "", pincode: "", fssaiNumber: "", gstin: "", weeklyNeed: "" });
   const [agree, setAgree] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export function RestaurantForm({ google }: { google?: { name: string; email: str
         weeklyNeed: f.weeklyNeed || undefined,
         agreeTerms: agree ? true : undefined,
       });
-      toast.success("Your kitchen is set up. Welcome to FoodFlow!");
+      toast.success(tx("Your kitchen is set up. Welcome to FoodFlow!"));
       router.push(res.redirect);
       router.refresh();
     } catch (err) {
@@ -58,17 +60,17 @@ export function RestaurantForm({ google }: { google?: { name: string; email: str
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold">Where should we deliver?</h2>
+        <h2 className="text-lg font-semibold">{tx("Where should we deliver?")}</h2>
         <TextField label="Address" id="addressLine" autoComplete="street-address" placeholder="Building, street, landmark" value={f.addressLine} onChange={set("addressLine")} />
         <div className="grid gap-4 sm:grid-cols-2">
           <AreaField value={f.area} onChange={set("area")} label="Area" />
           <TextField label="PIN code" id="pincode" inputMode="numeric" maxLength={6} value={f.pincode} onChange={(v) => set("pincode")(v.replace(/\D/g, ""))} />
         </div>
-        {UNSERVED_AREAS.includes(f.area) && <p className="rounded-2xl bg-warning/15 px-4 py-3 text-sm">We&apos;re not delivering to {f.area} yet. You can still register and we&apos;ll tell you when we arrive.</p>}
+        {UNSERVED_AREAS.includes(f.area) && <p className="rounded-2xl bg-warning/15 px-4 py-3 text-sm">{tx("We're not delivering to {area} yet. You can still register and we'll tell you when we arrive.", { area: f.area })}</p>}
       </section>
 
       <section className="space-y-4">
-        <h2 className="text-lg font-semibold">About your business</h2>
+        <h2 className="text-lg font-semibold">{tx("About your business")}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField label="FSSAI licence number (optional)" id="fssai" maxLength={20} value={f.fssaiNumber} onChange={set("fssaiNumber")} />
           <TextField label="GSTIN (optional)" id="gstin" maxLength={15} value={f.gstin} onChange={(v) => set("gstin")(v.toUpperCase())} />
@@ -83,33 +85,33 @@ export function RestaurantForm({ google }: { google?: { name: string; email: str
         <LanguageField value={f.language} onChange={set("language")} />
       </section>
 
-      {google && <p className="rounded-2xl bg-muted px-4 py-3 text-sm">Joining with Google ({google.email}). You&apos;ll use Google to sign in next time, so there&apos;s no PIN to remember.</p>}
+      {google && <p className="rounded-2xl bg-muted px-4 py-3 text-sm">{tx("Joining with Google ({email}). You'll use Google to sign in next time, so there's no PIN to remember.", { email: google.email })}</p>}
       <label className="flex items-start gap-3 text-sm">
         <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-1 size-4 accent-[var(--lime)]" />
         <span>
-          I agree to the{" "}
+          {tx("I agree to the")}{" "}
           <Link href="/terms" className="font-medium underline underline-offset-4">
-            terms
+            {tx("terms")}
           </Link>{" "}
-          and{" "}
+          {tx("and")}{" "}
           <Link href="/privacy" className="font-medium underline underline-offset-4">
-            privacy policy
+            {tx("privacy policy")}
           </Link>
           .
         </span>
       </label>
       {error && (
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          {tx(error)}
         </p>
       )}
       <Button type="submit" size="lg" className="w-full" disabled={busy}>
-        {busy ? <Loader2 className="animate-spin" /> : "Create account"}
+        {busy ? <Loader2 className="animate-spin" /> : tx("Create account")}
       </Button>
       <p className="text-sm text-muted-foreground">
-        Already registered?{" "}
+        {tx("Already registered?")}{" "}
         <Link href="/login" className="font-medium text-foreground underline underline-offset-4">
-          Sign in
+          {tx("Sign in")}
         </Link>
       </p>
     </form>

@@ -6,6 +6,7 @@
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { WordReveal } from "@/components/motion/reveal";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
 
 /**
@@ -29,6 +30,8 @@ export function PageHeader({
   actions?: React.ReactNode;
   className?: string;
 }) {
+  // English titles are translated here; titles already in the site's language pass through.
+  const { tx, lang } = useI18n();
   return (
     <div className={cn("mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between", className)}>
       <div className="min-w-0">
@@ -37,14 +40,14 @@ export function PageHeader({
             href={back.href}
             className="mb-3 inline-flex min-h-9 items-center gap-1.5 rounded-full pr-3 text-sm text-muted-foreground hover:text-foreground"
           >
-            <ArrowLeft className="size-4" /> {back.label}
+            <ArrowLeft className="size-4" /> {tx(back.label)}
           </Link>
         )}
         {eyebrow && <div className="mb-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">{eyebrow}</div>}
         <h1 className="text-[1.75rem] leading-[1.05] font-semibold tracking-tight break-words sm:text-4xl">
-          <WordReveal text={title} />
+          <WordReveal key={lang} text={tx(title)} />
         </h1>
-        {description && <div className="mt-2 max-w-2xl text-[15px] text-muted-foreground">{description}</div>}
+        {description && <div className="mt-2 max-w-2xl text-[15px] text-muted-foreground">{typeof description === "string" ? tx(description) : description}</div>}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
     </div>

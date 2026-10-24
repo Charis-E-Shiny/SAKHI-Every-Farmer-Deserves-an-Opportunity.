@@ -7,6 +7,7 @@
 // a 30-point swing), and an offer that can't meet the deadline loses 40%
 // of its score outright. Pure + unit-tested.
 import { courierCost } from "@/lib/fees";
+import { translateText, type Lang } from "@/lib/i18n";
 
 export const RANK_WEIGHTS = { cost: 0.3, coverage: 0.2, eta: 0.15, quality: 0.15, distance: 0.1, reliability: 0.1 } as const;
 type Factor = keyof typeof RANK_WEIGHTS;
@@ -50,7 +51,7 @@ function etaFit(etaHours: number, hoursLeft: number): number {
  * Scores and sorts offers for a demand (best first).
  * Ties break on delivered cost, then reliability.
  */
-export function rankOffersDeterministic(demand: RankInputDemand, offers: RankInputOffer[]): RankedOffer[] {
+export function rankOffersDeterministic(demand: RankInputDemand, offers: RankInputOffer[], lang: Lang = "en"): RankedOffer[] {
   if (!offers.length) return [];
   const now = demand.now ?? new Date();
   const hoursLeft = (demand.deadline.getTime() - now.getTime()) / 3_600_000;
@@ -81,33 +82,37 @@ export function rankOffersDeterministic(demand: RankInputDemand, offers: RankInp
     score: s.score,
     factors: s.factors,
     deliveredPerKg: s.deliveredPerKg,
-    reason: reasonFor(s, rank, best, demand, Math.round(lo * 100) / 100),
+    reason: reasonFor(s, rank, best, demand, Math.round(lo * 100) / 100, lang),
   }));
 }
 
 type Scored = { o: RankInputOffer; factors: Record<Factor, number>; score: number; deliveredPerKg: number };
 
-/** Plain-language reason: what the top offer wins on / what holds others back. */
-function reasonFor(s: Scored, rank: number, best: Scored, demand: RankInputDemand, cheapest: number): string {
+/**
+ * Plain-language reason: what the top offer wins on / what holds others back.
+ * @param lang - the buyer's language (each phrase and joiner is site text)
+ */
+function reasonFor(s: Scored, rank: number, best: Scored, demand: RankInputDemand, cheapest: number, lang: Lang = "en"): string {
+  const tr = (text: string, vars?: Record<string, string | number>) => translateText(lang, text, vars);
+  const price = s.deliveredPerKg;
+  const score = s.o.qualityScore ? ` (${s.o.qualityScore})` : "";
   const phrase: Record<Factor, (good: boolean) => string> = {
-    cost: (g) =>
-      g && s.deliveredPerKg <= cheapest ? `₹${s.deliveredPerKg}/kg delivered, the best price` : g ? `₹${s.deliveredPerKg}/kg delivered` : `costs ₹${s.deliveredPerKg}/kg delivered`,
-    coverage: (g) => (g ? `covers all ${demand.qtyKg} kg` : `only covers ${Math.round(s.factors.coverage * 100)}% of the ${demand.qtyKg} kg`),
-    eta: (g) => (g ? `arrives in ~${s.o.etaHours} h, well before the deadline` : s.factors.eta === 0 ? "would miss the deadline" : `tight for the deadline (~${s.o.etaHours} h)`),
-    quality: (g) => (g ? `strong visual score${s.o.qualityScore ? ` (${s.o.qualityScore})` : ""}${s.o.grade ? `, grade ${s.o.grade}` : ""}` : `weaker visual evidence${s.o.qualityScore ? ` (${s.o.qualityScore})` : ""}`),
-    distance: (g) => (g ? `closest farm (${Math.round(s.o.distanceKm)} km)` : `${Math.round(s.o.distanceKm)} km away`),
-    reliability: (g) => (g ? `${Math.round(s.o.reliability * 100)}% reliable` : `lower reliability (${Math.round(s.o.reliability * 100)}%)`),
+    cost: (g) => (g && price <= cheapest ? tr("₹{price}/kg delivered, the best price", { price }) : g ? tr("₹{price}/kg delivered", { price }) : tr("costs ₹{price}/kg delivered", { price })),
+    coverage: (g) => (g ? tr("covers all {qty} kg", { qty: demand.qtyKg }) : tr("only covers {pct}% of the {qty} kg", { pct: Math.round(s.factors.coverage * 100), qty: demand.qtyKg })),
+    eta: (g) => (g ? tr("arrives in ~{h} h, well before the deadline", { h: s.o.etaHours }) : s.factors.eta === 0 ? tr("would miss the deadline") : tr("tight for the deadline (~{h} h)", { h: s.o.etaHours })),
+    quality: (g) => (g ? `${tr("strong visual score")}${score}${s.o.grade ? `, ${tr("grade {grade}", { grade: s.o.grade })}` : ""}` : `${tr("weaker visual evidence")}${score}`),
+    distance: (g) => (g ? tr("closest farm ({km} km)", { km: Math.round(s.o.distanceKm) }) : tr("{km} km away", { km: Math.round(s.o.distanceKm) })),
+    reliability: (g) => (g ? tr("{pct}% reliable", { pct: Math.round(s.o.reliability * 100) }) : tr("lower reliability ({pct}%)", { pct: Math.round(s.o.reliability * 100) })),
   };
+  const sentence = (text: string) => (lang === "en" ? text.charAt(0).toUpperCase() + text.slice(1) : text);
   const factors = Object.keys(RANK_WEIGHTS) as Factor[];
   const contrib = factors.map((k) => ({ k, v: RANK_WEIGHTS[k] * s.factors[k], raw: s.factors[k] }));
   if (rank === 0) {
-    const top = [...contrib].sort((a, b) => b.v - a.v).slice(0, 2);
-    const text = top.map((t) => phrase[t.k](true)).join(" and ");
-    return text.charAt(0).toUpperCase() + text.slice(1);
+    const [a, b] = [...contrib].sort((x, y) => y.v - x.v).slice(0, 2);
+    return sentence(tr("{a} and {b}", { a: phrase[a.k](true), b: phrase[b.k](true) }));
   }
   // For runners-up, name the factor where they lose most against the leader.
   const gap = factors.map((k) => ({ k, d: RANK_WEIGHTS[k] * (best.factors[k] - s.factors[k]) })).sort((a, b) => b.d - a.d)[0];
   const strength = [...contrib].sort((a, b) => b.v - a.v)[0];
-  const text = strength.k !== gap.k ? `${phrase[strength.k](true)}, but ${phrase[gap.k](false)}` : phrase[gap.k](false);
-  return text.charAt(0).toUpperCase() + text.slice(1);
+  return sentence(strength.k !== gap.k ? tr("{a}, but {b}", { a: phrase[strength.k](true), b: phrase[gap.k](false) }) : phrase[gap.k](false));
 }

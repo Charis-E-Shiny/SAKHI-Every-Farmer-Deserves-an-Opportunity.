@@ -5,6 +5,7 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -15,6 +16,7 @@ const TABS = [
 /** Segmented link pair with a sliding pill. */
 export function BulkTabs() {
   const pathname = usePathname();
+  const { tx } = useI18n();
   return (
     <div className="mb-5 grid grid-cols-2 gap-1 rounded-2xl border p-1">
       {TABS.map((t) => {
@@ -22,7 +24,7 @@ export function BulkTabs() {
         return (
           <Link key={t.href} href={t.href} className={cn("relative flex min-h-11 items-center justify-center rounded-xl px-2 text-center text-sm font-medium", on ? "text-background" : "text-muted-foreground")}>
             {on && <motion.span layoutId="bulk-tab" className="absolute inset-0 -z-10 rounded-xl bg-foreground" />}
-            {t.label}
+            {tx(t.label)}
           </Link>
         );
       })}

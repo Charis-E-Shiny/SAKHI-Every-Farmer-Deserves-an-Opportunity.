@@ -5,7 +5,9 @@
 import { BadgeCheck, Mic, Recycle, ScanEye, ShoppingBasket, Wallet } from "lucide-react";
 import { motion, useMotionValueEvent, useScroll, useSpring } from "framer-motion";
 import { useRef, useState } from "react";
+import { Emph } from "@/components/common/emph";
 import { Reveal } from "@/components/motion/reveal";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
 
 const STEPS = [
@@ -19,6 +21,7 @@ const STEPS = [
 
 /** Six-step explainer with scroll-linked progress. */
 export function HowItWorks() {
+  const { tx } = useI18n();
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 75%", "end 55%"] });
   const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 });
@@ -29,9 +32,9 @@ export function HowItWorks() {
     <section id="how" className="scroll-mt-20 border-y bg-card/40 py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <Reveal>
-          <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">How it works</p>
+          <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">{tx("How it works")}</p>
           <h2 className="mt-3 max-w-3xl text-4xl leading-[1.02] font-semibold tracking-tight sm:text-5xl">
-            Field to table in <span className="font-serif font-normal italic">six</span> honest steps.
+            <Emph text={tx("Field to table in *six* honest steps.")} />
           </h2>
         </Reveal>
         <div ref={ref} className="relative mt-14">
@@ -53,8 +56,8 @@ export function HowItWorks() {
                     <s.icon className="size-5" />
                   </span>
                   <p className="font-mono text-xs text-muted-foreground">0{i + 1}</p>
-                  <h3 className={cn("mt-1 text-lg leading-tight font-semibold transition-colors", !on && "text-foreground/70")}>{s.title}</h3>
-                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+                  <h3 className={cn("mt-1 text-lg leading-tight font-semibold transition-colors", !on && "text-foreground/70")}>{tx(s.title)}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{tx(s.body)}</p>
                 </li>
               );
             })}

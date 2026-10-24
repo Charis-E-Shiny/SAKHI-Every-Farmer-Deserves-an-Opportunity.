@@ -7,6 +7,7 @@ import { LayoutGroup, motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { MicOrb } from "@/components/voice/mic-orb";
@@ -28,6 +29,7 @@ function extractCode(raw: string): string {
 
 /** /delivery/find */
 export function FindOrder() {
+  const { tx } = useI18n();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("type");
   const [code, setCode] = useState("");
@@ -35,13 +37,13 @@ export function FindOrder() {
 
   async function open(raw: string) {
     const c = extractCode(raw);
-    if (c.length < 5) return toast.error("That doesn't look like an order code");
+    if (c.length < 5) return toast.error(tx("That doesn't look like an order code"));
     setBusy(true);
     try {
       const r = await fetcher<{ orderId: string }>(`/api/deliveries/find?code=FF-${c}`);
       router.push(`/delivery/${r.orderId}`);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
       setBusy(false);
     }
   }
@@ -63,7 +65,7 @@ export function FindOrder() {
           ].map((m) => (
             <button key={m.k} type="button" onClick={() => setMode(m.k)} className={cn("relative flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium", mode === m.k ? "text-background" : "text-muted-foreground")}>
               {mode === m.k && <motion.span layoutId="find-pill" className="absolute inset-0 -z-10 rounded-xl bg-foreground" />}
-              <m.icon className="size-4" /> {m.l}
+              <m.icon className="size-4" /> {tx(m.l)}
             </button>
           ))}
         </div>
@@ -84,32 +86,32 @@ export function FindOrder() {
               value={code}
               onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 5))}
               placeholder="7K2QA"
-              aria-label="Order code"
+              aria-label={tx("Order code")}
               autoCapitalize="characters"
               autoComplete="off"
               className="min-w-0 flex-1 bg-transparent font-mono text-2xl tracking-[0.3em] uppercase outline-none"
             />
           </label>
           <Button type="submit" size="lg" className="w-full" disabled={busy || code.length < 5}>
-            {busy ? <Loader2 className="animate-spin" /> : "Open order"}
+            {busy ? <Loader2 className="animate-spin" /> : tx("Open order")}
           </Button>
         </form>
       )}
       {mode === "scan" && (
         <div>
           <QrScanner onResult={open} />
-          <p className="mt-3 text-center text-sm text-muted-foreground">Point at the QR on the farmer&apos;s packing label.</p>
+          <p className="mt-3 text-center text-sm text-muted-foreground">{tx("Point at the QR on the farmer's packing label.")}</p>
         </div>
       )}
       {mode === "speak" && (
         <div className="flex flex-col items-center">
-          <MicOrb listening={speech.listening} onClick={() => (speech.listening ? speech.stop() : speech.start("en-IN"))} disabled={!speech.supported || busy} label="Say the order code" />
+          <MicOrb listening={speech.listening} onClick={() => (speech.listening ? speech.stop() : speech.start("en-IN"))} disabled={!speech.supported || busy} label={tx("Say the order code")} />
           <p className="-mt-2 min-h-12 text-center text-muted-foreground">
-            {speech.listening ? speech.interim || "Listening…" : !speech.supported ? "Voice isn't supported here, type the code." : speech.error ?? "Say the 5 characters after FF, e.g. “seven K two Q A”."}
+            {speech.listening ? speech.interim || tx("Listening…") : !speech.supported ? tx("Voice isn't supported here, type the code.") : speech.error ? tx(speech.error) : tx("Say the 5 characters after FF, e.g. “seven K two Q A”.")}
           </p>
         </div>
       )}
-      <p className="mt-6 rounded-2xl bg-muted/60 p-3 text-center text-xs text-muted-foreground">Finding an order only opens it. It&apos;s marked delivered only with the customer&apos;s OTP.</p>
+      <p className="mt-6 rounded-2xl bg-muted/60 p-3 text-center text-xs text-muted-foreground">{tx("Finding an order only opens it. It's marked delivered only with the customer's OTP.")}</p>
     </div>
   );
 }

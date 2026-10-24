@@ -11,6 +11,7 @@ import useSWR from "swr";
 import { ChartCard, ChartTooltip, shortDay } from "@/components/charts/chart-card";
 import { ErrorState, SkeletonBlock } from "@/components/common/states";
 import { CountUp } from "@/components/motion/count-up";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { useLive } from "@/hooks/use-live";
 import { cropName } from "@/lib/crops";
@@ -44,6 +45,7 @@ const axis = { tickLine: false, axisLine: false, tick: { fontSize: 11, fill: "va
 
 /** /admin */
 export function AdminOverview() {
+  const { tx, lang } = useI18n();
   const { data, error, isLoading, mutate } = useSWR<Analytics>("/api/admin/analytics", { refreshInterval: 30_000 });
   useLive(["order.updated", "batch.updated", "settlement.updated", "offer.updated"], () => mutate());
 
@@ -52,9 +54,9 @@ export function AdminOverview() {
   const k = data.kpis;
   const typeTotal = data.byType.RETAIL + data.byType.BULK || 1;
   const tiles = [
-    { label: "Active farmers", v: k.activeFarmers, sub: `of ${k.totalFarmers} onboarded` },
-    { label: "Orders · 30d", v: k.orders, sub: `${k.buyers} buyers` },
-    { label: "GMV · 30d", v: k.gmv, money: true, sub: `${formatINR(k.platformRevenue)} platform revenue` },
+    { label: "Active farmers", v: k.activeFarmers, sub: tx("of {n} onboarded", { n: k.totalFarmers }) },
+    { label: "Orders · 30d", v: k.orders, sub: tx("{n} buyers", { n: k.buyers }) },
+    { label: "GMV · 30d", v: k.gmv, money: true, sub: tx("{amount} platform revenue", { amount: formatINR(k.platformRevenue) }) },
     { label: "Fulfilment rate", v: k.fulfilmentRate, pct: true, sub: "handed over vs cancelled/disputed" },
     { label: "Farmer earnings", v: k.farmerEarnings, money: true, sub: "net settlements · 30d" },
     { label: "Kg sold · 30d", v: k.kgSold, sub: "verified handovers" },
@@ -66,7 +68,7 @@ export function AdminOverview() {
         title="Marketplace *pulse*"
         eyebrow={
           <span className="inline-flex items-center gap-1.5 normal-case">
-            <span className="size-1.5 animate-pulse rounded-full bg-lime" /> Live · last 30 days
+            <span className="size-1.5 animate-pulse rounded-full bg-lime" /> {tx("Live|connection")} · {tx("last 30 days")}
           </span>
         }
       />
@@ -75,14 +77,14 @@ export function AdminOverview() {
         <Link href="/admin/review" className={cn("flex items-center gap-3 rounded-3xl border p-4 hover:border-foreground/30", k.pendingReview > 0 && "border-lime bg-lime/12")}>
           <ScanSearch className="size-5" />
           <span className="flex-1 text-sm">
-            <b>{k.pendingReview}</b> harvest{k.pendingReview === 1 ? "" : "s"} awaiting review
+            {tx(k.pendingReview === 1 ? "{n} harvest awaiting review" : "{n} harvests awaiting review", { n: k.pendingReview })}
           </span>
           <ArrowUpRight className="size-4" />
         </Link>
         <Link href="/admin/orders?status=DISPUTED" className={cn("flex items-center gap-3 rounded-3xl border p-4 hover:border-foreground/30", k.disputes > 0 && "border-warning/60 bg-warning/12")}>
           <AlertTriangle className="size-5" />
           <span className="flex-1 text-sm">
-            <b>{k.disputes}</b> open dispute{k.disputes === 1 ? "" : "s"}
+            {tx(k.disputes === 1 ? "{n} open dispute" : "{n} open disputes", { n: k.disputes })}
           </span>
           <ArrowUpRight className="size-4" />
         </Link>
@@ -91,11 +93,11 @@ export function AdminOverview() {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
         {tiles.map((t, i) => (
           <motion.div key={t.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-3xl border bg-card p-4">
-            <p className="text-xs text-muted-foreground">{t.label}</p>
+            <p className="text-xs text-muted-foreground">{tx(t.label)}</p>
             <p className="tabular mt-1 text-2xl font-semibold tracking-tight sm:text-3xl">
               <CountUp value={t.v} format={(n) => (t.money ? formatINRCompact(n) : t.pct ? `${n.toFixed(1)}%` : Math.round(n).toLocaleString("en-IN"))} />
             </p>
-            <p className="text-[11px] leading-snug text-muted-foreground">{t.sub}</p>
+            <p className="text-[11px] leading-snug text-muted-foreground">{tx(t.sub)}</p>
           </motion.div>
         ))}
       </div>
@@ -106,14 +108,14 @@ export function AdminOverview() {
         <div className="relative flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Leaf className="size-4 text-lime" /> Rescued from waste via surplus offers
+              <Leaf className="size-4 text-lime" /> {tx("Rescued from waste via surplus offers")}
             </p>
             <p className="tabular text-5xl font-semibold tracking-tight text-lime">
-              <CountUp value={k.kgRescued} format={(n) => `${Math.round(n)} kg`} />
+              <CountUp value={k.kgRescued} format={(n) => `${Math.round(n)} ${tx("kg")}`} />
             </p>
           </div>
           <div className="text-right">
-            <p className="text-sm text-muted-foreground">Average buyer rating</p>
+            <p className="text-sm text-muted-foreground">{tx("Average buyer rating")}</p>
             <p className="tabular text-3xl font-semibold">{k.avgRating ?? "-"} ★</p>
           </div>
         </div>
@@ -121,7 +123,7 @@ export function AdminOverview() {
 
       <ChartCard
         title="GMV · last 30 days"
-        subtitle={`${formatINR(k.gmv)} across ${k.orders} orders`}
+        subtitle={tx("{amount} across {n} orders", { amount: formatINR(k.gmv), n: k.orders })}
         table={[["Day", "GMV (₹)", "Orders"], ...data.series.map((s) => [shortDay(s.date), Math.round(s.gmv), s.orders])]}
       >
         <div className="h-56">
@@ -144,10 +146,10 @@ export function AdminOverview() {
       </ChartCard>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <ChartCard title="GMV by service area" table={[["Area", "GMV (₹)"], ...data.byArea.map((a) => [a.area, Math.round(a.gmv)])]}>
+        <ChartCard title="GMV by service area" table={[["Area", "GMV (₹)"], ...data.byArea.map((a) => [tx(a.area), Math.round(a.gmv)])]}>
           <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.byArea} layout="vertical" margin={{ top: 0, right: 48, left: 0, bottom: 0 }} barCategoryGap={6}>
+              <BarChart data={data.byArea.map((a) => ({ ...a, area: tx(a.area) }))} layout="vertical" margin={{ top: 0, right: 48, left: 0, bottom: 0 }} barCategoryGap={6}>
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="area" {...axis} width={80} />
                 <Tooltip cursor={{ fill: "var(--muted)", opacity: 0.6 }} content={<ChartTooltip formatValue={(v) => formatINR(v)} />} />
@@ -157,20 +159,20 @@ export function AdminOverview() {
           </div>
         </ChartCard>
 
-        <ChartCard title="Top crops by kg sold" table={[["Crop", "Kg"], ...data.topCrops.map((c) => [cropName(c.crop), c.kg])]}>
+        <ChartCard title="Top crops by kg sold" table={[["Crop", "Kg"], ...data.topCrops.map((c) => [cropName(c.crop, lang), c.kg])]}>
           <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.topCrops.map((c) => ({ ...c, name: cropName(c.crop) }))} layout="vertical" margin={{ top: 0, right: 40, left: 0, bottom: 0 }} barCategoryGap={4}>
+              <BarChart data={data.topCrops.map((c) => ({ ...c, name: cropName(c.crop, lang) }))} layout="vertical" margin={{ top: 0, right: 40, left: 0, bottom: 0 }} barCategoryGap={4}>
                 <XAxis type="number" hide />
                 <YAxis type="category" dataKey="name" {...axis} width={72} />
-                <Tooltip cursor={{ fill: "var(--muted)", opacity: 0.6 }} content={<ChartTooltip formatValue={(v) => `${v} kg`} />} />
+                <Tooltip cursor={{ fill: "var(--muted)", opacity: 0.6 }} content={<ChartTooltip formatValue={(v) => `${v} ${tx("kg")}`} />} />
                 <Bar dataKey="kg" name="Kg sold" fill="var(--chart-1)" radius={[0, 4, 4, 0]} maxBarSize={22} label={{ position: "right", fontSize: 11, fill: "var(--foreground)" }} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </ChartCard>
 
-        <ChartCard title="Retail vs bulk" subtitle="Share of 30-day GMV" table={[["Channel", "GMV (₹)"], ["Retail", Math.round(data.byType.RETAIL)], ["Bulk", Math.round(data.byType.BULK)]]}>
+        <ChartCard title="Retail vs bulk" subtitle="Share of 30-day GMV" table={[["Channel", "GMV (₹)"], [tx("Retail"), Math.round(data.byType.RETAIL)], [tx("Bulk"), Math.round(data.byType.BULK)]]}>
           <div className="flex h-4 gap-0.5 overflow-hidden rounded-full">
             <motion.span className="bg-[var(--chart-1)]" initial={{ width: 0 }} animate={{ width: `${(data.byType.RETAIL / typeTotal) * 100}%` }} transition={{ duration: 0.9 }} />
             <motion.span className="bg-[var(--chart-2)]" initial={{ width: 0 }} animate={{ width: `${(data.byType.BULK / typeTotal) * 100}%` }} transition={{ duration: 0.9, delay: 0.1 }} />
@@ -178,16 +180,16 @@ export function AdminOverview() {
           <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
             <p>
               <span className="mr-1.5 inline-block size-2 rounded-full bg-[var(--chart-1)]" />
-              Retail <b className="tabular">{formatINRCompact(data.byType.RETAIL)}</b> <span className="text-muted-foreground">({Math.round((data.byType.RETAIL / typeTotal) * 100)}%)</span>
+              {tx("Retail")} <b className="tabular">{formatINRCompact(data.byType.RETAIL)}</b> <span className="text-muted-foreground">({Math.round((data.byType.RETAIL / typeTotal) * 100)}%)</span>
             </p>
             <p>
               <span className="mr-1.5 inline-block size-2 rounded-full bg-[var(--chart-2)]" />
-              Bulk <b className="tabular">{formatINRCompact(data.byType.BULK)}</b> <span className="text-muted-foreground">({Math.round((data.byType.BULK / typeTotal) * 100)}%)</span>
+              {tx("Bulk")} <b className="tabular">{formatINRCompact(data.byType.BULK)}</b> <span className="text-muted-foreground">({Math.round((data.byType.BULK / typeTotal) * 100)}%)</span>
             </p>
           </div>
         </ChartCard>
 
-        <ChartCard title="Buyer ratings" subtitle={k.avgRating ? `Average ${k.avgRating} ★` : undefined} table={[["Stars", "Reviews"], ...data.ratings.map((r) => [`${r.rating} ★`, r.count])]}>
+        <ChartCard title="Buyer ratings" subtitle={k.avgRating ? tx("Average {n} ★", { n: k.avgRating }) : undefined} table={[["Stars", "Reviews"], ...data.ratings.map((r) => [`${r.rating} ★`, r.count])]}>
           <ul className="space-y-1.5">
             {data.ratings.map((r) => {
               const max = Math.max(1, ...data.ratings.map((x) => x.count));

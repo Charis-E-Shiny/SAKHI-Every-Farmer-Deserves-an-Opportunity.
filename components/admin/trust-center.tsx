@@ -13,18 +13,23 @@ import { MediaImage } from "@/components/common/media-image";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
 import { StatusBadge } from "@/components/common/status-badge";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { useLive } from "@/hooks/use-live";
+import { cropName } from "@/lib/crops";
 import { sendJSON } from "@/lib/fetcher";
 import { formatINR, timeAgo } from "@/lib/format";
+import { localizeTitle } from "@/lib/i18n/titles";
 import type { TrustReport } from "@/lib/trust";
 import { cn } from "@/lib/utils";
 
 const ISSUE_LABEL: Record<string, string> = { DAMAGED: "Damaged", NOT_FRESH: "Not fresh", WRONG_ITEM: "Wrong item", SHORT_QTY: "Short quantity", LATE: "Late" };
+const ROLE_LABEL: Record<string, string> = { FARMER: "Farmer", CONSUMER: "Household", BULK_BUYER: "Restaurant", ADMIN: "Admin", DELIVERY: "Delivery partner" };
 
 /** /admin/trust */
 export function TrustCenter() {
+  const { tx, lang } = useI18n();
   const { data, error, isLoading, mutate } = useSWR<TrustReport>("/api/admin/trust");
   useLive(["batch.updated", "order.updated", "inventory.updated"], () => mutate());
   const [busy, setBusy] = useState<string | null>(null);
@@ -37,15 +42,15 @@ export function TrustCenter() {
       toast.success(done);
       await mutate();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(null);
     }
   }
   const setSuspended = (id: string, name: string, suspended: boolean) =>
-    run(id, () => sendJSON(`/api/admin/users/${id}`, { suspended }, "PATCH"), suspended ? `${name} suspended, live listings paused` : `${name} reinstated`);
+    run(id, () => sendJSON(`/api/admin/users/${id}`, { suspended }, "PATCH"), tx(suspended ? "{name} suspended, live listings paused" : "{name} reinstated", { name }));
   const setListing = (id: string, status: "ACTIVE" | "PAUSED") =>
-    run(id, () => sendJSON(`/api/admin/listings/${id}`, { status }, "PATCH"), status === "PAUSED" ? "Listing paused" : "Listing resumed");
+    run(id, () => sendJSON(`/api/admin/listings/${id}`, { status }, "PATCH"), tx(status === "PAUSED" ? "Listing paused" : "Listing resumed"));
 
   if (isLoading) return <SkeletonRows count={6} />;
   if (error || !data) return <ErrorState message={error?.message} onRetry={() => mutate()} />;
@@ -66,7 +71,7 @@ export function TrustCenter() {
           <motion.div key={t.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="rounded-3xl border bg-card p-4">
             <t.icon className="size-4 text-muted-foreground" />
             <p className="tabular mt-2 text-3xl font-semibold">{t.value}</p>
-            <p className="text-xs text-muted-foreground">{t.label}</p>
+            <p className="text-xs text-muted-foreground">{tx(t.label)}</p>
           </motion.div>
         ))}
       </div>
@@ -79,22 +84,22 @@ export function TrustCenter() {
             {data.duplicates.map((d) => (
               <div key={d.batchId} className="flex gap-3 rounded-3xl border bg-card p-3">
                 <div className="relative size-20 shrink-0 overflow-hidden rounded-2xl bg-muted">
-                  <MediaImage src={d.imageUrl} alt={`${d.crop} photo`} sizes="80px" />
+                  <MediaImage src={d.imageUrl} alt={tx("{crop} photo", { crop: cropName(d.crop, lang) })} sizes="80px" />
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold capitalize">{d.crop}</p>
+                    <p className="font-semibold capitalize">{cropName(d.crop, lang)}</p>
                     <StatusBadge status={d.status} />
                   </div>
                   <p className="truncate text-sm text-muted-foreground">
-                    {d.farmer.name} · {d.farmer.area}
+                    {d.farmer.name} · {d.farmer.area && tx(d.farmer.area)}
                   </p>
                   <p className="mt-1 text-xs">
-                    {d.copies === 1 ? "1 photo matches" : `${d.copies} photos match`} {d.sameFarmer ? "their own earlier batch" : <b>{d.matchesFarmer ?? "another farmer"}&apos;s batch</b>} · {timeAgo(d.createdAt)}
+                    {tx(d.copies === 1 ? "1 photo matches" : "{n} photos match", { n: d.copies })} {d.sameFarmer ? tx("their own earlier batch") : <b>{d.matchesFarmer ? tx("{name}'s batch", { name: d.matchesFarmer }) : tx("another farmer's batch")}</b>} · {timeAgo(d.createdAt, lang)}
                   </p>
                   {d.status === "PENDING_REVIEW" && (
                     <Link href={`/admin/review/${d.batchId}`} className="mt-1 inline-flex min-h-9 items-center text-sm font-semibold underline-offset-4 hover:underline">
-                      Review batch →
+                      {tx("Review batch")} →
                     </Link>
                   )}
                 </div>
@@ -115,26 +120,26 @@ export function TrustCenter() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-semibold">{c.farmer.name}</p>
-                      {c.farmer.suspended && <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs text-destructive">Suspended</span>}
+                      {c.farmer.suspended && <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-xs text-destructive">{tx("Suspended")}</span>}
                     </div>
                     <p className="text-sm text-muted-foreground">
-                      {c.farmer.area} · reliability {Math.round(c.farmer.reliabilityScore * 100)}
+                      {c.farmer.area && tx(c.farmer.area)} · {tx("reliability {n}", { n: Math.round(c.farmer.reliabilityScore * 100) })}
                     </p>
                   </div>
                   {c.farmer.suspended ? (
                     <Button variant="outline" className="min-h-11" disabled={busy === c.farmer.id} onClick={() => setSuspended(c.farmer.id, c.farmer.name, false)}>
-                      <UserCheck /> Reinstate
+                      <UserCheck /> {tx("Reinstate")}
                     </Button>
                   ) : (
                     <Button variant="outline" className="min-h-11 border-destructive/40 text-destructive hover:bg-destructive/5" disabled={busy === c.farmer.id} onClick={() => setConfirm({ id: c.farmer.id, name: c.farmer.name })}>
-                      <Ban /> Suspend
+                      <Ban /> {tx("Suspend")}
                     </Button>
                   )}
                 </div>
                 <div className="mt-4">
                   <div className="flex items-baseline justify-between text-sm">
                     <span>
-                      <b className="tabular">{c.complaints}</b> complaints · <b className="tabular">{c.disputes}</b> disputes on <b className="tabular">{c.orders}</b> orders
+                      {tx("{complaints} complaints · {disputes} disputes on {orders} orders", { complaints: c.complaints, disputes: c.disputes, orders: c.orders })}
                     </span>
                     <span className="tabular font-semibold">{Math.round(c.rate * 100)}%</span>
                   </div>
@@ -145,12 +150,12 @@ export function TrustCenter() {
                 <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                   {c.avgRating !== null && (
                     <span className="inline-flex items-center gap-1 rounded-full border px-2.5 py-1">
-                      <Star className="size-3" /> {c.avgRating.toFixed(1)} avg
+                      <Star className="size-3" /> {tx("{n} avg", { n: c.avgRating.toFixed(1) })}
                     </span>
                   )}
                   {Object.entries(c.issues).map(([k, n]) => (
                     <span key={k} className="rounded-full border px-2.5 py-1">
-                      {ISSUE_LABEL[k] ?? k} × {n}
+                      {ISSUE_LABEL[k] ? tx(ISSUE_LABEL[k]) : k} × {n}
                     </span>
                   ))}
                 </div>
@@ -172,24 +177,24 @@ export function TrustCenter() {
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-semibold">{p.title}</p>
+                    <p className="font-semibold">{localizeTitle(p.title, lang)}</p>
                     <StatusBadge status={p.status} />
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    {p.farmer.name} · {p.area}
+                    {p.farmer.name} · {p.area && tx(p.area)}
                   </p>
                   <p className="mt-1 text-sm">
-                    <b className="tabular">{formatINR(p.price)}</b>/{p.unit} vs reference <span className="tabular">{formatINR(p.reference)}</span> ·{" "}
-                    <b className={cn("tabular", p.direction === "high" && "text-tomato")}>{p.ratio}× market</b>
+                    <b className="tabular">{formatINR(p.price)}</b>/{tx(p.unit === "litre" ? "L" : p.unit)} {tx("vs reference")} <span className="tabular">{formatINR(p.reference)}</span> ·{" "}
+                    <b className={cn("tabular", p.direction === "high" && "text-tomato")}>{tx("{n}× market", { n: p.ratio })}</b>
                   </p>
                 </div>
                 {p.status === "ACTIVE" ? (
                   <Button variant="outline" className="min-h-11" disabled={busy === p.listingId} onClick={() => setListing(p.listingId, "PAUSED")}>
-                    Pause listing
+                    {tx("Pause listing")}
                   </Button>
                 ) : (
                   <Button variant="outline" className="min-h-11" disabled={busy === p.listingId} onClick={() => setListing(p.listingId, "ACTIVE")}>
-                    Resume
+                    {tx("Resume")}
                   </Button>
                 )}
               </div>
@@ -208,11 +213,11 @@ export function TrustCenter() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-semibold">{u.name}</p>
                   <p className="truncate text-xs text-muted-foreground">
-                    {u.role.replace("_", " ").toLowerCase()} · {u.area} · {u.phone}
+                    {ROLE_LABEL[u.role] ? tx(ROLE_LABEL[u.role]) : u.role} · {u.area && tx(u.area)} · {u.phone}
                   </p>
                 </div>
                 <Button variant="outline" className="min-h-11" disabled={busy === u.id} onClick={() => setSuspended(u.id, u.name, false)}>
-                  Reinstate
+                  {tx("Reinstate")}
                 </Button>
               </div>
             ))}
@@ -220,14 +225,14 @@ export function TrustCenter() {
         )}
       </Section>
 
-      <ResponsiveModal open={Boolean(confirm)} onOpenChange={(o) => !o && setConfirm(null)} title={`Suspend ${confirm?.name ?? ""}?`}>
+      <ResponsiveModal open={Boolean(confirm)} onOpenChange={(o) => !o && setConfirm(null)} title={tx("Suspend {name}?", { name: confirm?.name ?? "" })}>
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            They&apos;ll be signed out straight away, can&apos;t log in, and every live listing they have is paused. Orders already placed continue. You can reinstate them from this page.
+            {tx("They'll be signed out straight away, can't log in, and every live listing they have is paused. Orders already placed continue. You can reinstate them from this page.")}
           </p>
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button variant="ghost" className="min-h-11" onClick={() => setConfirm(null)}>
-              Cancel
+              {tx("Cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -237,7 +242,7 @@ export function TrustCenter() {
                 setConfirm(null);
               }}
             >
-              <Ban /> Suspend account
+              <Ban /> {tx("Suspend account")}
             </Button>
           </div>
         </div>
@@ -247,10 +252,11 @@ export function TrustCenter() {
 }
 
 function Section({ title, hint, children }: { title: string; hint: string; children: React.ReactNode }) {
+  const { tx } = useI18n();
   return (
     <section>
-      <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{title}</h2>
-      <p className="mt-1 mb-3 text-sm text-muted-foreground">{hint}</p>
+      <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{tx(title)}</h2>
+      <p className="mt-1 mb-3 text-sm text-muted-foreground">{tx(hint)}</p>
       {children}
     </section>
   );

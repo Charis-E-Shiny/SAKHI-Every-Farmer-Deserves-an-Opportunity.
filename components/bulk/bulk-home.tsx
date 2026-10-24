@@ -12,11 +12,12 @@ import { MediaImage } from "@/components/common/media-image";
 import { Photo } from "@/components/common/photo";
 import { StatusBadge } from "@/components/common/status-badge";
 import { CountUp } from "@/components/motion/count-up";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { useLive } from "@/hooks/use-live";
 import type { SerializedDemand } from "@/lib/bulk";
-import { CROPS, isCropSlug } from "@/lib/crops";
+import { CROPS, cropName, isCropSlug } from "@/lib/crops";
 import { formatINR, formatINRCompact } from "@/lib/format";
 import type { SerializedOrder } from "@/lib/orders/queries";
 import { IN_FLIGHT } from "@/lib/orders/state";
@@ -25,6 +26,7 @@ import { Countdown } from "./deadline";
 
 /** /bulk */
 export function BulkHome({ orgName }: { orgName: string }) {
+  const { tx, lang } = useI18n();
   const { data, error, isLoading, mutate } = useSWR<SerializedDemand[]>("/api/demands");
   const { data: orders } = useSWR<SerializedOrder[]>("/api/orders?type=BULK&limit=100");
   useLive(["offer.updated", "demand.updated", "order.updated"], () => mutate());
@@ -40,11 +42,11 @@ export function BulkHome({ orgName }: { orgName: string }) {
       <PageHeader
         eyebrow={orgName}
         title="Bulk *procurement*"
-        description="Post what your kitchen needs. Nearby farmers offer, AI ranks them, you decide."
+        description={tx("Post what your kitchen needs. Nearby farmers offer, AI ranks them, you decide.")}
         actions={
           <Button asChild variant="brand">
             <Link href="/bulk/demands/new">
-              <Plus /> Post requirement
+              <Plus /> {tx("Post requirement")}
             </Link>
           </Button>
         }
@@ -52,7 +54,7 @@ export function BulkHome({ orgName }: { orgName: string }) {
       <BulkTabs />
       <div className="relative mb-5 overflow-hidden rounded-3xl">
         <Photo name="field-panorama" scrim="left" position="50% 75%" sizes="(max-width: 1152px) 100vw, 1100px" className="h-28 w-full sm:h-36" />
-        <p className="absolute inset-y-0 left-0 flex max-w-[70%] items-center px-5 text-base font-semibold text-white sm:px-7 sm:text-xl">Sourced direct from verified farms, handed over with an OTP.</p>
+        <p className="absolute inset-y-0 left-0 flex max-w-[70%] items-center px-5 text-base font-semibold text-white sm:px-7 sm:text-xl">{tx("Sourced direct from verified farms, handed over with an OTP.")}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -63,7 +65,7 @@ export function BulkHome({ orgName }: { orgName: string }) {
           { k: "Spend · 30 days", v: spend, money: true },
         ].map((kpi, i) => (
           <motion.div key={kpi.k} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.06 }} className={`rounded-3xl border p-4 ${kpi.hot ? "border-lime bg-lime/15" : "bg-card"}`}>
-            <p className="text-xs text-muted-foreground">{kpi.k}</p>
+            <p className="text-xs text-muted-foreground">{tx(kpi.k)}</p>
             <p className="tabular mt-1 text-2xl font-semibold">
               <CountUp value={kpi.v} format={kpi.money ? formatINRCompact : undefined} />
             </p>
@@ -71,11 +73,11 @@ export function BulkHome({ orgName }: { orgName: string }) {
         ))}
       </div>
 
-      <h2 className="mt-8 mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">Your requirements</h2>
+      <h2 className="mt-8 mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">{tx("Your requirements")}</h2>
       {isLoading && <SkeletonRows count={3} />}
       {error && <ErrorState message={error.message} onRetry={() => mutate()} />}
       {data?.length === 0 && (
-        <EmptyState icon={Handshake} title="No requirements yet" body="Post your first bulk requirement, farmers nearby are notified instantly." action={<Button asChild><Link href="/bulk/demands/new">Post requirement</Link></Button>} />
+        <EmptyState icon={Handshake} title="No requirements yet" body="Post your first bulk requirement, farmers nearby are notified instantly." action={<Button asChild><Link href="/bulk/demands/new">{tx("Post requirement")}</Link></Button>} />
       )}
       <ul className="grid gap-3 md:grid-cols-2">
         {data?.map((d, i) => {
@@ -88,21 +90,21 @@ export function BulkHome({ orgName }: { orgName: string }) {
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-1.5">
                     <span className="font-semibold">
-                      {d.qtyKg} kg {d.cropName}
+                      {d.qtyKg} {tx("kg")} {lang === "en" ? d.cropName : cropName(d.crop, lang)}
                     </span>
                     {d.urgent && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-tomato/15 px-2 py-0.5 text-[11px] font-semibold text-tomato">
-                        <Flame className="size-3" /> Urgent
+                        <Flame className="size-3" /> {tx("Urgent")}
                       </span>
                     )}
                     {d.recurring && (
                       <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px]">
-                        <Repeat className="size-3" /> {d.frequency === "DAILY" ? "Daily" : "Weekly"}
+                        <Repeat className="size-3" /> {tx(d.frequency === "DAILY" ? "Daily" : "Weekly")}
                       </span>
                     )}
                   </span>
                   <span className="mt-0.5 block text-sm text-muted-foreground">
-                    Target {formatINR(d.targetPrice)}/kg · grade {d.grade}
+                    {tx("Target {price}/kg · grade {grade}", { price: formatINR(d.targetPrice), grade: d.grade === "ANY" ? tx("Any") : d.grade })}
                     {d.status === "OPEN" && (
                       <>
                         {" "}
@@ -113,9 +115,9 @@ export function BulkHome({ orgName }: { orgName: string }) {
                   <span className="mt-2 flex flex-wrap items-center gap-2 text-sm">
                     <StatusBadge status={d.status} pulse={d.status === "OPEN"} />
                     <span className="text-muted-foreground">
-                      {d.offerCount} offer{d.offerCount === 1 ? "" : "s"}
+                      {tx(d.offerCount === 1 ? "{n} offer" : "{n} offers", { n: d.offerCount })}
                     </span>
-                    {best && <span className="rounded-full bg-lime/35 px-2 py-0.5 text-xs font-semibold">Top score {Math.round(best.aiScore!)}</span>}
+                    {best && <span className="rounded-full bg-lime/35 px-2 py-0.5 text-xs font-semibold">{tx("Top score {n}", { n: Math.round(best.aiScore!) })}</span>}
                   </span>
                 </span>
                 <ArrowUpRight className="size-5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

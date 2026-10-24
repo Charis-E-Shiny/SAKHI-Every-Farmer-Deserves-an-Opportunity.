@@ -18,6 +18,7 @@ import { toast } from "sonner";
 import { GuideBanner, GuideBar, useSignupGuide, type GuideValues } from "@/components/assistant/signup-guide";
 import { Choices, Question, Toggle } from "@/components/auth/join/choices";
 import { AreaField, Field, LanguageField, PinField, SelectField, TextField } from "@/components/auth/join/fields";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { AssistantLang } from "@/lib/assistant/intents";
@@ -107,13 +108,22 @@ function check(step: number, d: Draft, pin: string, google: boolean): string | n
  */
 export function SellerWizard({ google }: { google?: { name: string; email: string } | null }) {
   const router = useRouter();
+  const { lang: siteLang, setLang: setSiteLang } = useI18n();
   const [step, setStep] = useState(0);
-  const [d, setD] = useState<Draft>({ ...EMPTY, contactName: google?.name ?? "" });
+  // Starts in the site's language (Kannada or Hindi screens straight away when the site is in one).
+  const [d, setD] = useState<Draft>({ ...EMPTY, contactName: google?.name ?? "", ...(siteLang !== "en" && { language: siteLang }) });
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  // The screens switch language once the seller picks one (the default stays English).
-  const [langPicked, setLangPicked] = useState(false);
+  // The screens switch language once the seller picks one (or the site is already in Kannada or Hindi).
+  const [langPicked, setLangPicked] = useState(siteLang !== "en");
+  // The language switch in the top corner changes these screens too.
+  const [shownSite, setShownSite] = useState(siteLang);
+  if (shownSite !== siteLang) {
+    setShownSite(siteLang);
+    setD((s) => ({ ...s, language: siteLang }));
+    setLangPicked(true);
+  }
   const lang: AssistantLang = langPicked ? toLang(d.language) : "en";
   const tx = (text: string) => joinText(text, lang);
   // Saved progress is offered, not applied silently, so nothing is overwritten before the seller chooses.
@@ -153,6 +163,11 @@ export function SellerWizard({ google }: { google?: { name: string; email: strin
   const chooseLang = (l: string) => {
     set("language")(l);
     setLangPicked(true);
+    // The rest of the site follows the seller's language.
+    if ((l === "en" || l === "hi" || l === "kn") && l !== siteLang) {
+      setShownSite(l);
+      setSiteLang(l);
+    }
   };
   const last = step === STEPS.length - 1;
   const wantsDelivery = d.fulfilment.some((f) => f !== "PICKUP");
@@ -230,7 +245,7 @@ export function SellerWizard({ google }: { google?: { name: string; email: strin
 
   /** Choices in the page language, with the English label underneath. */
   const loc = <V extends string>(k: keyof Draft, options: readonly Option<V>[]): readonly Option<V>[] =>
-    lang === "en" || !(k in CHOICES) ? options : options.map((o) => ({ value: o.value, label: choiceLabel(k as DisplayField, o.value, lang), hint: o.label }));
+    lang === "en" || !(k in CHOICES) ? options : options.map((o) => ({ value: o.value, label: choiceLabel(k as DisplayField, o.value, lang), hint: o.hint }));
   const pick = <V extends string>(k: keyof Draft, options: readonly Option<V>[], opts?: { multi?: boolean; cols?: boolean; label?: string }) => (
     <Choices options={loc(k, options)} value={d[k] as never} onChange={(v) => set(k as never)(v as never)} multi={opts?.multi} cols={opts?.cols} label={opts?.label} />
   );
@@ -240,7 +255,7 @@ export function SellerWizard({ google }: { google?: { name: string; email: strin
     // Clip the screens' slide-in so it never flashes a horizontal scrollbar on phones.
     <div className="overflow-x-clip">
       <GuideBanner guide={guide} compact={step > 0} />
-      <ol className="mb-6 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${STEPS.length}, minmax(0, 1fr))` }} aria-label="Progress">
+      <ol className="mb-6 grid gap-1.5" style={{ gridTemplateColumns: `repeat(${STEPS.length}, minmax(0, 1fr))` }} aria-label={tx("Progress")}>
         {STEPS.map((s, i) => (
           <li key={s} aria-current={i === step ? "step" : undefined}>
             <span className={cn("block h-1.5 rounded-full", i < step ? "bg-foreground" : i === step ? "bg-lime" : "bg-muted")} />

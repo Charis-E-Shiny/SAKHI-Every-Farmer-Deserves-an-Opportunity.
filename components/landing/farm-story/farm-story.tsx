@@ -12,6 +12,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { pose, WORLD } from "./pose";
 import { Scene } from "./scene";
@@ -34,6 +35,7 @@ const clamp = (v: number, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 
 /** The scroll-driven story section. */
 export function FarmStory() {
+  const { tx } = useI18n();
   const portrait = useMediaQuery("(max-aspect-ratio: 1/1)");
   const track = useRef<HTMLDivElement>(null);
   const stage = useRef<HTMLDivElement>(null);
@@ -132,7 +134,7 @@ export function FarmStory() {
   return (
     <section id="story" aria-labelledby="story-title" className="relative bg-[#eef4ef] text-[#24382a]">
       <h2 id="story-title" className="sr-only">
-        From farm to table: a farmer picks a tomato and tosses it to a home cook, who turns it into dinner.
+        {tx("From farm to table: a farmer picks a tomato and tosses it to a home cook, who turns it into dinner.")}
       </h2>
       <div ref={track} className="relative h-[600svh] motion-reduce:h-auto">
         <div ref={stage} className="sticky top-0 h-svh overflow-hidden motion-reduce:static motion-reduce:h-[78svh]">
@@ -163,15 +165,15 @@ export function FarmStory() {
                   <p className="font-mono text-xs tracking-widest uppercase opacity-60">
                     0{i + 1} / 0{CAPTIONS.length}
                   </p>
-                  <p className="mt-2 text-3xl leading-[1.05] font-semibold tracking-tight sm:text-5xl">{c.title}</p>
-                  <p className="mt-2 text-base opacity-75 sm:text-lg">{c.body}</p>
+                  <p className="mt-2 text-3xl leading-[1.05] font-semibold tracking-tight sm:text-5xl">{tx(c.title)}</p>
+                  <p className="mt-2 text-base opacity-75 sm:text-lg">{tx(c.body)}</p>
                 </div>
               ))}
             </div>
           </div>
 
           <div ref={hint} aria-hidden className="pointer-events-none absolute inset-x-0 bottom-6 text-center font-mono text-xs tracking-widest uppercase opacity-70 motion-reduce:hidden">
-            Scroll to play ↓
+            {tx("Scroll to play")} ↓
           </div>
         </div>
       </div>
@@ -179,8 +181,8 @@ export function FarmStory() {
       <ol className="sr-only motion-reduce:not-sr-only motion-reduce:mx-auto motion-reduce:grid motion-reduce:max-w-5xl motion-reduce:gap-4 motion-reduce:px-4 motion-reduce:py-10 motion-reduce:sm:grid-cols-2">
         {CAPTIONS.map((c) => (
           <li key={c.title}>
-            <span className="block text-xl font-semibold">{c.title}</span>
-            <span className="block text-sm opacity-75">{c.body}</span>
+            <span className="block text-xl font-semibold">{tx(c.title)}</span>
+            <span className="block text-sm opacity-75">{tx(c.body)}</span>
           </li>
         ))}
       </ol>

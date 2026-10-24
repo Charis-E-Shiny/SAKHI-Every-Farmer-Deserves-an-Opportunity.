@@ -4,9 +4,11 @@
 // are onboarded by the team, not self-serve.)
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
+import { Emph } from "@/components/common/emph";
 import { Photo } from "@/components/common/photo";
 import { Reveal } from "@/components/motion/reveal";
 import type { Role } from "@/lib/auth/token";
+import { getI18n } from "@/lib/i18n/server";
 import type { PhotoName } from "@/lib/photos";
 import { ROLE_ICON } from "@/lib/role-icons";
 
@@ -50,13 +52,14 @@ const CARDS: { role: Role; title: string; body: string; points: string[]; photo:
 ];
 
 /** Section with the four main interfaces + rider note. */
-export function Interfaces() {
+export async function Interfaces() {
+  const { tx } = await getI18n();
   return (
     <section id="interfaces" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
       <Reveal>
-        <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">One marketplace, five apps</p>
+        <p className="font-mono text-xs tracking-widest text-muted-foreground uppercase">{tx("One marketplace, five apps")}</p>
         <h2 className="mt-3 max-w-3xl text-3xl leading-[1.05] font-semibold tracking-tight sm:text-4xl">
-          Built for everyone who <span className="font-serif font-normal italic">feeds</span> a city.
+          <Emph text={tx("Built for everyone who *feeds* a city.")} />
         </h2>
       </Reveal>
       <div className="mt-8 grid gap-3 md:grid-cols-2">
@@ -71,18 +74,18 @@ export function Interfaces() {
                     <span className="grid size-7 place-items-center rounded-lg bg-lime/40">
                       <Icon className="size-4" />
                     </span>
-                    {c.title}
+                    {tx(c.title)}
                   </h3>
-                  <p className="mt-1 text-sm text-muted-foreground">{c.body}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{tx(c.body)}</p>
                   <ul className="mt-2 flex flex-wrap gap-1.5">
                     {c.points.map((p) => (
                       <li key={p} className="rounded-full border px-2.5 py-0.5 text-xs">
-                        {p}
+                        {tx(p)}
                       </li>
                     ))}
                   </ul>
                   <Link href={c.cta.href} className="group mt-auto inline-flex min-h-9 items-center gap-1.5 self-start pt-2 text-sm font-semibold">
-                    {c.cta.label}
+                    {tx(c.cta.label)}
                     <ArrowUpRight className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
                 </div>
@@ -93,7 +96,7 @@ export function Interfaces() {
       </div>
       <Reveal delay={0.15}>
         <p className="mt-4 rounded-3xl border bg-card px-5 py-4 text-sm text-muted-foreground">
-          <b className="text-foreground">…and a rider app that can&apos;t be faked.</b> An order code or voice alone never marks a delivery done. Only the customer&apos;s OTP does.
+          <b className="text-foreground">{tx("…and a rider app that can't be faked.")}</b> {tx("An order code or voice alone never marks a delivery done. Only the customer's OTP does.")}
         </p>
       </Reveal>
     </section>

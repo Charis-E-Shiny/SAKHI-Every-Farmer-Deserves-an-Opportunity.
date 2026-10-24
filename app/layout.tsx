@@ -1,5 +1,6 @@
-// Root layout: fonts (Latin + Devanagari + Kannada for the farmer UI),
-// global providers, metadata and mobile viewport settings.
+// Root layout: fonts (Latin + Devanagari + Kannada), the site language
+// (English, Hindi or Kannada for everyone), global providers, metadata and
+// mobile viewport settings.
 import type { Metadata, Viewport } from "next";
 import {
   Fredoka,
@@ -11,6 +12,8 @@ import {
   Nunito,
 } from "next/font/google";
 import { Providers } from "@/components/providers/providers";
+import { getCurrentUser } from "@/lib/auth/session";
+import { getI18n, getLang } from "@/lib/i18n/server";
 import "./globals.css";
 
 // Rounded, friendly type to match the storybook illustrations: Fredoka for headings, Nunito for text.
@@ -27,12 +30,16 @@ const deva = Noto_Sans_Devanagari({
 });
 const knda = Noto_Sans_Kannada({ variable: "--font-knda", subsets: ["kannada"], preload: false });
 
-export const metadata: Metadata = {
-  title: { default: "FoodFlow: from every harvest to every table", template: "%s · FoodFlow" },
-  description:
-    "AI-assisted fresh-produce marketplace connecting farmers directly with households, restaurants and community kitchens, with Sakhi, a voice companion for farmers in Kannada, Hindi and English.",
-  applicationName: "FoodFlow",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { tx } = await getI18n();
+  return {
+    title: { default: tx("FoodFlow: from every harvest to every table"), template: "%s · FoodFlow" },
+    description: tx(
+      "AI-assisted fresh-produce marketplace connecting farmers directly with households, restaurants and community kitchens, with Sakhi, a voice companion for farmers in Kannada, Hindi and English.",
+    ),
+    applicationName: "FoodFlow",
+  };
+}
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -48,15 +55,19 @@ export const viewport: Viewport = {
  * Root HTML shell shared by every route.
  * @param children - active route segment
  */
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser().catch(() => null);
+  const lang = await getLang(user);
   return (
     <html
-      lang="en"
+      lang={lang}
       suppressHydrationWarning
       className={`${nunito.variable} ${fredoka.variable} ${geist.variable} ${instrument.variable} ${geistMono.variable} ${deva.variable} ${knda.variable} h-full antialiased`}
     >
       <body className="grain flex min-h-full flex-col">
-        <Providers>{children}</Providers>
+        <Providers lang={lang} signedIn={Boolean(user)}>
+          {children}
+        </Providers>
       </body>
     </html>
   );

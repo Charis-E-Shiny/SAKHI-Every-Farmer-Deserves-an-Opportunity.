@@ -59,7 +59,7 @@ export function UserMenu({
   greeting?: boolean;
   side?: "top" | "bottom";
 }) {
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   const signOut = useSignOut();
   const meta = ROLE_META[user.role as Role];
 
@@ -92,7 +92,7 @@ export function UserMenu({
                 {user.orgName ?? user.name}
               </span>
               <span className="block text-xs text-muted-foreground">
-                {meta.label}
+                {tx(meta.label)}
                 {user.area ? ` · ${user.area}` : ""}
               </span>
             </span>

@@ -1,9 +1,13 @@
 // /shop/listing/[id] — product detail with quality evidence and farmer card.
 import type { Metadata } from "next";
+import { getI18n } from "@/lib/i18n/server";
 import { ListingDetail } from "@/components/shop/listing-detail";
 import { getSession } from "@/lib/auth/session";
 
-export const metadata: Metadata = { title: "Listing" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { tx } = await getI18n();
+  return { title: tx("Listing") };
+}
 
 /** Detail page; bulk buyers get bulk quantity steps and a bulk back link. */
 export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {

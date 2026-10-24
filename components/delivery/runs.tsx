@@ -10,15 +10,18 @@ import useSWR from "swr";
 import { toast } from "sonner";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
 import { StatusBadge } from "@/components/common/status-badge";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { useLive } from "@/hooks/use-live";
 import { sendJSON } from "@/lib/fetcher";
 import { formatDateTime } from "@/lib/format";
+import { localizeSlot } from "@/lib/i18n/titles";
 import type { SerializedOrder } from "@/lib/orders/queries";
 
 /** The /delivery home screen. */
 export function Runs() {
+  const { tx, lang } = useI18n();
   const { data, error, isLoading, mutate } = useSWR<{ active: SerializedOrder[]; done: SerializedOrder[] }>("/api/deliveries");
   useLive(["order.updated", "delivery.updated"], () => mutate());
   const [busy, setBusy] = useState<string | null>(null);
@@ -27,10 +30,10 @@ export function Runs() {
     setBusy(o.id);
     try {
       await sendJSON(`/api/deliveries/${o.id}/pickup`);
-      toast.success(`${o.code} picked up, customer notified`);
+      toast.success(tx("{code} picked up, customer notified", { code: o.code }));
       mutate();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(null);
     }
@@ -38,14 +41,14 @@ export function Runs() {
 
   return (
     <div>
-      <PageHeader title="Today's *runs*" description={data ? `${data.active.length} active · ${data.done.length} delivered today` : " "} />
+      <PageHeader title="Today's *runs*" description={data ? tx("{active} active · {done} delivered today", { active: data.active.length, done: data.done.length }) : " "} />
       <Link href="/delivery/find" className="mb-5 flex items-center gap-3 rounded-3xl bg-foreground p-4 text-background">
         <span className="grid size-11 place-items-center rounded-2xl bg-lime text-lime-foreground">
           <ScanLine className="size-5" />
         </span>
         <span className="flex-1">
-          <span className="block font-semibold">Find an order</span>
-          <span className="block text-sm opacity-70">Type, scan or say the code</span>
+          <span className="block font-semibold">{tx("Find an order")}</span>
+          <span className="block text-sm opacity-70">{tx("Type, scan or say the code")}</span>
         </span>
         <ArrowRight className="size-5" />
       </Link>
@@ -68,7 +71,7 @@ export function Runs() {
                 </span>
                 <span className="min-w-0">
                   <span className="block font-medium">{o.farmer.farmName ?? o.farmer.name}</span>
-                  <span className="text-muted-foreground">{o.farmer.village}</span>
+                  <span className="text-muted-foreground">{o.farmer.village && tx(o.farmer.village)}</span>
                 </span>
               </li>
               <li className="ml-3 h-3 border-l-2 border-dashed" aria-hidden />
@@ -79,27 +82,27 @@ export function Runs() {
                 <span className="min-w-0">
                   <span className="block font-medium">{o.buyer.name}</span>
                   <span className="break-words text-muted-foreground">
-                    {o.addressLine}, {o.area}
+                    {o.addressLine}, {tx(o.area)}
                   </span>
                 </span>
               </li>
             </ol>
             <p className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-              <Package className="size-3.5" /> {o.items.length} item{o.items.length > 1 ? "s" : ""} · {o.slot ?? "ASAP"}
-              {o.delivery?.distanceKm ? ` · ${Math.round(o.delivery.distanceKm)} km` : ""}
+              <Package className="size-3.5" /> {tx(o.items.length > 1 ? "{n} items" : "{n} item", { n: o.items.length })} · {o.slot ? localizeSlot(o.slot, lang) : tx("ASAP")}
+              {o.delivery?.distanceKm ? ` · ${Math.round(o.delivery.distanceKm)} ${tx("km")}` : ""}
             </p>
             <div className="mt-3 grid grid-cols-2 gap-2">
               {o.delivery?.status === "ASSIGNED" ? (
                 <Button onClick={() => pickedUp(o)} disabled={busy === o.id}>
-                  {busy === o.id ? <Loader2 className="animate-spin" /> : <Package />} Picked up
+                  {busy === o.id ? <Loader2 className="animate-spin" /> : <Package />} {tx("Picked up|action")}
                 </Button>
               ) : (
                 <Button asChild variant="brand">
-                  <Link href={`/delivery/${o.id}`}>Hand over</Link>
+                  <Link href={`/delivery/${o.id}`}>{tx("Hand over")}</Link>
                 </Button>
               )}
               <Button asChild variant="outline">
-                <Link href={`/delivery/${o.id}`}>Details</Link>
+                <Link href={`/delivery/${o.id}`}>{tx("Details")}</Link>
               </Button>
             </div>
           </motion.li>
@@ -108,14 +111,14 @@ export function Runs() {
 
       {data && data.done.length > 0 && (
         <section className="mt-8">
-          <h2 className="mb-2 text-sm font-semibold tracking-wide text-muted-foreground uppercase">Delivered today</h2>
+          <h2 className="mb-2 text-sm font-semibold tracking-wide text-muted-foreground uppercase">{tx("Delivered today")}</h2>
           <ul className="divide-y rounded-3xl border bg-card">
             {data.done.map((o) => (
               <li key={o.id} className="flex items-center gap-3 px-4 py-3 text-sm">
                 <CheckCircle2 className="size-5 text-success" />
                 <span className="font-mono font-semibold">{o.code}</span>
-                <span className="flex-1 text-muted-foreground">{o.area}</span>
-                <span className="text-xs text-muted-foreground">{o.delivery?.verifiedAt ? formatDateTime(o.delivery.verifiedAt) : ""}</span>
+                <span className="flex-1 text-muted-foreground">{tx(o.area)}</span>
+                <span className="text-xs text-muted-foreground">{o.delivery?.verifiedAt ? formatDateTime(o.delivery.verifiedAt, lang) : ""}</span>
               </li>
             ))}
           </ul>

@@ -13,10 +13,12 @@ import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { ErrorState, SkeletonBlock } from "@/components/common/states";
 import { StatusBadge } from "@/components/common/status-badge";
 import { SuccessBurst } from "@/components/motion/success-burst";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { useLive } from "@/hooks/use-live";
 import { sendJSON } from "@/lib/fetcher";
 import { formatDateTime, formatQty } from "@/lib/format";
+import { localizeTitle } from "@/lib/i18n/titles";
 import type { SerializedOrder } from "@/lib/orders/queries";
 import { cn } from "@/lib/utils";
 import { OtpKeypad } from "./otp-keypad";
@@ -26,6 +28,7 @@ const PROBLEMS = ["Customer not at home", "Wrong or incomplete address", "Custom
 
 /** /delivery/[orderId] */
 export function RunDetail({ id }: { id: string }) {
+  const { tx, lang } = useI18n();
   const { data: o, error, isLoading, mutate } = useSWR<SerializedOrder>(`/api/orders/${id}`);
   useLive(["order.updated", "delivery.updated"], () => mutate());
   const [otp, setOtp] = useState("");
@@ -48,12 +51,12 @@ export function RunDetail({ id }: { id: string }) {
         setSuccess(true);
         mutate();
       } else {
-        setErr(r.message);
+        setErr(tx(r.message));
         setShake((s) => s + 1);
         setOtp("");
       }
     } catch (e) {
-      setErr((e as Error).message);
+      setErr(tx((e as Error).message));
       setShake((s) => s + 1);
       setOtp("");
     } finally {
@@ -65,10 +68,10 @@ export function RunDetail({ id }: { id: string }) {
     setBusy(true);
     try {
       await sendJSON(`/api/deliveries/${id}/pickup`);
-      toast.success("Picked up, customer notified");
+      toast.success(tx("Picked up, customer notified"));
       mutate();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -77,10 +80,10 @@ export function RunDetail({ id }: { id: string }) {
   async function report(reason: string) {
     try {
       await sendJSON(`/api/deliveries/${id}/problem`, { reason });
-      toast("Reported to FoodFlow support");
+      toast(tx("Reported to FoodFlow support"));
       setProblemOpen(false);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     }
   }
 
@@ -88,7 +91,7 @@ export function RunDetail({ id }: { id: string }) {
   return (
     <div>
       <Link href="/delivery" className="mb-3 inline-flex min-h-9 items-center gap-1.5 text-sm text-muted-foreground">
-        <ArrowLeft className="size-4" /> Runs
+        <ArrowLeft className="size-4" /> {tx("Runs")}
       </Link>
       <div className="flex items-center justify-between gap-2">
         <h1 className="font-mono text-3xl font-semibold tracking-tight">{o.code}</h1>
@@ -96,20 +99,20 @@ export function RunDetail({ id }: { id: string }) {
       </div>
 
       <section className="mt-4 rounded-3xl border bg-card p-4">
-        <Stop icon={<Sprout className="size-3.5" />} tone="bg-lime text-lime-foreground" title={o.farmer.farmName ?? o.farmer.name} sub={o.farmer.village ?? ""} phone={o.farmer.phone} />
+        <Stop icon={<Sprout className="size-3.5" />} tone="bg-lime text-lime-foreground" title={o.farmer.farmName ?? o.farmer.name} sub={o.farmer.village ? tx(o.farmer.village) : ""} phone={o.farmer.phone} />
         <div className="ml-3 h-4 border-l-2 border-dashed" aria-hidden />
-        <Stop icon={<MapPin className="size-3.5" />} tone="bg-tomato text-white" title={o.buyer.name} sub={`${o.addressLine ?? ""}, ${o.area}`} phone={o.buyer.phone} />
+        <Stop icon={<MapPin className="size-3.5" />} tone="bg-tomato text-white" title={o.buyer.name} sub={`${o.addressLine ?? ""}, ${tx(o.area)}`} phone={o.buyer.phone} />
       </section>
 
       <section className="mt-3 rounded-3xl border bg-card p-4">
         <p className="mb-2 flex items-center gap-2 text-sm font-semibold">
-          <Package className="size-4" /> Items
+          <Package className="size-4" /> {tx("Items")}
         </p>
         <ul className="space-y-1 text-sm">
           {o.items.map((it) => (
             <li key={it.id} className="flex justify-between">
-              <span>{it.title}</span>
-              <span className="tabular font-medium">{formatQty(it.qty, it.unit)}</span>
+              <span>{localizeTitle(it.title, lang)}</span>
+              <span className="tabular font-medium">{formatQty(it.qty, it.unit, lang)}</span>
             </li>
           ))}
         </ul>
@@ -118,22 +121,22 @@ export function RunDetail({ id }: { id: string }) {
       <div className="mt-5">
         {status === "ASSIGNED" && (
           <Button size="lg" className="w-full" onClick={pickedUp} disabled={busy}>
-            {busy ? <Loader2 className="animate-spin" /> : <Package />} Picked up from farm
+            {busy ? <Loader2 className="animate-spin" /> : <Package />} {tx("Picked up from farm")}
           </Button>
         )}
         {status === "PICKED_UP" && !success && (
           <section className="rounded-3xl border-2 border-lime bg-card p-4">
-            <p className="text-center font-semibold">Hand over with the customer&apos;s OTP</p>
-            <p className="mb-4 text-center text-xs text-muted-foreground">The order is only marked delivered when the code matches.</p>
+            <p className="text-center font-semibold">{tx("Hand over with the customer's OTP")}</p>
+            <p className="mb-4 text-center text-xs text-muted-foreground">{tx("The order is only marked delivered when the code matches.")}</p>
             <OtpKeypad value={otp} onChange={(v) => { setOtp(v); setErr(null); }} onSubmit={verify} busy={busy} shakeKey={shake} error={err} />
           </section>
         )}
         {status === "DELIVERED" && !success && (
-          <p className="rounded-3xl bg-success/12 p-4 text-center text-sm">Delivered {o.delivery?.verifiedAt ? formatDateTime(o.delivery.verifiedAt) : ""}, verified by OTP.</p>
+          <p className="rounded-3xl bg-success/12 p-4 text-center text-sm">{tx("Delivered {when}, verified by OTP.", { when: o.delivery?.verifiedAt ? formatDateTime(o.delivery.verifiedAt, lang) : "" })}</p>
         )}
         {status && status !== "DELIVERED" && (
           <Button variant="ghost" className="mt-3 w-full text-muted-foreground" onClick={() => setProblemOpen(true)}>
-            <AlertTriangle /> Report a problem
+            <AlertTriangle /> {tx("Report a problem")}
           </Button>
         )}
       </div>
@@ -144,11 +147,11 @@ export function RunDetail({ id }: { id: string }) {
             <div className="flex flex-col items-center">
               <SuccessBurst />
               <p className="mt-8 text-4xl font-semibold tracking-tight">
-                <span className="font-serif font-normal italic">Delivered</span>
+                <span className="font-serif font-normal italic">{tx("Delivered")}</span>
               </p>
-              <p className="mt-2 font-mono text-muted-foreground">{o.code} · verified by OTP</p>
+              <p className="mt-2 font-mono text-muted-foreground">{o.code} · {tx("verified by OTP")}</p>
               <Button asChild size="lg" variant="brand" className="mt-8 w-64">
-                <Link href="/delivery">Next run</Link>
+                <Link href="/delivery">{tx("Next run")}</Link>
               </Button>
             </div>
           </motion.div>
@@ -159,7 +162,7 @@ export function RunDetail({ id }: { id: string }) {
         <div className="grid gap-2">
           {PROBLEMS.map((p) => (
             <Button key={p} variant="outline" size="lg" className="justify-start" onClick={() => report(p)}>
-              {p}
+              {tx(p)}
             </Button>
           ))}
         </div>
@@ -169,6 +172,7 @@ export function RunDetail({ id }: { id: string }) {
 }
 
 function Stop({ icon, tone, title, sub, phone }: { icon: React.ReactNode; tone: string; title: string; sub: string; phone: string | null }) {
+  const { tx } = useI18n();
   return (
     <div className="flex items-start gap-3">
       <span className={cn("mt-0.5 grid size-6 shrink-0 place-items-center rounded-full", tone)}>{icon}</span>
@@ -177,7 +181,7 @@ function Stop({ icon, tone, title, sub, phone }: { icon: React.ReactNode; tone: 
         <span className="block text-sm break-words text-muted-foreground">{sub}</span>
       </span>
       {phone && (
-        <Button asChild variant="outline" size="icon" aria-label={`Call ${title}`}>
+        <Button asChild variant="outline" size="icon" aria-label={tx("Call {name}", { name: title })}>
           <a href={`tel:${phone.replace(/\s/g, "")}`}>
             <Phone className="size-4" />
           </a>

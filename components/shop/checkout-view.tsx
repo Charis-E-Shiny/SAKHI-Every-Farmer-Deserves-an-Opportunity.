@@ -11,7 +11,9 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import useSWR from "swr";
+import { Emph } from "@/components/common/emph";
 import { SuccessBurst } from "@/components/motion/success-burst";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { SERVICE_AREAS, UNSERVED_AREAS } from "@/lib/areas";
 import { ApiError, fetcher, sendJSON } from "@/lib/fetcher";
 import { formatINR, formatQty } from "@/lib/format";
+import { localizeSlot, localizeTitle } from "@/lib/i18n/titles";
 import { openRazorpay, type RazorpayStart } from "@/lib/payments/razorpay-checkout";
 import { useCart } from "@/lib/store/cart";
 import { cn } from "@/lib/utils";
@@ -78,6 +81,8 @@ function postQuote([url, body]: [string, string]) {
  */
 export function CheckoutView({ profile, gateway }: { profile: { area: string | null; address: string | null }; gateway: Gateway | null }) {
   const mounted = useSyncExternalStore(noop, () => true, () => false);
+  const { tx, lang } = useI18n();
+  const issueText = useIssueText();
   const items = useCart((s) => s.items);
   const setQty = useCart((s) => s.setQty);
   const removeLine = useCart((s) => s.remove);
@@ -119,14 +124,14 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
       setPhase(null);
       const outcome = await openRazorpay(start);
       if ("dismissed" in outcome) {
-        setNotice(outcome.lastError ? `${outcome.lastError}. You weren't charged, you can try again.` : "Payment cancelled, nothing was charged.");
+        setNotice(outcome.lastError ? `${tx(outcome.lastError)}. ${tx("You weren't charged, you can try again.")}` : tx("Payment cancelled, nothing was charged."));
         return;
       }
       setPaymentRef(outcome.paid.razorpay_payment_id);
       setPhase("verifying");
       await finish(await sendJSON<PlaceResult>("/api/payments/razorpay/verify", outcome.paid));
     } catch (e) {
-      setPayError((e as Error).message);
+      setPayError(tx((e as Error).message));
       setPhase("error");
     }
   }
@@ -145,7 +150,7 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
       await new Promise((r) => setTimeout(r, 600));
       await finish(res);
     } catch (e) {
-      setPayError((e as Error).message);
+      setPayError(tx((e as Error).message));
       setPhase("error");
     }
   }
@@ -157,7 +162,7 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
       <div>
         <PageHeader title="Checkout" />
         <p className="text-muted-foreground">
-          Your cart is empty. <Link href="/shop" className="underline">Browse produce</Link>
+          {tx("Your cart is empty.")} <Link href="/shop" className="underline">{tx("Browse produce")}</Link>
         </p>
       </div>
     );
@@ -168,7 +173,7 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
       <PageHeader title="*Checkout*" back={{ href: "/shop/cart", label: "Cart" }} />
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
         <div className="space-y-6">
-          <Section title="How do you want it?">
+          <Section title={tx("How do you want it?")}>
             <div className="grid grid-cols-2 gap-3">
               {[
                 { v: "DELIVERY" as const, icon: Home, t: "Doorstep delivery", s: "Rider verifies with OTP" },
@@ -182,18 +187,18 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
                 >
                   {fulfilment === o.v && <motion.span layoutId="ful-pill" className="absolute inset-0 -z-10 rounded-2xl bg-lime/25" />}
                   <o.icon className="size-5" />
-                  <p className="mt-2 text-sm font-semibold">{o.t}</p>
-                  <p className="text-xs text-muted-foreground">{o.s}</p>
+                  <p className="mt-2 text-sm font-semibold">{tx(o.t)}</p>
+                  <p className="text-xs text-muted-foreground">{tx(o.s)}</p>
                 </button>
               ))}
             </div>
           </Section>
 
           {fulfilment === "DELIVERY" ? (
-            <Section title="Deliver to">
+            <Section title={tx("Deliver to")}>
               <div className="grid gap-3 sm:grid-cols-[200px_1fr]">
                 <div className="space-y-1.5">
-                  <Label htmlFor="area">Area</Label>
+                  <Label htmlFor="area">{tx("Area")}</Label>
                   <Select value={area} onValueChange={setArea}>
                     <SelectTrigger id="area" className="w-full">
                       <SelectValue />
@@ -201,53 +206,53 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
                     <SelectContent>
                       {SERVICE_AREAS.map((a) => (
                         <SelectItem key={a.name} value={a.name}>
-                          {a.name}
+                          {tx(a.name)}
                         </SelectItem>
                       ))}
                       {UNSERVED_AREAS.map((a) => (
                         <SelectItem key={a} value={a}>
-                          {a}
+                          {tx(a)}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="addr">House / street</Label>
-                  <Input id="addr" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Flat, building, street" autoComplete="street-address" />
+                  <Label htmlFor="addr">{tx("House / street")}</Label>
+                  <Input id="addr" value={address} onChange={(e) => setAddress(e.target.value)} placeholder={tx("Flat, building, street")} autoComplete="street-address" />
                 </div>
               </div>
               {outOfArea && (
                 <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-3 flex gap-3 rounded-2xl border border-warning/40 bg-warning/12 p-4 text-sm">
                   <MapPin className="mt-0.5 size-5 shrink-0 text-warning" />
                   <div>
-                    <p>{quote?.blocked?.message}</p>
+                    <p>{lang === "en" ? quote?.blocked?.message : tx("We don't deliver to {place} yet. Choose Yelahanka, Hebbal or Jayanagar, or switch to self-pickup.", { place: tx(area) })}</p>
                     <Button variant="outline" size="sm" className="mt-2" onClick={() => setFulfilment("PICKUP")}>
-                      Switch to self-pickup
+                      {tx("Switch to self-pickup")}
                     </Button>
                   </div>
                 </motion.div>
               )}
             </Section>
           ) : (
-            <Section title="Pickup">
+            <Section title={tx("Pickup")}>
               <p className="rounded-2xl bg-muted/60 p-4 text-sm">
-                Collect from each farm&apos;s pickup point. Show your <b>pickup QR</b> or tell the farmer your <b>OTP</b>, it appears on the order page once it&apos;s packed.
+                {tx("Collect from each farm's pickup point. Show your pickup QR or tell the farmer your OTP, it appears on the order page once it's packed.")}
               </p>
             </Section>
           )}
 
-          <Section title={fulfilment === "DELIVERY" ? "Delivery slot" : "Pickup window"}>
+          <Section title={tx(fulfilment === "DELIVERY" ? "Delivery slot" : "Pickup window")}>
             <div className="flex flex-wrap gap-2">
               {options.map((s) => (
                 <button key={s} type="button" onClick={() => setSlot(s)} className={cn("min-h-11 rounded-full border px-4 text-sm", slot === s && "border-foreground bg-foreground text-background")}>
-                  {s}
+                  {localizeSlot(s, lang)}
                 </button>
               ))}
             </div>
           </Section>
 
-          <Section title="Pay with">
+          <Section title={tx("Pay with")}>
             <div className="grid grid-cols-2 gap-3">
               {[
                 { v: "UPI" as const, icon: Smartphone, t: "UPI" },
@@ -259,8 +264,8 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
                   onClick={() => setMethod(o.v)}
                   className={cn("flex min-h-14 items-center gap-3 rounded-2xl border px-4 text-sm font-medium", method === o.v && "border-foreground bg-muted/60")}
                 >
-                  <o.icon className="size-5" /> {o.t}
-                  {!gateway && <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">demo</span>}
+                  <o.icon className="size-5" /> {tx(o.t)}
+                  {!gateway && <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-[10px] text-muted-foreground">{tx("demo")}</span>}
                 </button>
               ))}
             </div>
@@ -269,17 +274,24 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
                 <p className="flex gap-2 text-muted-foreground">
                   <ShieldCheck className="mt-0.5 size-4 shrink-0 text-foreground" />
                   <span>
-                    Secured by <b className="text-foreground">Razorpay</b>. Your choice opens first; netbanking and wallets are there too. We never see your card or UPI PIN.
+                    {lang === "en" ? (
+                      <>
+                        Secured by <b className="text-foreground">Razorpay</b>.
+                      </>
+                    ) : (
+                      tx("Secured by Razorpay.")
+                    )}{" "}
+                    {tx("Your choice opens first; netbanking and wallets are there too. We never see your card or UPI PIN.")}
                   </span>
                 </p>
                 {gateway.testMode && (
                   <div className="flex gap-2 rounded-2xl border border-dashed p-3">
                     <FlaskConical className="mt-0.5 size-4 shrink-0" />
                     <div className="min-w-0">
-                      <p className="font-medium">Razorpay test mode: no real money moves</p>
+                      <p className="font-medium">{tx("Razorpay test mode: no real money moves")}</p>
                       <p className="mt-0.5 text-muted-foreground">
-                        UPI ID <code className="font-mono text-foreground">success@razorpay</code> (or <code className="font-mono">failure@razorpay</code>), or card{" "}
-                        <code className="font-mono whitespace-nowrap text-foreground">4100 2800 0000 1007</code> with any future expiry and CVV.
+                        {tx("UPI ID")} <code className="font-mono text-foreground">success@razorpay</code> ({tx("or")} <code className="font-mono">failure@razorpay</code>), {tx("or card")}{" "}
+                        <code className="font-mono whitespace-nowrap text-foreground">4100 2800 0000 1007</code> {tx("with any future expiry and CVV.")}
                       </p>
                     </div>
                   </div>
@@ -290,20 +302,20 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
         </div>
 
         <aside className="h-fit space-y-4 rounded-3xl border bg-card p-5 lg:sticky lg:top-8">
-          <p className="font-semibold">Order summary</p>
+          <p className="font-semibold">{tx("Order summary")}</p>
           {isLoading && !quote && <Loader2 className="size-5 animate-spin text-muted-foreground" />}
-          {error && <p className="text-sm text-destructive">{error.message}</p>}
+          {error && <p className="text-sm text-destructive">{tx(error.message)}</p>}
           {quote?.issues.map((iss) => (
             <div key={iss.listingId} className="flex gap-2 rounded-xl bg-warning/12 p-3 text-sm">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
               <div className="min-w-0">
-                <p>{iss.message}</p>
+                <p>{issueText(iss)}</p>
                 <button
                   type="button"
                   className="mt-1 text-xs font-semibold underline"
                   onClick={() => (iss.problem === "short" && iss.available ? setQty(iss.listingId, iss.available) : removeLine(iss.listingId))}
                 >
-                  {iss.problem === "short" && iss.available ? `Use ${iss.available}` : "Remove"}
+                  {iss.problem === "short" && iss.available ? tx("Use {n}", { n: iss.available }) : tx("Remove")}
                 </button>
               </div>
             </div>
@@ -315,34 +327,36 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
                 {g.items.map((i) => (
                   <li key={i.listingId} className="flex justify-between gap-2">
                     <span>
-                      {i.title} × {formatQty(i.qty, i.unit)}
+                      {localizeTitle(i.title, lang)} × {formatQty(i.qty, i.unit, lang)}
                     </span>
                     <span className="tabular">{formatINR(i.lineTotal)}</span>
                   </li>
                 ))}
                 <li className="flex justify-between gap-2">
-                  <span>{fulfilment === "PICKUP" ? "Pickup" : "Delivery"}</span>
-                  <span className="tabular">{g.deliveryFee ? formatINR(g.deliveryFee) : "Free"}</span>
+                  <span>{tx(fulfilment === "PICKUP" ? "Pickup" : "Delivery")}</span>
+                  <span className="tabular">{g.deliveryFee ? formatINR(g.deliveryFee) : tx("Free")}</span>
                 </li>
               </ul>
             </div>
           ))}
           {quote && !quote.blocked && (
             <div className="space-y-1.5 border-t pt-3 text-sm">
-              <Row k="Items" v={formatINR(quote.subtotal, true)} />
-              <Row k="Delivery" v={quote.deliveryFee ? formatINR(quote.deliveryFee, true) : "Free"} />
-              <Row k="Platform fee" v="₹0 for you" />
+              <Row k={tx("Items")} v={formatINR(quote.subtotal, true)} />
+              <Row k={tx("Delivery")} v={quote.deliveryFee ? formatINR(quote.deliveryFee, true) : tx("Free")} />
+              <Row k={tx("Platform fee")} v={tx("₹0 for you")} />
               <div className="flex justify-between pt-1 text-base font-semibold">
-                <span>Total</span>
+                <span>{tx("Total")}</span>
                 <span className="tabular">{formatINR(quote.total, true)}</span>
               </div>
             </div>
           )}
           <p className="flex gap-2 text-xs text-muted-foreground">
             <Info className="mt-0.5 size-3.5 shrink-0" />
-            {gateway
-              ? "You pay through Razorpay, then we reserve each farm's stock. If a farm runs out in between, its share is refunded to you through Razorpay. Farmers are paid after delivery is verified."
-              : "We authorise the amount now and capture it only once each farm's stock is reserved. Farmers are paid after delivery is verified."}
+            {tx(
+              gateway
+                ? "You pay through Razorpay, then we reserve each farm's stock. If a farm runs out in between, its share is refunded to you through Razorpay. Farmers are paid after delivery is verified."
+                : "We authorise the amount now and capture it only once each farm's stock is reserved. Farmers are paid after delivery is verified.",
+            )}
           </p>
           {notice && (
             <p role="status" className="flex gap-2 rounded-xl bg-muted p-3 text-sm">
@@ -352,7 +366,7 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
           )}
           <div className="glass fixed inset-x-0 bottom-0 z-30 border-t px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
             <Button size="lg" variant="brand" className="w-full" onClick={pay} disabled={!quote || Boolean(quote.issues.length) || outOfArea || phase !== null}>
-              Pay {quote ? formatINR(quote.total, true) : ""} <ArrowRight />
+              {tx("Pay {amount}", { amount: quote ? formatINR(quote.total, true) : "" })} <ArrowRight />
             </Button>
           </div>
         </aside>
@@ -367,6 +381,19 @@ export function CheckoutView({ profile, gateway }: { profile: { area: string | n
       />
     </div>
   );
+}
+
+/** A cart problem from the quote, in the site's language. */
+function useIssueText() {
+  const { tx, lang } = useI18n();
+  return (iss: Quote["issues"][number]) => {
+    if (lang === "en") return iss.message;
+    const item = localizeTitle(iss.title, lang);
+    if (iss.problem === "gone") return tx("{item} is no longer available", { item });
+    if (iss.problem === "short" && iss.available) return tx("Only {qty} of {item} left", { qty: iss.available, item });
+    if (iss.problem === "not_in_area") return tx("{item} isn't sold in your area yet", { item });
+    return tx(iss.message);
+  };
 }
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -388,16 +415,17 @@ function Row({ k, v }: { k: string; v: string }) {
 }
 
 function Success({ result }: { result: PlaceResult }) {
+  const { tx, lang } = useI18n();
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center py-8 text-center">
       <SuccessBurst />
       <h1 className="mt-8 text-3xl font-semibold tracking-tight">
-        Order{result.placed.length > 1 ? "s" : ""} <span className="font-serif font-normal italic">placed</span>
+        <Emph text={tx(result.placed.length > 1 ? "Orders *placed*" : "Order *placed*")} />
       </h1>
       <p className="mt-2 max-w-sm text-muted-foreground">
-        {result.method ? `${formatINR(result.total, true)} paid, ${result.method}.` : `${formatINR(result.total, true)} captured.`} Your farmers are packing. Track each order live.
+        {result.method ? tx("{amount} paid, {method}.", { amount: formatINR(result.total, true), method: tx(result.method) }) : tx("{amount} captured.", { amount: formatINR(result.total, true) })} {tx("Your farmers are packing. Track each order live.")}
       </p>
-      {result.paymentId && <p className="mt-1 font-mono text-xs text-muted-foreground">Razorpay ref {result.paymentId}</p>}
+      {result.paymentId && <p className="mt-1 font-mono text-xs text-muted-foreground">{tx("Razorpay ref {ref}", { ref: result.paymentId })}</p>}
       <div className="mt-6 w-full max-w-md space-y-2">
         {result.placed.map((p) => (
           <Link key={p.id} href={`/shop/orders/${p.id}`} className="flex items-center justify-between rounded-2xl border bg-card p-4 text-left hover:border-foreground/30">
@@ -406,7 +434,7 @@ function Success({ result }: { result: PlaceResult }) {
               <span className="text-xs text-muted-foreground">{p.farmerName}</span>
             </span>
             <span className="inline-flex items-center gap-1 text-sm font-medium">
-              Track <ArrowRight className="size-4" />
+              {tx("Track")} <ArrowRight className="size-4" />
             </span>
           </Link>
         ))}
@@ -414,18 +442,18 @@ function Success({ result }: { result: PlaceResult }) {
           <div key={f.farmerId} className="flex gap-2 rounded-2xl bg-warning/12 p-4 text-left text-sm">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
             <span>
-              <b>{f.farmerName}:</b> {f.reason}.{" "}
+              <b>{f.farmerName}:</b> {lang === "en" ? f.reason : tx("Stock ran out")}.{" "}
               {f.refund === "refunded"
-                ? `Its share (${formatINR(f.total, true)}) was refunded to you through Razorpay. It's still in your cart.`
+                ? tx("Its share ({amount}) was refunded to you through Razorpay. It's still in your cart.", { amount: formatINR(f.total, true) })
                 : f.refund === "pending"
-                  ? `Its share (${formatINR(f.total, true)}) is owed back to you, the refund hasn't gone through yet. It's still in your cart.`
-                  : "That part wasn't charged, it's still in your cart."}
+                  ? tx("Its share ({amount}) is owed back to you, the refund hasn't gone through yet. It's still in your cart.", { amount: formatINR(f.total, true) })
+                  : tx("That part wasn't charged, it's still in your cart.")}
             </span>
           </div>
         ))}
       </div>
       <Button asChild variant="outline" className="mt-6">
-        <Link href="/shop/orders">All orders</Link>
+        <Link href="/shop/orders">{tx("All orders")}</Link>
       </Button>
     </motion.div>
   );

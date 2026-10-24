@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { SERVICE_AREAS } from "@/lib/areas";
@@ -78,6 +79,7 @@ async function detectAndSaveLocation(): Promise<{ resolved: Resolved; active: bo
  */
 export function AutoLocation({ enabled }: { enabled: boolean }) {
   const router = useRouter();
+  const { tx } = useI18n();
   useEffect(() => {
     if (!enabled) return;
     try {
@@ -94,13 +96,15 @@ export function AutoLocation({ enabled }: { enabled: boolean }) {
         if (perm?.state === "denied") return;
         const { resolved, active } = await detectAndSaveLocation();
         if (active) {
-          toast.success(`Delivering to ${resolved.label}`);
+          toast.success(tx("Delivering to {place}", { place: resolved.label }));
           router.refresh();
-        } else toast.message("FoodFlow isn't available at your current location yet.", { description: "You can still browse, or pick another address from the top bar." });
+        } else toast.message(tx("FoodFlow isn't available at your current location yet."), { description: tx("You can still browse, or pick another address from the top bar.") });
       } catch {
         /* declined, unavailable or offline: keep the saved address */
       }
     })();
+    // The language only changes the wording of the toasts.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, router]);
   return null;
 }
@@ -112,6 +116,7 @@ export function AutoLocation({ enabled }: { enabled: boolean }) {
  */
 export function LocationPicker({ label, value, defaultLabel = "Home", className }: { label: string; value: string; defaultLabel?: (typeof LABELS)[number]; className?: string }) {
   const router = useRouter();
+  const { tx } = useI18n();
   const [open, setOpen] = useState(false);
   const { data, mutate } = useSWR<{ addresses: SavedAddress[]; activeId: string | null }>(open ? "/api/addresses" : null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -127,7 +132,7 @@ export function LocationPicker({ label, value, defaultLabel = "Home", className 
       await mutate();
       router.refresh();
     } catch (e) {
-      setError(e instanceof ApiError ? e.message : geoMessage(e));
+      setError(tx(e instanceof ApiError ? e.message : geoMessage(e)));
     } finally {
       setBusy(null);
     }
@@ -137,14 +142,14 @@ export function LocationPicker({ label, value, defaultLabel = "Home", className 
     run("detect", async () => {
       const { resolved, active } = await detectAndSaveLocation();
       if (active) {
-        toast.success(`Using ${resolved.label}`);
+        toast.success(tx("Using {place}", { place: resolved.label }));
         setOpen(false);
-      } else setError("FoodFlow isn't available at your current location yet. It's saved, but we'll keep your previous delivery address.");
+      } else setError(tx("FoodFlow isn't available at your current location yet. It's saved, but we'll keep your previous delivery address."));
     });
   const choose = (a: SavedAddress) =>
     run(a.id, async () => {
       await sendJSON(`/api/addresses/${a.id}`, { action: "activate" }, "PATCH");
-      toast.success(`Using ${a.label}: ${a.line}`);
+      toast.success(tx("Using {place}", { place: `${tx(a.label)}: ${a.line}` }));
       setOpen(false);
     });
   const remove = (a: SavedAddress) => run(`rm-${a.id}`, async () => void (await sendJSON(`/api/addresses/${a.id}`, undefined, "DELETE")));
@@ -154,27 +159,27 @@ export function LocationPicker({ label, value, defaultLabel = "Home", className 
       await sendJSON("/api/addresses", { label: form.label, line: form.line.trim(), area: form.area && form.area !== OUTSIDE ? form.area : null, makeActive: true });
       setForm({ label: defaultLabel, line: "", area: "" });
       setAdding(false);
-      toast.success("Address saved and selected");
+      toast.success(tx("Address saved and selected"));
       setOpen(false);
     });
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} aria-label={`${label}: ${value || "set your location"}. Change`} className={cn("flex min-w-0 items-center gap-1.5 rounded-xl px-1.5 py-1 text-left hover:bg-muted/60", className)}>
+      <button type="button" onClick={() => setOpen(true)} aria-label={`${label}: ${value || tx("Set your location")}. ${tx("Change")}`} className={cn("flex min-w-0 items-center gap-1.5 rounded-xl px-1.5 py-1 text-left hover:bg-muted/60", className)}>
         <MapPin className="size-5 shrink-0 text-lime" />
         <span className="min-w-0 leading-tight">
           <span className="block max-w-48 truncate text-xs text-muted-foreground">{label}</span>
-          <span className="block max-w-48 truncate text-sm font-semibold">{value || "Set your location"}</span>
+          <span className="block max-w-48 truncate text-sm font-semibold">{value || tx("Set your location")}</span>
         </span>
       </button>
 
       <ResponsiveModal open={open} onOpenChange={setOpen} title="Choose your location" description="Pick a saved address, use where you are now, or add a new one.">
         <div className="space-y-4">
           <Button type="button" variant="outline" size="lg" className="w-full justify-start" onClick={detect} disabled={busy !== null}>
-            {busy === "detect" ? <Loader2 className="animate-spin" /> : <Crosshair />} Use my current location
+            {busy === "detect" ? <Loader2 className="animate-spin" /> : <Crosshair />} {tx("Use my current location")}
           </Button>
 
-          <ul className="space-y-2" aria-label="Saved addresses">
+          <ul className="space-y-2" aria-label={tx("Saved addresses")}>
             {data?.addresses.map((a) => {
               const on = data.activeId === a.id;
               return (
@@ -183,50 +188,50 @@ export function LocationPicker({ label, value, defaultLabel = "Home", className 
                     <span className={cn("grid size-5 shrink-0 place-items-center rounded-full border", on ? "border-foreground bg-foreground text-background" : "border-input")}>{on && <Check className="size-3.5" strokeWidth={3} />}</span>
                     <span className="min-w-0">
                       <span className="block text-sm font-semibold">
-                        {a.label}
-                        {a.area ? <span className="font-normal text-muted-foreground"> · {a.area}</span> : <span className="font-normal text-warning"> · outside service area</span>}
+                        {tx(a.label)}
+                        {a.area ? <span className="font-normal text-muted-foreground"> · {a.area}</span> : <span className="font-normal text-warning"> · {tx("outside service area")}</span>}
                       </span>
                       <span className="block truncate text-sm text-muted-foreground">{a.line}</span>
                     </span>
                   </button>
-                  <Button type="button" variant="ghost" size="icon" aria-label={`Remove ${a.label}`} onClick={() => remove(a)} disabled={busy !== null}>
+                  <Button type="button" variant="ghost" size="icon" aria-label={tx("Remove {name}", { name: tx(a.label) })} onClick={() => remove(a)} disabled={busy !== null}>
                     {busy === `rm-${a.id}` ? <Loader2 className="animate-spin" /> : <Trash2 />}
                   </Button>
                 </li>
               );
             })}
-            {data && data.addresses.length === 0 && <li className="rounded-2xl border border-dashed px-4 py-5 text-center text-sm text-muted-foreground">No saved addresses yet.</li>}
+            {data && data.addresses.length === 0 && <li className="rounded-2xl border border-dashed px-4 py-5 text-center text-sm text-muted-foreground">{tx("No saved addresses yet.")}</li>}
           </ul>
 
           {adding ? (
             <div className="space-y-3 rounded-2xl border p-4">
-              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Address type">
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={tx("Address type")}>
                 {LABELS.map((l) => (
                   <button key={l} type="button" role="radio" aria-checked={form.label === l} onClick={() => setForm((f) => ({ ...f, label: l }))} className={cn("h-9 rounded-full border px-3.5 text-sm", form.label === l ? "border-foreground bg-foreground text-background" : "text-muted-foreground")}>
-                    {l}
+                    {tx(l)}
                   </button>
                 ))}
               </div>
-              <Input value={form.line} onChange={(e) => setForm((f) => ({ ...f, line: e.target.value }))} placeholder="Flat / street / landmark" aria-label="Address" autoComplete="street-address" />
-              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Service area">
+              <Input value={form.line} onChange={(e) => setForm((f) => ({ ...f, line: e.target.value }))} placeholder={tx("Flat / street / landmark")} aria-label={tx("Address")} autoComplete="street-address" />
+              <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={tx("Service area")}>
                 {[...SERVICE_AREAS.map((a) => a.name), OUTSIDE].map((a) => (
                   <button key={a} type="button" role="radio" aria-checked={form.area === a} onClick={() => setForm((f) => ({ ...f, area: a }))} className={cn("h-9 rounded-full border px-3.5 text-sm", form.area === a ? "border-foreground bg-lime/30" : "text-muted-foreground")}>
-                    {a === OUTSIDE ? "Somewhere else" : a}
+                    {a === OUTSIDE ? tx("Somewhere else") : a}
                   </button>
                 ))}
               </div>
               <div className="flex gap-2">
                 <Button type="button" variant="brand" onClick={add} disabled={busy !== null}>
-                  {busy === "add" && <Loader2 className="animate-spin" />} Save and use
+                  {busy === "add" && <Loader2 className="animate-spin" />} {tx("Save and use")}
                 </Button>
                 <Button type="button" variant="ghost" onClick={() => setAdding(false)}>
-                  Cancel
+                  {tx("Cancel")}
                 </Button>
               </div>
             </div>
           ) : (
             <Button type="button" variant="ghost" className="w-full justify-start" onClick={() => setAdding(true)}>
-              <Plus /> Add a new address
+              <Plus /> {tx("Add a new address")}
             </Button>
           )}
           {error && (

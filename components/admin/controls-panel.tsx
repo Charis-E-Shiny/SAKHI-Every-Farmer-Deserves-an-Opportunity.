@@ -9,6 +9,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { ErrorState, SkeletonRows } from "@/components/common/states";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { useLive } from "@/hooks/use-live";
 import { sendJSON } from "@/lib/fetcher";
+import { cropName } from "@/lib/crops";
 import { formatDateTime, formatINR, timeAgo } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +43,7 @@ interface Controls {
 
 /** /admin/controls */
 export function ControlsPanel() {
+  const { tx, lang } = useI18n();
   const { data, error, isLoading, mutate } = useSWR<Controls>("/api/admin/controls");
   useLive(["settlement.updated"], () => mutate());
   const [busy, setBusy] = useState<string | null>(null);
@@ -54,7 +57,7 @@ export function ControlsPanel() {
       await mutate();
       return true;
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
       return false;
     } finally {
       setBusy(null);
@@ -65,10 +68,10 @@ export function ControlsPanel() {
     setBusy("payouts");
     try {
       const r = await sendJSON<{ settled: number; amount: number }>("/api/admin/settlements/run", {});
-      toast.success(r.settled ? `Settled ${r.settled} payouts · ${formatINR(r.amount)}` : "Nothing pending");
+      toast.success(r.settled ? tx("Settled {n} payouts · {amount}", { n: r.settled, amount: formatINR(r.amount) }) : tx("Nothing pending"));
       await mutate();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(null);
     }
@@ -78,10 +81,10 @@ export function ControlsPanel() {
     setBusy("subs");
     try {
       const r = await sendJSON<{ due: number; placed: number; skipped: number }>("/api/subscriptions/run-due", {});
-      toast.success(r.due ? `${r.placed} placed${r.skipped ? ` · ${r.skipped} skipped` : ""}` : "No subscriptions due right now");
+      toast.success(r.due ? `${tx("{n} placed", { n: r.placed })}${r.skipped ? ` · ${tx("{n} skipped", { n: r.skipped })}` : ""}` : tx("No subscriptions due right now"));
       await mutate();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(null);
     }
@@ -98,10 +101,10 @@ export function ControlsPanel() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="Fees" icon={Percent}>
-          <SettingControl s={byKey.commissionPct} busy={busy} onSave={(v) => patch("commissionPct", { kind: "setting", key: "commissionPct", value: v }, `Commission set to ${v}%`)}>
+          <SettingControl s={byKey.commissionPct} busy={busy} onSave={(v) => patch("commissionPct", { kind: "setting", key: "commissionPct", value: v }, tx("Commission set to {v}%", { v }))}>
             {(v) => (
               <p className="text-sm text-muted-foreground">
-                On a {formatINR(1000)} order the farmer receives <b className="tabular text-foreground">{formatINR(1000 * (1 - v / 100))}</b> before any delivery share.
+                {tx("On a {order} order the farmer receives {net} before any delivery share.", { order: formatINR(1000), net: formatINR(1000 * (1 - v / 100)) })}
               </p>
             )}
           </SettingControl>
@@ -112,18 +115,18 @@ export function ControlsPanel() {
             <div>
               <p className="tabular text-3xl font-semibold">{formatINR(data.payouts.pendingAmount)}</p>
               <p className="text-sm text-muted-foreground">
-                {data.payouts.pendingCount} settlement{data.payouts.pendingCount === 1 ? "" : "s"} pending
+                {tx(data.payouts.pendingCount === 1 ? "{n} settlement pending" : "{n} settlements pending", { n: data.payouts.pendingCount })}
               </p>
             </div>
             <Button className="min-h-11" disabled={busy === "payouts" || data.payouts.pendingCount === 0} onClick={() => setConfirmRun(true)}>
-              {busy === "payouts" && <Loader2 className="animate-spin" />} Run payouts
+              {busy === "payouts" && <Loader2 className="animate-spin" />} {tx("Run payouts")}
             </Button>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
             {data.payouts.lastRun
-              ? `Last run ${timeAgo(data.payouts.lastRun.at)}${data.payouts.lastRun.meta?.count ? ` · ${data.payouts.lastRun.meta.count} payouts, ${formatINR(data.payouts.lastRun.meta.amount ?? 0)}` : ""}`
-              : "No payout run yet."}{" "}
-            Simulated, in production this follows the gateway&apos;s transfer confirmation.
+              ? `${tx("Last run {when}", { when: timeAgo(data.payouts.lastRun.at, lang) })}${data.payouts.lastRun.meta?.count ? ` · ${tx("{n} payouts, {amount}", { n: data.payouts.lastRun.meta.count, amount: formatINR(data.payouts.lastRun.meta.amount ?? 0) })}` : ""}`
+              : tx("No payout run yet.")}{" "}
+            {tx("Simulated, in production this follows the gateway's transfer confirmation.")}
           </p>
         </Card>
 
@@ -132,35 +135,35 @@ export function ControlsPanel() {
             <div className="flex gap-8">
               <div>
                 <p className="tabular text-3xl font-semibold">{data.subscriptions.active}</p>
-                <p className="text-sm text-muted-foreground">active plans</p>
+                <p className="text-sm text-muted-foreground">{tx("active plans")}</p>
               </div>
               <div>
                 <p className={cn("tabular text-3xl font-semibold", data.subscriptions.due > 0 && "text-tomato")}>{data.subscriptions.due}</p>
-                <p className="text-sm text-muted-foreground">due now</p>
+                <p className="text-sm text-muted-foreground">{tx("due now")}</p>
               </div>
             </div>
             <Button variant="outline" className="min-h-11" disabled={busy === "subs"} onClick={runSubscriptions}>
-              {busy === "subs" && <Loader2 className="animate-spin" />} Run due now
+              {busy === "subs" && <Loader2 className="animate-spin" />} {tx("Run due now")}
             </Button>
           </div>
           <p className="mt-3 text-xs text-muted-foreground">
-            {data.subscriptions.nextRunAt ? `Next order goes out ${formatDateTime(data.subscriptions.nextRunAt)}. ` : ""}A scheduler calls <code className="font-mono">/api/subscriptions/run-due</code> every 15 minutes in production; each plan is claimed atomically, so overlapping runs never double-order.
+            {data.subscriptions.nextRunAt ? `${tx("Next order goes out {when}.", { when: formatDateTime(data.subscriptions.nextRunAt, lang) })} ` : ""}{tx("A scheduler places due orders every 15 minutes in production; each plan is claimed atomically, so overlapping runs never double-order.")}
           </p>
         </Card>
       </div>
 
       <Card title="Surplus rescue rules" icon={Snowflake} className="space-y-6">
-        <p className="-mt-2 text-sm text-muted-foreground">A listing is flagged at risk when either rule trips. Farmers then see one-tap rescue offers to community kitchens.</p>
+        <p className="-mt-2 text-sm text-muted-foreground">{tx("A listing is flagged at risk when either rule trips. Farmers then see one-tap rescue offers to community kitchens.")}</p>
         <div className="grid gap-6 md:grid-cols-3">
           {(["surplusSellThroughPct", "surplusMinAgeHours", "surplusShelfLifePct"] as const).map((k) => (
-            <SettingControl key={k} s={byKey[k]} busy={busy} onSave={(v) => patch(k, { kind: "setting", key: k, value: v }, `${byKey[k].label.replace(/^…/, "")} updated`)} />
+            <SettingControl key={k} s={byKey[k]} busy={busy} onSave={(v) => patch(k, { kind: "setting", key: k, value: v }, tx("{setting} updated", { setting: tx(byKey[k].label.replace(/^…/, "")) }))} />
           ))}
         </div>
       </Card>
 
       <section>
-        <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">Service areas</h2>
-        <p className="mt-1 mb-3 text-sm text-muted-foreground">Checkout blocks addresses outside active areas. Base fee is the delivery charge before free delivery kicks in (₹499+).</p>
+        <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{tx("Service areas")}</h2>
+        <p className="mt-1 mb-3 text-sm text-muted-foreground">{tx("Checkout blocks addresses outside active areas. Base fee is the delivery charge before free delivery kicks in (₹499+).")}</p>
         <div className="grid gap-3 md:grid-cols-3">
           {data.areas.map((a) => (
             <AreaCard key={a.id} area={a} busy={busy === a.id} onPatch={(p, done) => patch(a.id, { kind: "area", id: a.id, ...p }, done)} />
@@ -169,14 +172,14 @@ export function ControlsPanel() {
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">Cold-chain categories</h2>
-        <p className="mt-1 mb-3 text-sm text-muted-foreground">Milk, eggs and chicken need refrigerated handling, so they&apos;re sold only where you switch them on.</p>
+        <h2 className="text-sm font-semibold tracking-wide text-muted-foreground uppercase">{tx("Cold-chain categories")}</h2>
+        <p className="mt-1 mb-3 text-sm text-muted-foreground">{tx("Milk, eggs and chicken need refrigerated handling, so they're sold only where you switch them on.")}</p>
         <div className="space-y-3">
           {data.categories.map((c) => (
             <div key={c.slug} className="flex flex-col gap-3 rounded-3xl border bg-card p-4 sm:flex-row sm:items-center">
               <div className="min-w-0 flex-1">
-                <p className="font-semibold">{c.name}</p>
-                <p className="text-xs text-muted-foreground">{c.enabledAreas.length ? `Sold in ${c.enabledAreas.join(", ")}` : "Not sold anywhere yet"}</p>
+                <p className="font-semibold">{cropName(c.slug, lang) === c.slug ? tx(c.name) : cropName(c.slug, lang)}</p>
+                <p className="text-xs text-muted-foreground">{c.enabledAreas.length ? tx("Sold in {areas}", { areas: c.enabledAreas.map((a) => tx(a)).join(", ") }) : tx("Not sold anywhere yet")}</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {activeAreas.map((a) => {
@@ -188,14 +191,14 @@ export function ControlsPanel() {
                       type="button"
                       aria-pressed={on}
                       disabled={busy === key}
-                      onClick={() => patch(key, { kind: "category", slug: c.slug, area: a.name, enabled: !on }, `${c.name} ${on ? "paused" : "enabled"} in ${a.name}`)}
+                      onClick={() => patch(key, { kind: "category", slug: c.slug, area: a.name, enabled: !on }, tx(on ? "{name} paused in {area}" : "{name} enabled in {area}", { name: tx(c.name), area: tx(a.name) }))}
                       className={cn(
                         "inline-flex min-h-11 items-center gap-1.5 rounded-full border px-4 text-sm transition-colors",
                         on ? "border-lime bg-lime text-lime-foreground" : "bg-background text-muted-foreground hover:text-foreground",
                       )}
                     >
                       {busy === key ? <Loader2 className="size-3.5 animate-spin" /> : on ? <Check className="size-3.5" /> : null}
-                      {a.name}
+                      {tx(a.name)}
                     </button>
                   );
                 })}
@@ -205,17 +208,17 @@ export function ControlsPanel() {
         </div>
       </section>
 
-      <ResponsiveModal open={confirmRun} onOpenChange={setConfirmRun} title="Run payout batch?">
+      <ResponsiveModal open={confirmRun} onOpenChange={setConfirmRun} title={tx("Run payout batch?")}>
         <div className="space-y-4">
           <p className="text-sm text-muted-foreground">
-            Marks {data.payouts.pendingCount} pending settlement{data.payouts.pendingCount === 1 ? "" : "s"} ({formatINR(data.payouts.pendingAmount)}) as paid. Farmers see the update on their payments page straight away.
+            {tx("Marks {n} pending settlement(s) ({amount}) as paid. Farmers see the update on their payments page straight away.", { n: data.payouts.pendingCount, amount: formatINR(data.payouts.pendingAmount) })}
           </p>
           <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
             <Button variant="ghost" className="min-h-11" onClick={() => setConfirmRun(false)}>
-              Cancel
+              {tx("Cancel")}
             </Button>
             <Button className="min-h-11" onClick={runPayouts}>
-              Settle {formatINR(data.payouts.pendingAmount)}
+              {tx("Settle {amount}", { amount: formatINR(data.payouts.pendingAmount) })}
             </Button>
           </div>
         </div>
@@ -225,10 +228,11 @@ export function ControlsPanel() {
 }
 
 function Card({ title, icon: Icon, className, children }: { title: string; icon: React.ComponentType<{ className?: string }>; className?: string; children: React.ReactNode }) {
+  const { tx } = useI18n();
   return (
     <section className={cn("rounded-3xl border bg-card p-5", className)}>
       <h2 className="mb-4 flex items-center gap-2 font-semibold">
-        <Icon className="size-4 text-muted-foreground" /> {title}
+        <Icon className="size-4 text-muted-foreground" /> {tx(title)}
       </h2>
       {children}
     </section>
@@ -237,29 +241,30 @@ function Card({ title, icon: Icon, className, children }: { title: string; icon:
 
 /** Slider + value readout; a Save button appears once the value changes. */
 function SettingControl({ s, busy, onSave, children }: { s: SettingRow; busy: string | null; onSave: (v: number) => Promise<boolean>; children?: (v: number) => React.ReactNode }) {
+  const { tx } = useI18n();
   const [draft, setDraft] = useState<number | null>(null);
   const v = draft ?? s.value;
   const dirty = draft !== null && draft !== s.value;
   return (
     <div className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-sm font-medium">{s.label}</p>
+        <p className="text-sm font-medium">{tx(s.label)}</p>
         <p className="tabular shrink-0 text-2xl font-semibold">
           {v}
-          <span className="ml-1 text-sm font-normal text-muted-foreground">{s.unit}</span>
+          <span className="ml-1 text-sm font-normal text-muted-foreground">{tx(s.unit)}</span>
         </p>
       </div>
-      <Slider value={[v]} min={s.min} max={s.max} step={s.step} onValueChange={([n]) => setDraft(n)} aria-label={s.label} className="py-2" />
-      <p className="text-xs text-muted-foreground">{s.help}</p>
+      <Slider value={[v]} min={s.min} max={s.max} step={s.step} onValueChange={([n]) => setDraft(n)} aria-label={tx(s.label)} className="py-2" />
+      <p className="text-xs text-muted-foreground">{tx(s.help)}</p>
       {children?.(v)}
       <AnimatePresence initial={false}>
         {dirty && (
           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="flex gap-2 overflow-hidden">
             <Button className="min-h-11" disabled={busy === s.key} onClick={async () => (await onSave(v)) && setDraft(null)}>
-              {busy === s.key && <Loader2 className="animate-spin" />} Save
+              {busy === s.key && <Loader2 className="animate-spin" />} {tx("Save")}
             </Button>
             <Button variant="ghost" className="min-h-11" onClick={() => setDraft(null)}>
-              Reset
+              {tx("Reset")}
             </Button>
           </motion.div>
         )}
@@ -277,11 +282,12 @@ function AreaCard({
   busy: boolean;
   onPatch: (p: { active?: boolean; baseDeliveryFee?: number }, done: string) => Promise<boolean>;
 }) {
+  const { tx } = useI18n();
   const [fee, setFee] = useState(String(area.baseDeliveryFee));
   const saveFee = () => {
     const n = Number(fee);
     if (!Number.isFinite(n) || n === area.baseDeliveryFee) return setFee(String(area.baseDeliveryFee));
-    onPatch({ baseDeliveryFee: n }, `${area.name} base fee set to ${formatINR(n)}`);
+    onPatch({ baseDeliveryFee: n }, tx("{area} base fee set to {amount}", { area: tx(area.name), amount: formatINR(n) }));
   };
   return (
     <div className={cn("rounded-3xl border bg-card p-4 transition-opacity", !area.active && "opacity-70")}>
@@ -291,17 +297,17 @@ function AreaCard({
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-semibold">
-            {area.name}
-            {area.isPilot && <span className="ml-2 rounded-full bg-lime px-2 py-0.5 align-middle text-[11px] text-lime-foreground">Pilot</span>}
+            {tx(area.name)}
+            {area.isPilot && <span className="ml-2 rounded-full bg-lime px-2 py-0.5 align-middle text-[11px] text-lime-foreground">{tx("Pilot")}</span>}
           </p>
           <p className="text-xs text-muted-foreground">
-            {area.radiusKm} km radius · {area.active ? "Delivering" : "Paused"}
+            {tx("{km} km radius", { km: area.radiusKm })} · {tx(area.active ? "Delivering" : "Paused")}
           </p>
         </div>
-        <Switch checked={area.active} disabled={busy} onCheckedChange={(on) => onPatch({ active: on }, `${area.name} ${on ? "re-opened" : "paused"}`)} aria-label={`${area.name} active`} />
+        <Switch checked={area.active} disabled={busy} onCheckedChange={(on) => onPatch({ active: on }, tx(on ? "{area} re-opened" : "{area} paused", { area: tx(area.name) }))} aria-label={tx("{area} active", { area: tx(area.name) })} />
       </div>
       <label className="mt-4 flex items-center gap-2 text-sm">
-        <span className="text-muted-foreground">Base fee ₹</span>
+        <span className="text-muted-foreground">{tx("Base fee ₹")}</span>
         <Input
           inputMode="decimal"
           value={fee}
@@ -310,7 +316,7 @@ function AreaCard({
           onBlur={saveFee}
           onKeyDown={(e) => e.key === "Enter" && (e.currentTarget as HTMLInputElement).blur()}
           className="h-11 w-24 text-base"
-          aria-label={`${area.name} base delivery fee`}
+          aria-label={tx("{area} base delivery fee", { area: tx(area.name) })}
         />
       </label>
     </div>

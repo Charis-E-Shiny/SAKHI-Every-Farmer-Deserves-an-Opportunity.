@@ -32,13 +32,13 @@ export function ChartCard({
   className?: string;
   action?: React.ReactNode;
 }) {
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   return (
     <section className={cn("rounded-3xl border bg-card p-4 sm:p-5", className)}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="font-semibold">{title}</h3>
-          {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+          <h3 className="font-semibold">{tx(title)}</h3>
+          {subtitle && <p className="text-sm text-muted-foreground">{typeof subtitle === "string" ? tx(subtitle) : subtitle}</p>}
         </div>
         {action}
       </div>
@@ -47,7 +47,7 @@ export function ChartCard({
           {legend.map((l) => (
             <li key={l.label} className="flex items-center gap-1.5">
               <span className="h-0.5 w-4 rounded-full" style={{ background: l.color }} />
-              {l.label}
+              {tx(l.label)}
             </li>
           ))}
         </ul>
@@ -64,7 +64,7 @@ export function ChartCard({
                 <tr>
                   {table[0].map((h) => (
                     <th key={String(h)} className="px-3 py-2 font-medium">
-                      {h}
+                      {typeof h === "string" ? tx(h) : h}
                     </th>
                   ))}
                 </tr>
@@ -102,6 +102,7 @@ export function ChartTooltip({
   formatValue?: (v: number) => string;
   formatLabel?: (l: string | number) => string;
 }) {
+  const { tx } = useI18n();
   if (!active || !payload?.length) return null;
   return (
     <div className="rounded-xl border bg-popover px-3 py-2 text-xs shadow-lg">
@@ -109,7 +110,7 @@ export function ChartTooltip({
       {payload.map((p) => (
         <p key={String(p.dataKey)} className="flex items-center gap-2">
           <span className="size-2 rounded-full" style={{ background: p.color }} />
-          <span className="text-muted-foreground">{p.name}</span>
+          <span className="text-muted-foreground">{p.name ? tx(p.name) : p.name}</span>
           <span className="tabular ml-auto font-semibold">{typeof p.value === "number" ? formatValue(p.value) : p.value}</span>
         </p>
       ))}
@@ -117,8 +118,9 @@ export function ChartTooltip({
   );
 }
 
-/** "2026-10-20" → "20 Oct". */
+/** "2026-10-20" → "20 Oct" (in the page's language). */
 export function shortDay(iso: string | number) {
   const d = new Date(`${iso}T12:00:00`);
-  return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  const lang = typeof document === "undefined" ? "en" : document.documentElement.lang || "en";
+  return d.toLocaleDateString(`${lang}-IN`, { day: "numeric", month: "short" });
 }

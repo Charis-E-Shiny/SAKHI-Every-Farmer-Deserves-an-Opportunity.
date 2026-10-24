@@ -62,6 +62,7 @@ export function EmptyState({
   action?: React.ReactNode;
   className?: string;
 }) {
+  const { tx } = useI18n();
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.98 }}
@@ -71,8 +72,8 @@ export function EmptyState({
       <span className="grid size-14 place-items-center rounded-2xl bg-muted">
         <Icon className="size-6 text-muted-foreground" />
       </span>
-      <p className="mt-4 font-medium">{title}</p>
-      {body && <div className="mt-1 max-w-sm text-sm text-muted-foreground">{body}</div>}
+      <p className="mt-4 font-medium">{tx(title)}</p>
+      {body && <div className="mt-1 max-w-sm text-sm text-muted-foreground">{typeof body === "string" ? tx(body) : body}</div>}
       {action && <div className="mt-5">{action}</div>}
     </motion.div>
   );
@@ -80,12 +81,12 @@ export function EmptyState({
 
 /** Error card with retry. */
 export function ErrorState({ message, onRetry }: { message?: string; onRetry?: () => void }) {
-  const { t } = useI18n();
+  const { t, tx } = useI18n();
   return (
     <div role="alert" className="flex flex-col items-center rounded-3xl border border-destructive/30 bg-destructive/5 px-6 py-10 text-center">
       <AlertTriangle className="size-6 text-destructive" />
       <p className="mt-3 font-medium">{t("state.errorTitle")}</p>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">{message ?? t("state.errorBody")}</p>
+      <p className="mt-1 max-w-sm text-sm text-muted-foreground">{message ? tx(message) : t("state.errorBody")}</p>
       {onRetry && (
         <Button variant="outline" className="mt-4" onClick={onRetry}>
           <RotateCw /> {t("common.retry")}

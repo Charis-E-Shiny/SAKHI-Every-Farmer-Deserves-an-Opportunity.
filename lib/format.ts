@@ -1,7 +1,7 @@
 // Display formatting shared by every interface: rupees, quantities,
 // dates and relative times (Indian locale). Helpers that print words take
 // an optional UI language; the default English output is unchanged.
-import { translate, type Lang } from "@/lib/i18n";
+import { translate, translateText, type Lang } from "@/lib/i18n";
 
 const LOCALE: Record<Lang, string> = { en: "en-IN", hi: "hi-IN", kn: "kn-IN" };
 
@@ -87,10 +87,10 @@ function startOfDay(d: Date) {
 }
 
 /** Compact harvest age for small cards: "Today", "Yesterday", "3d ago". */
-export function harvestAgeShort(d: Date | string): string {
+export function harvestAgeShort(d: Date | string, lang: Lang = "en"): string {
   const date = typeof d === "string" ? new Date(d) : d;
   const days = Math.floor((startOfDay(new Date()).getTime() - startOfDay(date).getTime()) / 86_400_000);
-  if (days <= 0) return "Today";
-  if (days === 1) return "Yesterday";
-  return `${days}d ago`;
+  if (days <= 0) return translateText(lang, "Today");
+  if (days === 1) return translateText(lang, "Yesterday");
+  return translateText(lang, "{n}d ago", { n: days });
 }

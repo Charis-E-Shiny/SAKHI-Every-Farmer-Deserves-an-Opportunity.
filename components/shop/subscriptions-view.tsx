@@ -12,12 +12,15 @@ import { MediaImage } from "@/components/common/media-image";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { EmptyState, ErrorState, SkeletonCards } from "@/components/common/states";
 import { StatusBadge } from "@/components/common/status-badge";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useLive } from "@/hooks/use-live";
 import { sendJSON } from "@/lib/fetcher";
+import { cropName } from "@/lib/crops";
 import { formatINR } from "@/lib/format";
+import { localizeSlot, localizeTitle } from "@/lib/i18n/titles";
 import type { SubscriptionSlot } from "@/lib/subscription-schedule";
 import { cn } from "@/lib/utils";
 import { deliveryLabel, ScheduleFields, SubscribeSheet, type ScheduleValue } from "./subscribe-sheet";
@@ -40,6 +43,7 @@ interface Plan {
 
 /** Subscriptions page body. */
 export function SubscriptionsView() {
+  const { tx, lang } = useI18n();
   const { data, error, isLoading, mutate } = useSWR<Plan[]>("/api/subscriptions");
   useLive(["order.updated"], () => mutate());
   const [creating, setCreating] = useState(false);
@@ -51,10 +55,10 @@ export function SubscriptionsView() {
     setBusy(key);
     try {
       await fn();
-      if (done) toast.success(done);
+      if (done) toast.success(tx(done));
       await mutate();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(null);
     }
@@ -62,7 +66,7 @@ export function SubscriptionsView() {
   const runNow = (p: Plan) =>
     act(`run:${p.id}`, async () => {
       const r = await sendJSON<{ code: string; switchedTo: string | null }>(`/api/subscriptions/${p.id}/run`, {});
-      toast.success(`Order ${r.code} placed${r.switchedTo ? ` from ${r.switchedTo}` : ""}`);
+      toast.success(r.switchedTo ? tx("Order {code} placed from {farm}", { code: r.code, farm: r.switchedTo }) : tx("Order {code} placed", { code: r.code }));
     });
 
   const header = (
@@ -71,7 +75,7 @@ export function SubscriptionsView() {
       description="Milk every morning, vegetables every Sunday, set it once, pause any time."
       actions={
         <Button className="min-h-11" onClick={() => setCreating(true)}>
-          <Plus /> New plan
+          <Plus /> {tx("New plan")}
         </Button>
       }
     />
@@ -90,7 +94,7 @@ export function SubscriptionsView() {
           body="Pick something you buy often and choose when it should arrive."
           action={
             <Button className="min-h-11" onClick={() => setCreating(true)}>
-              <Plus /> Start a plan
+              <Plus /> {tx("Start a plan")}
             </Button>
           }
         />
@@ -111,15 +115,15 @@ export function SubscriptionsView() {
                   <div className="flex items-start gap-3">
                     <span className="relative size-16 shrink-0 overflow-hidden rounded-2xl bg-muted">{p.listing?.imageUrl && <MediaImage src={p.listing.imageUrl} alt="" sizes="64px" />}</span>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold">{p.listing?.title ?? p.crop}</p>
+                      <p className="truncate font-semibold">{p.listing ? localizeTitle(p.listing.title, lang) : cropName(p.crop, lang)}</p>
                       <p className="truncate text-sm text-muted-foreground">
-                        {p.listing ? `${p.listing.farmer}${p.listing.village ? ` · ${p.listing.village}` : ""}` : "Any nearby farm"}
+                        {p.listing ? `${p.listing.farmer}${p.listing.village ? ` · ${tx(p.listing.village)}` : ""}` : tx("Any nearby farm")}
                       </p>
                       <p className="mt-1 text-sm">
                         <b className="tabular">
-                          {p.qty} {p.unit}
+                          {p.qty} {tx(p.unit === "litre" ? "L" : p.unit)}
                         </b>{" "}
-                        · {p.schedule}
+                        · {localizeSlot(p.schedule, lang)}
                       </p>
                     </div>
                     <label className="flex shrink-0 flex-col items-center gap-1 text-[11px] text-muted-foreground">
@@ -127,36 +131,36 @@ export function SubscriptionsView() {
                         checked={p.active}
                         disabled={busy === `toggle:${p.id}`}
                         onCheckedChange={(on) => act(`toggle:${p.id}`, () => sendJSON(`/api/subscriptions/${p.id}`, { active: on }, "PATCH"), on ? "Plan resumed" : "Plan paused")}
-                        aria-label={p.active ? "Pause plan" : "Resume plan"}
+                        aria-label={tx(p.active ? "Pause plan" : "Resume plan")}
                       />
-                      {p.active ? "On" : "Paused"}
+                      {tx(p.active ? "On|switch" : "Paused")}
                     </label>
                   </div>
 
                   <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-muted/60 px-3 py-2.5 text-sm">
                     <span className="inline-flex items-center gap-1.5">
                       <CalendarClock className="size-4 text-muted-foreground" />
-                      {p.nextDeliveryAt ? deliveryLabel(p.nextDeliveryAt, p.preferredSlot) : "Paused, no deliveries"}
+                      {p.nextDeliveryAt ? deliveryLabel(p.nextDeliveryAt, p.preferredSlot, lang) : tx("Paused, no deliveries")}
                     </span>
-                    {p.estimate !== null && <span className="tabular text-muted-foreground">≈ {formatINR(p.estimate)} per delivery</span>}
+                    {p.estimate !== null && <span className="tabular text-muted-foreground">≈ {tx("{amount} per delivery", { amount: formatINR(p.estimate) })}</span>}
                   </div>
-                  {unavailable && <p className="mt-2 text-xs text-muted-foreground">This farm is running low, the next delivery will come from another nearby farm&apos;s {p.crop} if needed.</p>}
+                  {unavailable && <p className="mt-2 text-xs text-muted-foreground">{tx("This farm is running low, the next delivery will come from another nearby farm's {crop} if needed.", { crop: cropName(p.crop, lang) })}</p>}
 
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Button variant="outline" className="min-h-11" disabled={!p.active || busy === `run:${p.id}`} onClick={() => runNow(p)}>
-                      {busy === `run:${p.id}` ? <Loader2 className="animate-spin" /> : <Zap />} Deliver now
+                      {busy === `run:${p.id}` ? <Loader2 className="animate-spin" /> : <Zap />} {tx("Deliver now")}
                     </Button>
                     <Button variant="ghost" className="min-h-11" onClick={() => setEditing(p)}>
-                      <Pencil /> Edit
+                      <Pencil /> {tx("Edit")}
                     </Button>
-                    <Button variant="ghost" className="min-h-11 text-muted-foreground" onClick={() => setCancelling(p)} aria-label="Cancel plan">
+                    <Button variant="ghost" className="min-h-11 text-muted-foreground" onClick={() => setCancelling(p)} aria-label={tx("Cancel plan")}>
                       <Trash2 />
                     </Button>
                   </div>
 
                   {p.orders.length > 0 && (
                     <div className="mt-4 border-t pt-3">
-                      <p className="mb-2 text-xs text-muted-foreground">Recent deliveries</p>
+                      <p className="mb-2 text-xs text-muted-foreground">{tx("Recent deliveries")}</p>
                       <ul className="space-y-1.5">
                         {p.orders.map((o) => (
                           <li key={o.id}>
@@ -180,10 +184,10 @@ export function SubscriptionsView() {
       <SubscribeSheet open={creating} onOpenChange={setCreating} onCreated={() => mutate()} />
       {editing && <EditPlan plan={editing} onClose={() => setEditing(null)} onSaved={() => mutate()} />}
       <ResponsiveModal open={Boolean(cancelling)} onOpenChange={(o) => !o && setCancelling(null)} title="Cancel this plan?">
-        <p className="text-sm text-muted-foreground">No more deliveries will be placed. Past orders stay in your history. You can pause instead if you&apos;re away for a while.</p>
+        <p className="text-sm text-muted-foreground">{tx("No more deliveries will be placed. Past orders stay in your history. You can pause instead if you're away for a while.")}</p>
         <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button variant="ghost" className="min-h-11" onClick={() => setCancelling(null)}>
-            Keep plan
+            {tx("Keep plan")}
           </Button>
           <Button
             variant="destructive"
@@ -194,7 +198,7 @@ export function SubscriptionsView() {
               if (p) act(`del:${p.id}`, () => sendJSON(`/api/subscriptions/${p.id}`, {}, "DELETE"), "Plan cancelled");
             }}
           >
-            Cancel plan
+            {tx("Cancel plan")}
           </Button>
         </div>
       </ResponsiveModal>
@@ -203,27 +207,28 @@ export function SubscriptionsView() {
 }
 
 function EditPlan({ plan, onClose, onSaved }: { plan: Plan; onClose: () => void; onSaved: () => void }) {
+  const { tx, lang } = useI18n();
   const [v, setV] = useState<ScheduleValue>({ qty: String(plan.qty), frequency: plan.frequency, dayOfWeek: plan.dayOfWeek ?? 0, preferredSlot: plan.preferredSlot });
   const [busy, setBusy] = useState(false);
   async function save() {
     setBusy(true);
     try {
       await sendJSON(`/api/subscriptions/${plan.id}`, { qty: Number(v.qty), frequency: v.frequency, dayOfWeek: v.frequency === "WEEKLY" ? v.dayOfWeek : null, preferredSlot: v.preferredSlot }, "PATCH");
-      toast.success("Plan updated");
+      toast.success(tx("Plan updated"));
       onSaved();
       onClose();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(false);
     }
   }
   return (
-    <ResponsiveModal open onOpenChange={(o) => !o && onClose()} title={`Edit ${plan.listing?.title ?? plan.crop}`}>
+    <ResponsiveModal open onOpenChange={(o) => !o && onClose()} title={tx("Edit {item}", { item: plan.listing ? localizeTitle(plan.listing.title, lang) : cropName(plan.crop, lang) })}>
       <div className="space-y-5">
         <ScheduleFields value={v} onChange={setV} unit={plan.unit} min={plan.unit === "kg" ? 0.5 : 1} />
         <Button className="min-h-12 w-full" size="lg" disabled={busy || !(Number(v.qty) > 0)} onClick={save}>
-          {busy && <Loader2 className="animate-spin" />} Save changes
+          {busy && <Loader2 className="animate-spin" />} {tx("Save changes")}
         </Button>
       </div>
     </ResponsiveModal>

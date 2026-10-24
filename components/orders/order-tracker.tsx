@@ -5,7 +5,9 @@
 
 import { Bike, Check, CircleX, PackageCheck, ShoppingBag, Store, ThumbsUp } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { formatDateTime } from "@/lib/format";
+import { localizeSlot } from "@/lib/i18n/titles";
 import type { SerializedOrder } from "@/lib/orders/queries";
 import { cn } from "@/lib/utils";
 
@@ -34,19 +36,21 @@ function progressIndex(order: SerializedOrder) {
 
 /** Big animated status block. */
 export function StatusHero({ order }: { order: SerializedOrder }) {
+  const { tx, lang } = useI18n();
   const reduce = useReducedMotion();
   const s = order.status;
-  const title = s === "CANCELLED" ? "Cancelled" : s === "DISPUTED" ? "Under review" : LABEL[s]?.title ?? s;
+  const slot = order.slot ? ` · ${localizeSlot(order.slot, lang)}` : "";
+  const title = tx(s === "CANCELLED" ? "Cancelled" : s === "DISPUTED" ? "Under review" : LABEL[s]?.title ?? s);
   const sub =
     s === "CANCELLED"
-      ? order.cancelReason ?? "This order was cancelled"
+      ? tx(order.cancelReason ?? "This order was cancelled")
       : s === "DISPUTED"
-        ? "We're looking into the issue you reported"
+        ? tx("We're looking into the issue you reported")
         : s === "OUT_FOR_DELIVERY"
-          ? `${order.delivery?.worker?.name ?? "Your rider"} is on the way${order.slot ? ` · ${order.slot}` : ""}`
+          ? `${order.delivery?.worker?.name ? tx("{name} is on the way", { name: order.delivery.worker.name }) : tx("Your rider is on the way")}${slot}`
           : s === "CONFIRMED" || s === "PLACED"
-            ? `${order.farmer.name} will pack it soon${order.slot ? ` · ${order.slot}` : ""}`
-            : LABEL[s]?.sub ?? "";
+            ? `${tx("{name} will pack it soon", { name: order.farmer.name })}${slot}`
+            : tx(LABEL[s]?.sub ?? "");
   return (
     <div className={cn("dark relative overflow-hidden rounded-3xl bg-background p-5 text-foreground sm:p-6", s === "CANCELLED" && "bg-[oklch(0.2_0.02_20)]")}>
       <span className="absolute -top-16 -right-10 size-56 animate-orb rounded-full bg-lime/20 blur-3xl" />
@@ -91,6 +95,7 @@ export function StatusHero({ order }: { order: SerializedOrder }) {
 
 /** Vertical step timeline with timestamps. */
 export function OrderTimeline({ order }: { order: SerializedOrder }) {
+  const { tx, lang } = useI18n();
   const flow: readonly string[] = order.fulfilment === "PICKUP" ? PICKUP_FLOW : DELIVERY_FLOW;
   const idx = progressIndex(order);
   const cancelled = order.status === "CANCELLED";
@@ -123,15 +128,15 @@ export function OrderTimeline({ order }: { order: SerializedOrder }) {
               {done ? <Check className="relative size-4" strokeWidth={3} /> : <span className="text-xs">{i + 1}</span>}
             </span>
             <div className={cn("pt-1", !done && "opacity-50")}>
-              <p className="leading-tight font-medium">{LABEL[step].title}</p>
-              <p className="text-sm text-muted-foreground">{t ? formatDateTime(t) : LABEL[step].sub}</p>
+              <p className="leading-tight font-medium">{tx(LABEL[step].title)}</p>
+              <p className="text-sm text-muted-foreground">{t ? formatDateTime(t, lang) : tx(LABEL[step].sub)}</p>
             </div>
           </li>
         );
       })}
       {cancelled && (
         <li className="mt-2 flex gap-3 rounded-2xl bg-destructive/10 p-3 text-sm">
-          <CircleX className="mt-0.5 size-4 shrink-0 text-destructive" /> {order.cancelReason ?? "Cancelled"}
+          <CircleX className="mt-0.5 size-4 shrink-0 text-destructive" /> {tx(order.cancelReason ?? "Cancelled")}
         </li>
       )}
     </ol>
@@ -140,6 +145,7 @@ export function OrderTimeline({ order }: { order: SerializedOrder }) {
 
 /** Honest payment trail: authorised → captured (→ refunded), or paid on Razorpay (→ refunded through it). */
 export function PaymentTrail({ order }: { order: SerializedOrder }) {
+  const { tx, lang } = useI18n();
   const p = order.payment;
   if (!p) return null;
   const gateway = p.provider === "RAZORPAY";
@@ -158,8 +164,8 @@ export function PaymentTrail({ order }: { order: SerializedOrder }) {
         {steps.map((s, i) => (
           <span key={s.k} className="flex items-center gap-2">
             <span className={cn("rounded-full px-2.5 py-1 text-xs font-medium", s.on ? (s.k === "Refunded" ? "bg-muted" : "bg-lime/35") : "bg-muted text-muted-foreground")}>
-              {s.k}
-              {s.at ? ` · ${formatDateTime(s.at)}` : ""}
+              {tx(s.k)}
+              {s.at ? ` · ${formatDateTime(s.at, lang)}` : ""}
             </span>
             {i < steps.length - 1 && <span className="text-muted-foreground">→</span>}
           </span>
@@ -167,16 +173,16 @@ export function PaymentTrail({ order }: { order: SerializedOrder }) {
       </div>
       <p className="mt-2 text-xs break-words text-muted-foreground">
         {p.status === "FAILED"
-          ? p.failureReason ?? "Authorisation released, you weren't charged."
+          ? tx(p.failureReason ?? "Authorisation released, you weren't charged.")
           : p.status === "REFUNDED"
             ? gateway
-              ? `Refunded through Razorpay${p.refundRef ? `, refund ref ${p.refundRef}` : ""}. Banks usually take 5 to 7 working days to show it.`
-              : "Refunded to your original payment method (simulated)."
+              ? `${p.refundRef ? tx("Refunded through Razorpay, refund ref {ref}.", { ref: p.refundRef }) : tx("Refunded through Razorpay.")} ${tx("Banks usually take 5 to 7 working days to show it.")}`
+              : tx("Refunded to your original payment method (simulated).")
             : gateway && p.failureReason
-              ? `${p.failureReason}. Payment ref ${p.ref}.`
+              ? `${tx(p.failureReason)}. ${tx("Payment ref {ref}.", { ref: p.ref })}`
               : p.status === "CAPTURED" || gateway
-                ? `${p.method}, ref ${p.ref}. The farmer is paid only after the handover is verified.`
-                : "Held on your account, not yet charged."}
+                ? `${tx(p.method)}, ${tx("ref {ref}.", { ref: p.ref })} ${tx("The farmer is paid only after the handover is verified.")}`
+                : tx("Held on your account, not yet charged.")}
       </p>
     </div>
   );

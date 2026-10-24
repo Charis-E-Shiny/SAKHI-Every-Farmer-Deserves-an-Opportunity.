@@ -1,12 +1,16 @@
 // /bulk/orders/[id]/invoice — printable invoice (Download PDF = print).
 import type { Metadata } from "next";
+import { getI18n } from "@/lib/i18n/server";
 import { notFound } from "next/navigation";
 import { Invoice } from "@/components/bulk/invoice";
 import { HttpError } from "@/lib/api";
 import { getCurrentUser } from "@/lib/auth/session";
 import { loadOrderFor, serializeOrder } from "@/lib/orders/queries";
 
-export const metadata: Metadata = { title: "Invoice" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { tx } = await getI18n();
+  return { title: tx("Invoice") };
+}
 
 /** Loads the order (buyer, farmer or admin); 404s for anyone else. */
 async function loadInvoice(id: string) {

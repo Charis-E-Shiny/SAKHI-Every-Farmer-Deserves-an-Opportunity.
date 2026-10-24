@@ -12,15 +12,18 @@ import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { MediaImage } from "@/components/common/media-image";
 import { ErrorState, SkeletonBlock } from "@/components/common/states";
 import { OrderTimeline, PaymentTrail, StatusHero } from "@/components/orders/order-tracker";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useLive } from "@/hooks/use-live";
 import { sendJSON } from "@/lib/fetcher";
 import { formatINR, formatQty } from "@/lib/format";
+import { localizeTitle } from "@/lib/i18n/titles";
 import type { SerializedOrder } from "@/lib/orders/queries";
 import { cn } from "@/lib/utils";
 
 const CANCEL_REASONS = ["Ordered by mistake", "Need it at a different time", "Found it elsewhere"];
+const DELIVERY_STATUS: Record<string, string> = { UNASSIGNED: "Unassigned", ASSIGNED: "Rider assigned", PICKED_UP: "Picked up", DELIVERED: "Delivered", FAILED: "Failed" };
 
 /**
  * @param backHref - list to return to
@@ -41,6 +44,7 @@ export function OrderDetail({
   after?: (order: SerializedOrder, refresh: () => void) => React.ReactNode;
   actions?: (order: SerializedOrder) => React.ReactNode;
 }) {
+  const { tx, lang } = useI18n();
   const { data: order, error, isLoading, mutate } = useSWR<SerializedOrder>(`/api/orders/${id}`);
   const [live, setLive] = useState(false);
   useLive(["order.updated", "delivery.updated"], (e) => {
@@ -48,7 +52,7 @@ export function OrderDetail({
     mutate();
   });
   const [cancelOpen, setCancelOpen] = useState(false);
-  const [reason, setReason] = useState(CANCEL_REASONS[0]);
+  const [reason, setReason] = useState(() => tx(CANCEL_REASONS[0]));
   const [busy, setBusy] = useState(false);
 
   if (isLoading) {
@@ -66,11 +70,11 @@ export function OrderDetail({
     setBusy(true);
     try {
       await sendJSON(`/api/orders/${id}/cancel`, { reason });
-      toast.success("Order cancelled, refund issued");
+      toast.success(tx("Order cancelled, refund issued"));
       setCancelOpen(false);
       mutate();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -80,12 +84,12 @@ export function OrderDetail({
     <div>
       <div className="mb-4 flex items-center justify-between gap-2">
         <Link href={backHref} className="inline-flex min-h-9 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="size-4" /> Orders
+          <ArrowLeft className="size-4" /> {tx("Orders")}
         </Link>
         <span className="flex items-center gap-2">
           {actions?.(order)}
           <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs", live ? "border-lime/60 text-foreground" : "text-muted-foreground")}>
-            <Radio className={cn("size-3.5", live && "text-lime")} /> {live ? "Live" : "Auto-updating"}
+            <Radio className={cn("size-3.5", live && "text-lime")} /> {tx(live ? "Live|connection" : "Auto-updating")}
           </span>
         </span>
       </div>
@@ -96,7 +100,7 @@ export function OrderDetail({
         <div className="space-y-5">
           {handover?.(order, () => mutate())}
           <section className="rounded-3xl border bg-card p-5">
-            <p className="mb-4 font-semibold">Progress</p>
+            <p className="mb-4 font-semibold">{tx("Progress")}</p>
             <OrderTimeline order={order} />
           </section>
           {after?.(order, () => mutate())}
@@ -104,15 +108,15 @@ export function OrderDetail({
 
         <div className="space-y-5">
           <section className="rounded-3xl border bg-card p-5">
-            <p className="font-semibold">Items</p>
+            <p className="font-semibold">{tx("Items")}</p>
             <ul className="mt-3 space-y-3">
               {order.items.map((it) => (
                 <li key={it.id} className="flex items-center gap-3">
                   <span className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-muted">{it.imageUrl && <MediaImage src={it.imageUrl} sizes="48px" />}</span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium break-words">{it.title}</span>
+                    <span className="block text-sm font-medium break-words">{localizeTitle(it.title, lang)}</span>
                     <span className="text-xs text-muted-foreground">
-                      {formatQty(it.qty, it.unit)} × {formatINR(it.unitPrice)}
+                      {formatQty(it.qty, it.unit, lang)} × {formatINR(it.unitPrice)}
                     </span>
                   </span>
                   <span className="tabular text-sm font-medium">{formatINR(it.qty * it.unitPrice)}</span>
@@ -121,33 +125,33 @@ export function OrderDetail({
             </ul>
             <dl className="mt-4 space-y-1.5 border-t pt-3 text-sm">
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">Items</dt>
+                <dt className="text-muted-foreground">{tx("Items")}</dt>
                 <dd className="tabular">{formatINR(order.subtotal, true)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-muted-foreground">{order.fulfilment === "PICKUP" ? "Self-pickup" : "Delivery"}</dt>
-                <dd className="tabular">{order.deliveryFee ? formatINR(order.deliveryFee, true) : "Free"}</dd>
+                <dt className="text-muted-foreground">{tx(order.fulfilment === "PICKUP" ? "Self-pickup" : "Delivery")}</dt>
+                <dd className="tabular">{order.deliveryFee ? formatINR(order.deliveryFee, true) : tx("Free")}</dd>
               </div>
               <div className="flex justify-between pt-1 font-semibold">
-                <dt>Total</dt>
+                <dt>{tx("Total")}</dt>
                 <dd className="tabular">{formatINR(order.total, true)}</dd>
               </div>
             </dl>
           </section>
 
           <section className="rounded-3xl border bg-card p-5">
-            <p className="mb-3 font-semibold">Payment</p>
+            <p className="mb-3 font-semibold">{tx("Payment")}</p>
             <PaymentTrail order={order} />
           </section>
 
           <section className="grid gap-3 sm:grid-cols-2">
-            <Contact label="Farmer" name={order.farmer.farmName ?? order.farmer.name} sub={order.farmer.village ?? ""} phone={order.farmer.phone} />
-            {order.delivery?.worker && <Contact label="Rider" name={order.delivery.worker.name} sub={order.delivery.status.replace(/_/g, " ").toLowerCase()} phone={order.delivery.worker.phone} />}
+            <Contact label={tx("Farmer")} name={order.farmer.farmName ?? order.farmer.name} sub={order.farmer.village ? tx(order.farmer.village) : ""} phone={order.farmer.phone} />
+            {order.delivery?.worker && <Contact label={tx("Rider")} name={order.delivery.worker.name} sub={tx(DELIVERY_STATUS[order.delivery.status] ?? order.delivery.status.replace(/_/g, " ").toLowerCase())} phone={order.delivery.worker.phone} />}
           </section>
 
           {canCancel && (
             <Button variant="outline" className="w-full" onClick={() => setCancelOpen(true)}>
-              Cancel order
+              {tx("Cancel order")}
             </Button>
           )}
         </div>
@@ -157,14 +161,14 @@ export function OrderDetail({
         <div className="space-y-3">
           <div className="flex flex-wrap gap-2">
             {CANCEL_REASONS.map((r) => (
-              <button key={r} type="button" onClick={() => setReason(r)} className={cn("rounded-full border px-3 py-1.5 text-sm", reason === r && "border-foreground bg-muted")}>
-                {r}
+              <button key={r} type="button" onClick={() => setReason(tx(r))} className={cn("rounded-full border px-3 py-1.5 text-sm", reason === tx(r) && "border-foreground bg-muted")}>
+                {tx(r)}
               </button>
             ))}
           </div>
           <Textarea rows={2} value={reason} onChange={(e) => setReason(e.target.value)} />
           <Button variant="destructive" size="lg" className="w-full" onClick={cancel} disabled={busy || reason.trim().length < 3}>
-            Cancel order
+            {tx("Cancel order")}
           </Button>
         </div>
       </ResponsiveModal>
@@ -173,6 +177,7 @@ export function OrderDetail({
 }
 
 function Contact({ label, name, sub, phone }: { label: string; name: string; sub: string; phone: string | null }) {
+  const { tx } = useI18n();
   return (
     <div className="flex items-center gap-3 rounded-3xl border bg-card p-4">
       <div className="min-w-0 flex-1">
@@ -181,7 +186,7 @@ function Contact({ label, name, sub, phone }: { label: string; name: string; sub
         <p className="text-xs text-muted-foreground capitalize">{sub}</p>
       </div>
       {phone && (
-        <Button asChild variant="outline" size="icon" aria-label={`Call ${name}`}>
+        <Button asChild variant="outline" size="icon" aria-label={tx("Call {name}", { name })}>
           <a href={`tel:${phone.replace(/\s/g, "")}`}>
             <Phone className="size-4" />
           </a>

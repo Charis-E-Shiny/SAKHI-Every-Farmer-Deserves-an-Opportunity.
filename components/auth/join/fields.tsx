@@ -1,6 +1,7 @@
 // Small form pieces shared by the join forms.
 "use client";
 
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,36 +10,39 @@ import { LANGUAGES, type Option } from "@/lib/onboarding-options";
 
 /** Label + control. */
 export function Field({ label, id, hint, children }: { label: string; id: string; hint?: string; children: React.ReactNode }) {
+  const { tx } = useI18n();
   return (
     <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
+      <Label htmlFor={id}>{tx(label)}</Label>
       {children}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-xs text-muted-foreground">{tx(hint)}</p>}
     </div>
   );
 }
 
 /** Text input wired to a setter. */
-export function TextField({ label, id, value, onChange, hint, ...rest }: { label: string; id: string; value: string; onChange: (v: string) => void; hint?: string } & Omit<React.ComponentProps<typeof Input>, "value" | "onChange" | "id">) {
+export function TextField({ label, id, value, onChange, hint, placeholder, ...rest }: { label: string; id: string; value: string; onChange: (v: string) => void; hint?: string } & Omit<React.ComponentProps<typeof Input>, "value" | "onChange" | "id">) {
+  const { tx } = useI18n();
   return (
     <Field label={label} id={id} hint={hint}>
-      <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} {...rest} />
+      <Input id={id} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder && tx(placeholder)} {...rest} />
     </Field>
   );
 }
 
 /** Dropdown for a list of options. */
 export function SelectField<V extends string>({ label, id, value, onChange, options, placeholder }: { label: string; id: string; value: string; onChange: (v: V) => void; options: readonly Option<V>[]; placeholder?: string }) {
+  const { tx } = useI18n();
   return (
     <Field label={label} id={id}>
       <Select value={value} onValueChange={(v) => onChange(v as V)}>
         <SelectTrigger id={id} className="w-full">
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={placeholder && tx(placeholder)} />
         </SelectTrigger>
         <SelectContent>
           {options.map((o) => (
             <SelectItem key={o.value} value={o.value}>
-              {o.label}
+              {tx(o.label)}
             </SelectItem>
           ))}
         </SelectContent>
@@ -53,9 +57,10 @@ export const LanguageField = ({ value, onChange, label = "Preferred language" }:
 
 /** Service-area dropdown; towns we don't serve yet are listed as "coming soon". */
 export function AreaField({ value, onChange, label = "Your area", id = "area", servedOnly = false }: { value: string; onChange: (v: string) => void; label?: string; id?: string; servedOnly?: boolean }) {
+  const { tx } = useI18n();
   const options: Option[] = [
-    ...SERVICE_AREAS.map((a) => ({ value: a.name, label: a.name })),
-    ...(servedOnly ? [] : UNSERVED_AREAS.map((a) => ({ value: a, label: `${a} (coming soon)` }))),
+    ...SERVICE_AREAS.map((a) => ({ value: a.name, label: tx(a.name) })),
+    ...(servedOnly ? [] : UNSERVED_AREAS.map((a) => ({ value: a, label: `${tx(a)} (${tx("coming soon")})` }))),
   ];
   return <SelectField label={label} id={id} value={value} onChange={onChange} options={options} placeholder="Choose an area" />;
 }

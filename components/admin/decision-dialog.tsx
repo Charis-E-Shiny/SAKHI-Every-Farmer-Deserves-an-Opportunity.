@@ -5,6 +5,7 @@
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +41,7 @@ export function DecisionDialog({
   defaults: { price: number | null; grade: string | null; unit: string };
   onConfirm: (input: { note?: string; price?: number; grade?: "A" | "B" | "C" }) => Promise<void>;
 }) {
+  const { tx } = useI18n();
   const [note, setNote] = useState("");
   const [price, setPrice] = useState(String(defaults.price ?? ""));
   const [grade, setGrade] = useState(defaults.grade ?? "B");
@@ -67,15 +69,15 @@ export function DecisionDialog({
         {kind === "APPROVE" && (
           <>
             <p className="text-sm text-muted-foreground">
-              This creates a live listing buyers can order from. AI flags are advisory, you&apos;re making the call.
+              {tx("This creates a live listing buyers can order from. AI flags are advisory, you're making the call.")}
             </p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="ap-price">Price (₹/{defaults.unit})</Label>
+                <Label htmlFor="ap-price">{tx("Price (₹/{unit})", { unit: tx(defaults.unit === "litre" ? "L" : defaults.unit) })}</Label>
                 <Input id="ap-price" inputMode="decimal" value={price} onChange={(e) => setPrice(e.target.value.replace(/[^\d.]/g, ""))} />
               </div>
               <div className="space-y-1.5">
-                <Label>Grade</Label>
+                <Label>{tx("Grade")}</Label>
                 <div className="grid grid-cols-3 gap-1.5">
                   {["A", "B", "C"].map((g) => (
                     <button
@@ -98,24 +100,24 @@ export function DecisionDialog({
               <button
                 key={q}
                 type="button"
-                onClick={() => setNote(q)}
-                className={cn("rounded-full border px-3 py-1.5 text-left text-xs", note === q && "border-foreground bg-muted")}
+                onClick={() => setNote(tx(q))}
+                className={cn("rounded-full border px-3 py-1.5 text-left text-xs", note === tx(q) && "border-foreground bg-muted")}
               >
-                {q}
+                {tx(q)}
               </button>
             ))}
           </div>
         )}
         <div className="space-y-1.5">
-          <Label htmlFor="dec-note">{needsNote ? "Note to farmer (required)" : "Note (optional)"}</Label>
+          <Label htmlFor="dec-note">{tx(needsNote ? "Note to farmer (required)" : "Note (optional)")}</Label>
           <Textarea id="dec-note" rows={3} value={note} onChange={(e) => setNote(e.target.value)} maxLength={400} />
         </div>
         <div className="grid grid-cols-2 gap-3">
           <Button variant="outline" size="lg" onClick={onClose} disabled={busy}>
-            Cancel
+            {tx("Cancel")}
           </Button>
           <Button variant={copy.variant} size="lg" onClick={confirm} disabled={busy || (needsNote && !note.trim())}>
-            {busy ? <Loader2 className="animate-spin" /> : copy.cta}
+            {busy ? <Loader2 className="animate-spin" /> : tx(copy.cta)}
           </Button>
         </div>
       </div>

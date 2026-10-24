@@ -4,6 +4,7 @@
 import { z } from "zod";
 import { handler, HttpError } from "@/lib/api";
 import { loadDemand, rankDemandOffers } from "@/lib/bulk";
+import { getLang } from "@/lib/i18n/server";
 import { rateLimit } from "@/lib/rate-limit";
 
 const body = z.object({ demandId: z.string().min(1) });
@@ -13,5 +14,5 @@ export const POST = handler<z.infer<typeof body>>({ roles: ["BULK_BUYER", "ADMIN
   rateLimit(`ai:rank:${user.id}`, 30, 60_000);
   const d = await loadDemand(body.demandId);
   if (user.role === "BULK_BUYER" && d.buyerId !== user.id) throw new HttpError(403, "Not your requirement");
-  return rankDemandOffers(d.id);
+  return rankDemandOffers(d.id, await getLang(user));
 });

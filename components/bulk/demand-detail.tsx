@@ -15,10 +15,11 @@ import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { EmptyState, ErrorState, SkeletonBlock } from "@/components/common/states";
 import { StatusBadge, offerStatusLabel } from "@/components/common/status-badge";
 import { MediaImage } from "@/components/common/media-image";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { useLive } from "@/hooks/use-live";
 import type { SerializedDemand, SerializedOffer } from "@/lib/bulk";
-import { CROPS, isCropSlug } from "@/lib/crops";
+import { CROPS, cropName, isCropSlug } from "@/lib/crops";
 import { sendJSON } from "@/lib/fetcher";
 import { formatINR } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,7 @@ const FACTOR_LABEL: Record<keyof Ranked["factors"], string> = { cost: "Cost", co
 
 /** /bulk/demands/[id] */
 export function DemandDetail({ id }: { id: string }) {
+  const { tx, lang } = useI18n();
   const { data: d, error, isLoading, mutate } = useSWR<SerializedDemand>(`/api/demands/${id}`);
   const [rank, setRank] = useState<{ source: string; ranking: Ranked[] } | null>(null);
   const [ranking, setRanking] = useState(false);
@@ -48,7 +50,7 @@ export function DemandDetail({ id }: { id: string }) {
       setRank(r);
       mutate();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setRanking(false);
     }
@@ -83,7 +85,7 @@ export function DemandDetail({ id }: { id: string }) {
   return (
     <div>
       <Link href="/bulk" className="mb-4 inline-flex min-h-9 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="size-4" /> Requirements
+        <ArrowLeft className="size-4" /> {tx("Requirements")}
       </Link>
 
       <section className="dark relative overflow-hidden rounded-3xl bg-background p-5 text-foreground sm:p-6">
@@ -97,27 +99,27 @@ export function DemandDetail({ id }: { id: string }) {
             <StatusBadge status={d.status} pulse={d.status === "OPEN"} />
             {d.urgent && (
               <span className="inline-flex items-center gap-1 rounded-full bg-tomato px-2 py-0.5 text-xs font-semibold text-white">
-                <Flame className="size-3" /> Urgent
+                <Flame className="size-3" /> {tx("Urgent")}
               </span>
             )}
             {d.recurring && (
               <span className="inline-flex items-center gap-1 rounded-full bg-white/10 px-2 py-0.5 text-xs">
-                <Repeat className="size-3" /> {d.frequency === "DAILY" ? "Daily" : "Weekly"}
+                <Repeat className="size-3" /> {tx(d.frequency === "DAILY" ? "Daily" : "Weekly")}
               </span>
             )}
           </div>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {d.qtyKg} kg <span className="font-serif font-normal italic">{d.cropName.toLowerCase()}</span>
+            {d.qtyKg} {tx("kg")} <span className="font-serif font-normal italic">{lang === "en" ? d.cropName.toLowerCase() : cropName(d.crop, lang)}</span>
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Grade {d.grade} · target {formatINR(d.targetPrice)}/kg · {d.status === "OPEN" ? <>needed <Countdown to={d.deadline} /></> : "closed"}
+            {tx("Grade {grade}", { grade: d.grade === "ANY" ? tx("Any") : d.grade })} · {tx("target {price}/kg", { price: formatINR(d.targetPrice) })} · {d.status === "OPEN" ? <>{tx("needed")} <Countdown to={d.deadline} /></> : tx("closed")}
           </p>
           {d.notes && <p className="mt-2 max-w-md text-sm opacity-80">“{d.notes}”</p>}
           <div className="mt-4 max-w-sm">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Covered</span>
+              <span>{tx("Covered")}</span>
               <span className="tabular">
-                {d.acceptedKg} / {d.qtyKg} kg
+                {d.acceptedKg} / {d.qtyKg} {tx("kg")}
               </span>
             </div>
             <div className="mt-1 h-2 overflow-hidden rounded-full bg-white/10">
@@ -129,13 +131,13 @@ export function DemandDetail({ id }: { id: string }) {
 
       <div className="mt-6 mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-semibold">
-          Offers <span className="text-muted-foreground">({d.offers.length})</span>
+          {tx("Offers")} <span className="text-muted-foreground">({d.offers.length})</span>
         </h2>
         <div className="flex items-center gap-2">
           {rank && <AISourceBadge source={rank.source} />}
           {d.status === "OPEN" && d.offers.some((o) => ["PENDING", "COUNTERED"].includes(o.status)) && (
             <Button variant="outline" size="sm" onClick={runRank} disabled={ranking}>
-              {ranking ? <Loader2 className="animate-spin" /> : <Sparkles />} {ranking ? "Ranking…" : "Re-rank"}
+              {ranking ? <Loader2 className="animate-spin" /> : <Sparkles />} {tx(ranking ? "Ranking…" : "Re-rank")}
             </Button>
           )}
         </div>
@@ -171,6 +173,7 @@ function OfferCard({
   onChange: () => void;
   onAccept: () => void;
 }) {
+  const { tx } = useI18n();
   const [counter, setCounter] = useState(String(Math.round(Math.min(o.pricePerKg, demand.targetPrice + 1))));
   const [showCounter, setShowCounter] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -186,11 +189,11 @@ function OfferCard({
     setBusy(action);
     try {
       await sendJSON(`/api/offers/${o.id}`, { action, price: p });
-      toast.success(action === "COUNTER" ? "Counter sent" : "Offer declined");
+      toast.success(tx(action === "COUNTER" ? "Counter sent" : "Offer declined"));
       setShowCounter(false);
       onChange();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(null);
     }
@@ -207,28 +210,28 @@ function OfferCard({
           <div className="flex flex-wrap items-center gap-2">
             <p className="font-semibold">{o.farmer.farmName ?? o.farmer.name}</p>
             <StatusBadge status={o.status} label={offerStatusLabel(o.status, o.lastActor, "BUYER")} />
-            {o.fromSurplus && <span className="rounded-full bg-lime/30 px-2 py-0.5 text-[11px] font-medium">Surplus rescue</span>}
+            {o.fromSurplus && <span className="rounded-full bg-lime/30 px-2 py-0.5 text-[11px] font-medium">{tx("Surplus rescue")}</span>}
           </div>
           <p className="text-sm text-muted-foreground">
-            {o.farmer.name} · <MapPin className="inline size-3" /> {o.farmer.village} · {Math.round(o.distanceKm)} km · {Math.round(o.farmer.reliability * 100)}% reliable
+            {o.farmer.name} · <MapPin className="inline size-3" /> {o.farmer.village && tx(o.farmer.village)} · {Math.round(o.distanceKm)} {tx("km")} · {tx("{pct}% reliable", { pct: Math.round(o.farmer.reliability * 100) })}
           </p>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
             <span>
-              <b className="tabular">{o.qtyKg} kg</b> <span className="text-muted-foreground">of {demand.qtyKg}</span>
+              <b className="tabular">{o.qtyKg} {tx("kg")}</b> <span className="text-muted-foreground">{tx("of {qty}", { qty: demand.qtyKg })}</span>
             </span>
             <span>
-              <b className="tabular">{formatINR(price)}/kg</b>
-              {farmerCountered && <span className="ml-1 text-xs text-muted-foreground">(countered)</span>}
+              <b className="tabular">{formatINR(price)}/{tx("kg")}</b>
+              {farmerCountered && <span className="ml-1 text-xs text-muted-foreground">({tx("countered")})</span>}
             </span>
-            {ranked && <span className="text-muted-foreground">₹{ranked.deliveredPerKg}/kg delivered</span>}
-            <span className="text-muted-foreground">~{o.etaHours} h</span>
-            {o.listing?.qualityScore && <span className="text-muted-foreground">visual {o.listing.qualityScore}</span>}
+            {ranked && <span className="text-muted-foreground">{tx("₹{price}/kg delivered", { price: ranked.deliveredPerKg })}</span>}
+            <span className="text-muted-foreground">~{o.etaHours} {tx("h")}</span>
+            {o.listing?.qualityScore && <span className="text-muted-foreground">{tx("visual {n}", { n: o.listing.qualityScore })}</span>}
           </div>
         </div>
         {score !== null && score !== undefined && (
           <div className="shrink-0 text-right">
             <p className="tabular text-2xl leading-none font-semibold">{Math.round(score)}</p>
-            <p className="text-[10px] text-muted-foreground uppercase">score</p>
+            <p className="text-[10px] text-muted-foreground uppercase">{tx("score")}</p>
           </div>
         )}
       </div>
@@ -250,7 +253,7 @@ function OfferCard({
                 return (
                   <div key={k} className="min-w-0">
                     <div className="flex items-baseline justify-between gap-2 text-xs">
-                      <dt className="truncate text-muted-foreground">{FACTOR_LABEL[k]}</dt>
+                      <dt className="truncate text-muted-foreground">{tx(FACTOR_LABEL[k])}</dt>
                       <dd className="tabular font-medium">{v}</dd>
                     </div>
                     <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted">
@@ -267,37 +270,37 @@ function OfferCard({
 
       {o.status === "ACCEPTED" && o.order && (
         <Link href={`/bulk/orders/${o.order.id}`} className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-success underline">
-          <Check className="size-4" /> Order {o.order.code}
+          <Check className="size-4" /> {tx("Order {code}", { code: o.order.code })}
         </Link>
       )}
 
       {live && (
         <div className="mt-3 space-y-2">
-          {waitingFarmer && <p className="text-sm text-muted-foreground">You countered at {formatINR(o.counterPrice)}/kg, waiting for the farmer (round {o.rounds}/2).</p>}
+          {waitingFarmer && <p className="text-sm text-muted-foreground">{tx("You countered at {price}/kg, waiting for the farmer (round {n}/2).", { price: formatINR(o.counterPrice), n: o.rounds })}</p>}
           <div className="flex flex-wrap gap-2">
             {!waitingFarmer && (
               <Button variant="brand" onClick={onAccept}>
-                <Check /> Accept {formatINR(price)}/kg
+                <Check /> {tx("Accept {price}/kg", { price: formatINR(price) })}
               </Button>
             )}
             {!waitingFarmer && o.rounds < 2 && (
               <Button variant="outline" onClick={() => setShowCounter((s) => !s)}>
-                Counter
+                {tx("Counter")}
               </Button>
             )}
             <Button variant="ghost" className="text-muted-foreground" onClick={() => act("REJECT")} disabled={busy !== null}>
-              <X /> Decline
+              <X /> {tx("Decline")}
             </Button>
           </div>
           <AnimatePresence>
             {showCounter && (
               <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
                 <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-muted/50 p-3">
-                  <span className="text-sm">Counter at ₹</span>
-                  <input aria-label="Counter price per kg" inputMode="decimal" value={counter} onChange={(e) => setCounter(e.target.value.replace(/[^\d.]/g, ""))} className="h-10 w-24 rounded-xl border bg-background px-3 text-base" />
-                  <span className="text-sm text-muted-foreground">/kg · round {o.rounds + 1} of 2</span>
+                  <span className="text-sm">{tx("Counter at ₹")}</span>
+                  <input aria-label={tx("Counter price per kg")} inputMode="decimal" value={counter} onChange={(e) => setCounter(e.target.value.replace(/[^\d.]/g, ""))} className="h-10 w-24 rounded-xl border bg-background px-3 text-base" />
+                  <span className="text-sm text-muted-foreground">/{tx("kg")} · {tx("round {n} of 2", { n: o.rounds + 1 })}</span>
                   <Button size="sm" onClick={() => act("COUNTER", Number(counter))} disabled={busy !== null || !Number(counter)}>
-                    {busy === "COUNTER" && <Loader2 className="animate-spin" />} Send
+                    {busy === "COUNTER" && <Loader2 className="animate-spin" />} {tx("Send")}
                   </Button>
                 </div>
               </motion.div>
@@ -310,6 +313,7 @@ function OfferCard({
 }
 
 function AcceptDialog({ demand, offer, onClose, onDone }: { demand: SerializedDemand; offer: SerializedOffer | null; onClose: () => void; onDone: () => void }) {
+  const { tx } = useI18n();
   const [busy, setBusy] = useState(false);
   if (!offer) return null;
   const price = offer.status === "COUNTERED" && offer.lastActor === "FARMER" && offer.counterPrice ? offer.counterPrice : offer.pricePerKg;
@@ -317,40 +321,40 @@ function AcceptDialog({ demand, offer, onClose, onDone }: { demand: SerializedDe
     setBusy(true);
     try {
       const r = await sendJSON<{ code: string; awarded: boolean }>(`/api/offers/${offer!.id}`, { action: "ACCEPT" });
-      toast.success(`Order ${r.code} placed${r.awarded ? ", requirement fully covered" : ""}`);
+      toast.success(r.awarded ? tx("Order {code} placed, requirement fully covered", { code: r.code }) : tx("Order {code} placed", { code: r.code }));
       onDone();
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(false);
     }
   }
   return (
-    <ResponsiveModal open onOpenChange={(o) => !o && onClose()} title={`Accept ${offer.farmer.farmName ?? offer.farmer.name}`} description="This places a bulk order and reserves the farmer's stock right away.">
+    <ResponsiveModal open onOpenChange={(o) => !o && onClose()} title={tx("Accept {name}", { name: offer.farmer.farmName ?? offer.farmer.name })} description={tx("This places a bulk order and reserves the farmer's stock right away.")}>
       <div className="space-y-4">
         <dl className="space-y-1.5 rounded-2xl bg-muted/50 p-4 text-sm">
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Quantity</dt>
-            <dd className="tabular font-medium">{offer.qtyKg} kg</dd>
+            <dt className="text-muted-foreground">{tx("Quantity")}</dt>
+            <dd className="tabular font-medium">{offer.qtyKg} {tx("kg")}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Agreed price</dt>
-            <dd className="tabular font-medium">{formatINR(price)}/kg</dd>
+            <dt className="text-muted-foreground">{tx("Agreed price")}</dt>
+            <dd className="tabular font-medium">{formatINR(price)}/{tx("kg")}</dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-muted-foreground">Delivery by</dt>
-            <dd className="font-medium">~{offer.etaHours} h</dd>
+            <dt className="text-muted-foreground">{tx("Delivery by")}</dt>
+            <dd className="font-medium">~{offer.etaHours} {tx("h")}</dd>
           </div>
           <div className="flex justify-between border-t pt-2 text-base font-semibold">
-            <dt>Goods total</dt>
+            <dt>{tx("Goods total")}</dt>
             <dd className="tabular">{formatINR(price * offer.qtyKg)}</dd>
           </div>
         </dl>
-        <p className="text-xs text-muted-foreground">Delivery fee for your area is added on the invoice. Payment is captured once stock is reserved; the farmer is paid after verified delivery.</p>
+        <p className="text-xs text-muted-foreground">{tx("Delivery fee for your area is added on the invoice. Payment is captured once stock is reserved; the farmer is paid after verified delivery.")}</p>
         <Button size="lg" variant="brand" className="w-full" onClick={accept} disabled={busy}>
-          {busy ? <Loader2 className="animate-spin" /> : <Check />} Place bulk order
+          {busy ? <Loader2 className="animate-spin" /> : <Check />} {tx("Place bulk order")}
         </Button>
-        {demand.qtyKg > offer.qtyKg && <p className="text-center text-xs text-muted-foreground">Covers {offer.qtyKg} of {demand.qtyKg} kg, you can accept more offers for the rest.</p>}
+        {demand.qtyKg > offer.qtyKg && <p className="text-center text-xs text-muted-foreground">{tx("Covers {qty} of {total} kg, you can accept more offers for the rest.", { qty: offer.qtyKg, total: demand.qtyKg })}</p>}
       </div>
     </ResponsiveModal>
   );

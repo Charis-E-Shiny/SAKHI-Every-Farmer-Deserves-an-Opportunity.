@@ -1,11 +1,15 @@
 // /bulk/browse — "Browse & buy": the shop with bulk quantity steps.
 import type { Metadata } from "next";
+import { getI18n } from "@/lib/i18n/server";
 import { BulkTabs } from "@/components/bulk/bulk-tabs";
 import { Browse } from "@/components/shop/browse";
 import { getCurrentUser } from "@/lib/auth/session";
 import { categoryChips } from "@/lib/categories";
 
-export const metadata: Metadata = { title: "Browse & buy" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { tx } = await getI18n();
+  return { title: tx("Browse & buy") };
+}
 
 /** Bulk buyers buy listed stock directly, in bigger steps (`?q=` from the top-bar search). */
 export default async function BulkBrowsePage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {

@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSyncExternalStore } from "react";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { formatINR } from "@/lib/format";
 import { useCart } from "@/lib/store/cart";
 
@@ -15,6 +16,7 @@ const noop = () => () => {};
 /** Hidden on the cart/checkout pages themselves. */
 export function CartBar() {
   const pathname = usePathname();
+  const { tx } = useI18n();
   const mounted = useSyncExternalStore(noop, () => true, () => false);
   const items = useCart((s) => s.items);
   const total = items.reduce((s, i) => s + i.qty * i.price, 0);
@@ -40,14 +42,14 @@ export function CartBar() {
             </span>
             <span className="min-w-0 flex-1 leading-tight">
               <span className="block text-sm font-semibold">
-                {items.length} item{items.length > 1 ? "s" : ""} · <span className="tabular">{formatINR(total)}</span>
+                {tx(items.length > 1 ? "{n} items" : "{n} item", { n: items.length })} · <span className="tabular">{formatINR(total)}</span>
               </span>
               <span className="block text-xs opacity-70">
-                from {farmers} farmer{farmers > 1 ? "s" : ""}
+                {tx(farmers > 1 ? "from {n} farmers" : "from {n} farmer", { n: farmers })}
               </span>
             </span>
             <span className="inline-flex items-center gap-1 text-sm font-semibold">
-              View cart <ArrowRight className="size-4" />
+              {tx("View cart")} <ArrowRight className="size-4" />
             </span>
           </Link>
         </motion.div>

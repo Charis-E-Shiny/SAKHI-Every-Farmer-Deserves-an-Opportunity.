@@ -1,10 +1,14 @@
 // /shop — consumer marketplace browse.
 import type { Metadata } from "next";
+import { getI18n } from "@/lib/i18n/server";
 import { Browse } from "@/components/shop/browse";
 import { getCurrentUser } from "@/lib/auth/session";
 import { categoryChips } from "@/lib/categories";
 
-export const metadata: Metadata = { title: "Shop" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { tx } = await getI18n();
+  return { title: tx("Shop") };
+}
 
 /** Loads the buyer's area and category availability, then renders browse (`?q=` from the top-bar search). */
 export default async function ShopPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {

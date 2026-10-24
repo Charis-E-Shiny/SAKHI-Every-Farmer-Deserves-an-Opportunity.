@@ -1,5 +1,9 @@
 // Colour-coded status pill for batches, listings, orders, payments,
-// settlements and deliveries — one vocabulary across the whole app.
+// settlements and deliveries — one vocabulary across the whole app, in the
+// site's language.
+"use client";
+
+import { useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
 
 type Tone = "neutral" | "info" | "warning" | "success" | "danger" | "lime";
@@ -76,6 +80,7 @@ export function StatusBadge({
   pulse?: boolean;
   className?: string;
 }) {
+  const { tx } = useI18n();
   const meta = STATUS[status] ?? { label: status, tone: "neutral" as Tone };
   return (
     <span
@@ -91,7 +96,7 @@ export function StatusBadge({
           <span className="relative size-1.5 rounded-full bg-current" />
         </span>
       )}
-      {label ?? meta.label}
+      {tx(label ?? meta.label)}
     </span>
   );
 }

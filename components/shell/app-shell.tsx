@@ -12,7 +12,8 @@ import { LogoMark } from "@/components/brand/logo";
 import { SiteFooter } from "@/components/common/site-footer";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { ThemeToggle } from "@/components/common/theme-toggle";
-import { I18nProvider, useI18n } from "@/components/providers/i18n-provider";
+import { useI18n } from "@/components/providers/i18n-provider";
+import { LanguageMenu } from "@/components/shell/language-switch";
 import { UserMenu } from "@/components/shell/user-menu";
 import { useNavBadges } from "@/components/shell/use-nav-badges";
 import type { PublicUser } from "@/lib/auth/public-user";
@@ -26,11 +27,9 @@ import { cn } from "@/lib/utils";
  */
 export function AppShell({ role, user, children }: { role: Role; user: PublicUser; children: React.ReactNode }) {
   return (
-    <I18nProvider initial="en" persist={false}>
-      <ShellInner role={role} user={user}>
-        {children}
-      </ShellInner>
-    </I18nProvider>
+    <ShellInner role={role} user={user}>
+      {children}
+    </ShellInner>
   );
 }
 
@@ -67,6 +66,7 @@ function TopBar({ user, items, active }: { user: PublicUser; items: NavItem[]; a
       >
         {current ? t(current.labelKey) : ""}
       </motion.span>
+      <LanguageMenu />
       <ThemeToggle />
       <UserMenu user={user} compact />
     </header>

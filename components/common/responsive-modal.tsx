@@ -16,6 +16,7 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { useIsDesktop } from "@/hooks/use-media-query";
 import { cn } from "@/lib/utils";
 
@@ -41,6 +42,10 @@ export function ResponsiveModal({
   className?: string;
 }) {
   const desktop = useIsDesktop();
+  // English titles are translated here; ones already in the site's language pass through.
+  const { tx } = useI18n();
+  title = tx(title);
+  description = description && tx(description);
   if (desktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>

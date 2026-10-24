@@ -1,20 +1,25 @@
 // /join/seller — the guided seller setup (six short screens).
 import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth/auth-shell";
+import { getI18n } from "@/lib/i18n/server";
 import { getPendingGoogle } from "@/lib/auth/google";
 import { BackLink } from "@/components/auth/join/back-link";
 import { SellerWizard } from "@/components/auth/join/seller-wizard";
 
-export const metadata: Metadata = { title: "Sell on FoodFlow" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { tx } = await getI18n();
+  return { title: tx("Sell on FoodFlow") };
+}
 
 /** Seller setup screen. */
 export default async function SellerJoinPage() {
   const google = await getPendingGoogle();
+  const { tx } = await getI18n();
   return (
     <AuthShell width="max-w-2xl">
-      <BackLink href="/login" label="Back" />
-      <h1 className="mt-4 text-[2.2rem] leading-[1] font-semibold tracking-tight sm:text-5xl">Set up your seller account</h1>
-      <p className="mt-3 mb-7 text-muted-foreground">A few quick questions so we can match you with the right buyers. It takes about five minutes.</p>
+      <BackLink href="/login" label={tx("Back")} />
+      <h1 className="mt-4 text-[2.2rem] leading-[1] font-semibold tracking-tight sm:text-5xl">{tx("Set up your seller account")}</h1>
+      <p className="mt-3 mb-7 text-muted-foreground">{tx("A few quick questions so we can match you with the right buyers. It takes about five minutes.")}</p>
       <SellerWizard google={google && { name: google.name, email: google.email }} />
     </AuthShell>
   );

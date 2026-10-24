@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { AISourceBadge } from "@/components/ai/ai-labels";
 import { QtyStepper } from "@/components/common/qty-stepper";
 import { CropPicker } from "@/components/farmer/new-batch/crop-picker";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,7 @@ const emptyDraft = (): Draft => ({ crop: null, qtyKg: "50", grade: "ANY", target
 
 /** /bulk/demands/new */
 export function PostDemand() {
+  const { tx } = useI18n();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("form");
   const [draft, setDraft] = useState<Draft>(emptyDraft);
@@ -84,7 +86,7 @@ export function PostDemand() {
     const gaps = [!draft.crop && "crop", !(Number(draft.qtyKg) > 0) && "qtyKg", !(Number(draft.targetPrice) > 0) && "targetPrice", !draft.deadline && "deadline"].filter(Boolean) as string[];
     if (gaps.length) {
       setMissing(gaps);
-      return toast.error("Fill in the highlighted fields");
+      return toast.error(tx("Fill in the highlighted fields"));
     }
     setBusy(true);
     try {
@@ -104,10 +106,10 @@ export function PostDemand() {
           },
         ],
       });
-      toast.success("Posted, nearby farmers are being notified");
+      toast.success(tx("Posted, nearby farmers are being notified"));
       router.push(`/bulk/demands/${res.ids[0]}`);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
       setBusy(false);
     }
   }
@@ -124,7 +126,7 @@ export function PostDemand() {
           ].map((m) => (
             <button key={m.k} type="button" onClick={() => setMode(m.k)} className={cn("relative flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium", mode === m.k ? "text-background" : "text-muted-foreground")}>
               {mode === m.k && <motion.span layoutId="post-pill" className="absolute inset-0 -z-10 rounded-xl bg-foreground" />}
-              <m.icon className="size-4" /> {m.l}
+              <m.icon className="size-4" /> {tx(m.l)}
             </button>
           ))}
         </div>
@@ -143,7 +145,7 @@ export function PostDemand() {
             setMissing(r.missing);
             setVoiceInfo({ transcript, source: r.source });
             setMode("form");
-            toast.success("Here's what we heard, check it before posting");
+            toast.success(tx("Here's what we heard, check it before posting"));
           }}
         />
       )}
@@ -158,23 +160,23 @@ export function PostDemand() {
             </div>
           )}
           <section className={cn("space-y-3 rounded-3xl", missing.includes("crop") && "ring-2 ring-tomato/60 ring-offset-4 ring-offset-background")}>
-            <Label className="text-[15px]">What do you need?</Label>
+            <Label className="text-[15px]">{tx("What do you need?")}</Label>
             <CropPicker value={draft.crop} onChange={(crop) => set({ crop })} />
           </section>
 
           <section className="grid gap-6 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="dq" className="text-[15px]">Quantity (kg)</Label>
-              <QtyStepper id="dq" size="lg" value={draft.qtyKg} onChange={(qtyKg) => set({ qtyKg })} step={5} min={1} suffix="kg" className={cn(missing.includes("qtyKg") && "rounded-xl ring-2 ring-tomato/60")} />
+              <Label htmlFor="dq" className="text-[15px]">{tx("Quantity (kg)")}</Label>
+              <QtyStepper id="dq" size="lg" value={draft.qtyKg} onChange={(qtyKg) => set({ qtyKg })} step={5} min={1} suffix={tx("kg")} className={cn(missing.includes("qtyKg") && "rounded-xl ring-2 ring-tomato/60")} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dp" className="text-[15px]">Target price (₹/kg)</Label>
-              <QtyStepper id="dp" size="lg" value={draft.targetPrice} onChange={(targetPrice) => set({ targetPrice })} step={1} min={1} suffix="/kg" className={cn(missing.includes("targetPrice") && "rounded-xl ring-2 ring-tomato/60")} />
+              <Label htmlFor="dp" className="text-[15px]">{tx("Target price (₹/kg)")}</Label>
+              <QtyStepper id="dp" size="lg" value={draft.targetPrice} onChange={(targetPrice) => set({ targetPrice })} step={1} min={1} suffix={`/${tx("kg")}`} className={cn(missing.includes("targetPrice") && "rounded-xl ring-2 ring-tomato/60")} />
               {market && (
                 <p className="text-xs text-muted-foreground">
-                  Indicative: {market.mandi} modal ₹{market.modalToday} · retail ~₹{market.suggested}.{" "}
+                  {tx("Indicative: {mandi} mandi ₹{modal} · retail ~₹{retail}.", { mandi: market.mandi, modal: market.modalToday, retail: market.suggested })}{" "}
                   <button type="button" className="font-semibold underline" onClick={() => set({ targetPrice: String(Math.round(market.modalToday * 1.05)) })}>
-                    Use ₹{Math.round(market.modalToday * 1.05)}
+                    {tx("Use ₹{price}", { price: Math.round(market.modalToday * 1.05) })}
                   </button>
                 </p>
               )}
@@ -182,29 +184,29 @@ export function PostDemand() {
           </section>
 
           <section className="space-y-2">
-            <Label className="text-[15px]">Grade</Label>
+            <Label className="text-[15px]">{tx("Grade")}</Label>
             <div className="grid grid-cols-4 gap-2">
               {(["ANY", "A", "B", "C"] as Grade[]).map((g) => (
                 <button key={g} type="button" onClick={() => set({ grade: g })} className={cn("h-11 rounded-xl border text-sm font-semibold", draft.grade === g && "border-foreground bg-foreground text-background")}>
-                  {g === "ANY" ? "Any" : `Grade ${g}`}
+                  {g === "ANY" ? tx("Any") : tx("Grade {grade}", { grade: g })}
                 </button>
               ))}
             </div>
           </section>
 
           <section className={cn("space-y-2 rounded-2xl", missing.includes("deadline") && "ring-2 ring-tomato/60")}>
-            <Label className="text-[15px]">Needed by</Label>
+            <Label className="text-[15px]">{tx("Needed by")}</Label>
             <div className="flex flex-wrap gap-2">
               {DEADLINES.map((d) => {
                 const v = d.value();
                 return (
                   <button key={d.label} type="button" onClick={() => set({ deadline: v })} className={cn("min-h-11 rounded-full border px-4 text-sm", draft.deadline === v && "border-foreground bg-foreground text-background")}>
-                    {d.label}
+                    {tx(d.label)}
                   </button>
                 );
               })}
             </div>
-            <Input type="datetime-local" value={draft.deadline} min={at(0, new Date().getHours() + 1)} onChange={(e) => set({ deadline: e.target.value })} aria-label="Exact deadline" />
+            <Input type="datetime-local" value={draft.deadline} min={at(0, new Date().getHours() + 1)} onChange={(e) => set({ deadline: e.target.value })} aria-label={tx("Exact deadline")} />
           </section>
 
           <section className="grid gap-3 sm:grid-cols-2">
@@ -212,8 +214,8 @@ export function PostDemand() {
               <span className="flex items-center gap-2">
                 <Flame className={cn("size-5", draft.urgent && "text-tomato")} />
                 <span>
-                  <span className="block text-sm font-medium">Urgent</span>
-                  <span className="block text-xs text-muted-foreground">Pushed to the top for farmers</span>
+                  <span className="block text-sm font-medium">{tx("Urgent")}</span>
+                  <span className="block text-xs text-muted-foreground">{tx("Pushed to the top for farmers")}</span>
                 </span>
               </span>
               <Switch checked={draft.urgent} onCheckedChange={(urgent) => set({ urgent })} />
@@ -223,8 +225,8 @@ export function PostDemand() {
                 <span className="flex items-center gap-2">
                   <Repeat className="size-5" />
                   <span>
-                    <span className="block text-sm font-medium">Recurring</span>
-                    <span className="block text-xs text-muted-foreground">Repost on a schedule</span>
+                    <span className="block text-sm font-medium">{tx("Recurring")}</span>
+                    <span className="block text-xs text-muted-foreground">{tx("Repost on a schedule")}</span>
                   </span>
                 </span>
                 <Switch checked={draft.recurring} onCheckedChange={(recurring) => set({ recurring })} />
@@ -235,7 +237,7 @@ export function PostDemand() {
                     <div className="mt-3 grid grid-cols-2 gap-2">
                       {(["DAILY", "WEEKLY"] as const).map((f) => (
                         <button key={f} type="button" onClick={() => set({ frequency: f })} className={cn("h-10 rounded-xl border text-sm", draft.frequency === f && "border-foreground bg-foreground text-background")}>
-                          {f === "DAILY" ? "Daily" : "Weekly"}
+                          {tx(f === "DAILY" ? "Daily" : "Weekly")}
                         </button>
                       ))}
                     </div>
@@ -246,13 +248,13 @@ export function PostDemand() {
           </section>
 
           <section className="space-y-2">
-            <Label htmlFor="dn" className="text-[15px]">Notes for farmers</Label>
-            <Textarea id="dn" rows={2} value={draft.notes} onChange={(e) => set({ notes: e.target.value })} placeholder="Size, delivery window, packing…" maxLength={300} />
+            <Label htmlFor="dn" className="text-[15px]">{tx("Notes for farmers")}</Label>
+            <Textarea id="dn" rows={2} value={draft.notes} onChange={(e) => set({ notes: e.target.value })} placeholder={tx("Size, delivery window, packing…")} maxLength={300} />
           </section>
 
           <div className="glass sticky bottom-0 z-30 -mx-4 border-y px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:px-6 lg:bottom-4 lg:mx-0 lg:rounded-2xl lg:border lg:pb-3">
             <Button size="lg" variant="brand" className="w-full" onClick={submit} disabled={busy}>
-              {busy ? <Loader2 className="animate-spin" /> : <Send />} Post requirement
+              {busy ? <Loader2 className="animate-spin" /> : <Send />} {tx("Post requirement")}
             </Button>
           </div>
         </div>
@@ -275,6 +277,7 @@ interface ParsedDemandResult {
 }
 
 function VoiceDemand({ onParsed }: { onParsed: (r: ParsedDemandResult, transcript: string) => void }) {
+  const { tx } = useI18n();
   const [lang, setLang] = useState("hi-IN");
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
@@ -283,7 +286,7 @@ function VoiceDemand({ onParsed }: { onParsed: (r: ParsedDemandResult, transcrip
     try {
       onParsed(await sendJSON<ParsedDemandResult>("/api/ai/parse-demand", { transcript: t, lang }), t);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -292,7 +295,7 @@ function VoiceDemand({ onParsed }: { onParsed: (r: ParsedDemandResult, transcrip
   return (
     <div className="dark relative overflow-hidden rounded-[2rem] bg-background p-5 text-foreground">
       <span className="absolute -top-16 -right-12 size-56 animate-orb rounded-full bg-lime/20 blur-3xl" />
-      <p className="relative text-lg font-semibold">Say what you need</p>
+      <p className="relative text-lg font-semibold">{tx("Say what you need")}</p>
       <p className="relative text-sm text-muted-foreground">“50 kilo pyaz kal subah tak chahiye, urgent, 30 rupaye tak”</p>
       <div className="relative mt-3 flex flex-wrap gap-2">
         {SPEECH_LANGS.map((l) => (
@@ -302,13 +305,13 @@ function VoiceDemand({ onParsed }: { onParsed: (r: ParsedDemandResult, transcrip
         ))}
       </div>
       <div className="relative flex flex-col items-center">
-        <MicOrb listening={speech.listening} onClick={() => (speech.listening ? speech.stop() : speech.start(lang))} disabled={!speech.supported || busy} label="Speak your requirement" />
-        <p className="-mt-3 min-h-12 max-w-md text-center">{speech.listening ? speech.interim || "Listening…" : busy ? "Understanding…" : !speech.supported ? "Voice isn't supported here, type below." : speech.error ?? "Tap and speak."}</p>
+        <MicOrb listening={speech.listening} onClick={() => (speech.listening ? speech.stop() : speech.start(lang))} disabled={!speech.supported || busy} label={tx("Speak your requirement")} />
+        <p className="-mt-3 min-h-12 max-w-md text-center">{speech.listening ? speech.interim || tx("Listening…") : busy ? tx("Understanding…") : !speech.supported ? tx("Voice isn't supported here, type below.") : speech.error ? tx(speech.error) : tx("Tap and speak.")}</p>
       </div>
       <div className="relative space-y-2">
-        <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder="…or type it here" className="border-white/15" />
+        <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder={tx("…or type it here")} className="border-white/15" />
         <Button variant="brand" onClick={() => parse(text)} disabled={busy || text.trim().length < 3}>
-          <Wand2 /> Fill the form
+          <Wand2 /> {tx("Fill the form")}
         </Button>
       </div>
     </div>
@@ -333,6 +336,7 @@ async function marketTarget(crop: CropSlug): Promise<string> {
 }
 
 function ListDemand() {
+  const { tx, lang } = useI18n();
   const router = useRouter();
   const [rows, setRows] = useState<ListRow[]>([]);
   const [text, setText] = useState("");
@@ -353,7 +357,7 @@ function ListDemand() {
     try {
       await accept((await sendJSON<{ items: { name: string; qty: number; unit: string }[] }>("/api/ai/parse-grocery-list", { text })).items);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -364,10 +368,10 @@ function ListDemand() {
       const form = new FormData();
       form.append("image", f);
       const r = await sendForm<{ items: { name: string; qty: number; unit: string }[]; sample: boolean }>("/api/ai/parse-grocery-list", form);
-      if (r.sample) toast("Photo reading needs the AI service, showing a sample list to edit");
+      if (r.sample) toast(tx("Photo reading needs the AI service, showing a sample list to edit"));
       await accept(r.items);
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     } finally {
       setBusy(false);
     }
@@ -376,19 +380,19 @@ function ListDemand() {
     // Never drop a row silently: name every incomplete one and post nothing.
     const incomplete = rows.filter((r) => !(r.crop && Number(r.qtyKg) > 0 && Number(r.targetPrice) > 0));
     if (incomplete.length) {
-      return toast.error(`Add a known crop, quantity and target price for: ${incomplete.map((r) => (r.crop ? cropName(r.crop) : r.name || "an empty row")).join(", ")}`);
+      return toast.error(tx("Add a known crop, quantity and target price for: {rows}", { rows: incomplete.map((r) => (r.crop ? cropName(r.crop, lang) : r.name || tx("an empty row"))).join(", ") }));
     }
     const valid = rows;
-    if (!valid.length) return toast.error("Add at least one item");
+    if (!valid.length) return toast.error(tx("Add at least one item"));
     setBusy(true);
     try {
       await sendJSON("/api/demands", {
         demands: valid.map((r) => ({ crop: r.crop, qtyKg: Number(r.qtyKg), grade: "ANY", targetPrice: Number(r.targetPrice), deadline: new Date(deadline).toISOString(), urgent, recurring: false, source: "LIST" })),
       });
-      toast.success(valid.length === 1 ? "Requirement posted" : `${valid.length} requirements posted`);
+      toast.success(valid.length === 1 ? tx("Requirement posted") : tx("{n} requirements posted", { n: valid.length }));
       router.push("/bulk");
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
       setBusy(false);
     }
   }
@@ -396,14 +400,14 @@ function ListDemand() {
   return (
     <div className="space-y-4">
       <div className="rounded-3xl border border-dashed bg-card p-5">
-        <p className="font-semibold">Upload or paste your procurement list</p>
-        <Textarea className="mt-3" rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder={"onion 60 kg\ntomato 40 kg\npotato 100 kg"} />
+        <p className="font-semibold">{tx("Upload or paste your procurement list")}</p>
+        <Textarea className="mt-3" rows={4} value={text} onChange={(e) => setText(e.target.value)} placeholder={tx("onion 60 kg\ntomato 40 kg\npotato 100 kg")} />
         <div className="mt-3 grid grid-cols-2 gap-2">
           <Button variant="brand" onClick={readText} disabled={busy || text.trim().length < 3}>
-            <Wand2 /> Read text
+            <Wand2 /> {tx("Read text")}
           </Button>
           <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={busy}>
-            {busy ? <Loader2 className="animate-spin" /> : <ListChecks />} Photo
+            {busy ? <Loader2 className="animate-spin" /> : <ListChecks />} {tx("Photo")}
           </Button>
         </div>
         <input ref={fileRef} type="file" accept="image/*" className="sr-only" onChange={(e) => e.target.files?.[0] && readPhoto(e.target.files[0])} />
@@ -413,36 +417,36 @@ function ListDemand() {
           {rows.map((r, i) => (
             <div key={i} className="grid grid-cols-[1fr_1fr_auto] items-center gap-2 border-b pb-3 last:border-0 sm:grid-cols-[1.4fr_1fr_1fr_auto]">
               <select
-                aria-label="Crop"
+                aria-label={tx("Crop")}
                 value={r.crop ?? ""}
                 onChange={(e) => setRows((xs) => xs.map((x, j) => (j === i ? { ...x, crop: (e.target.value || null) as CropSlug | null } : x)))}
                 className={cn("col-span-3 h-11 rounded-xl border bg-background/60 px-3 text-base sm:col-span-1", !r.crop && "border-tomato")}
               >
-                <option value="">{r.name}, pick crop</option>
+                <option value="">{tx("{name}, pick crop", { name: r.name })}</option>
                 {CROP_SLUGS.map((c) => (
                   <option key={c} value={c}>
-                    {cropName(c)}
+                    {cropName(c, lang)}
                   </option>
                 ))}
               </select>
-              <Input aria-label="Kg" inputMode="decimal" value={r.qtyKg} onChange={(e) => setRows((xs) => xs.map((x, j) => (j === i ? { ...x, qtyKg: e.target.value } : x)))} placeholder="kg" />
-              <Input aria-label="Target ₹/kg" inputMode="decimal" value={r.targetPrice} onChange={(e) => setRows((xs) => xs.map((x, j) => (j === i ? { ...x, targetPrice: e.target.value } : x)))} placeholder="₹/kg" />
-              <Button variant="ghost" size="icon" aria-label="Remove" onClick={() => setRows((xs) => xs.filter((_, j) => j !== i))}>
+              <Input aria-label={tx("kg")} inputMode="decimal" value={r.qtyKg} onChange={(e) => setRows((xs) => xs.map((x, j) => (j === i ? { ...x, qtyKg: e.target.value } : x)))} placeholder={tx("kg")} />
+              <Input aria-label={tx("Target ₹/kg")} inputMode="decimal" value={r.targetPrice} onChange={(e) => setRows((xs) => xs.map((x, j) => (j === i ? { ...x, targetPrice: e.target.value } : x)))} placeholder={`₹/${tx("kg")}`} />
+              <Button variant="ghost" size="icon" aria-label={tx("Remove")} onClick={() => setRows((xs) => xs.filter((_, j) => j !== i))}>
                 <Trash2 className="size-4" />
               </Button>
             </div>
           ))}
           <Button variant="ghost" size="sm" onClick={() => setRows((xs) => [...xs, { crop: null, name: "item", qtyKg: "", targetPrice: "" }])}>
-            <Plus /> Add row
+            <Plus /> {tx("Add row")}
           </Button>
           <div className="grid gap-3 sm:grid-cols-2">
-            <Input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} aria-label="Deadline for all" />
+            <Input type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} aria-label={tx("Deadline for all")} />
             <label className="flex min-h-11 items-center justify-between rounded-xl border px-3 text-sm">
-              Urgent <Switch checked={urgent} onCheckedChange={setUrgent} />
+              {tx("Urgent")} <Switch checked={urgent} onCheckedChange={setUrgent} />
             </label>
           </div>
           <Button size="lg" variant="brand" className="w-full" onClick={postAll} disabled={busy}>
-            <Send /> Post {rows.length} requirement{rows.length > 1 ? "s" : ""}
+            <Send /> {tx(rows.length > 1 ? "Post {n} requirements" : "Post {n} requirement", { n: rows.length })}
           </Button>
         </div>
       )}

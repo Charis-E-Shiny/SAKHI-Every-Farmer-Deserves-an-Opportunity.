@@ -1,5 +1,8 @@
 // "Continue with Google": a full-page navigation to the OAuth start route
 // (it redirects to Google, so it is a plain link, not a client-side route).
+"use client";
+
+import { useI18n } from "@/components/providers/i18n-provider";
 
 /** Google's four-colour "G". */
 function GoogleMark() {
@@ -17,11 +20,12 @@ function GoogleMark() {
  * @param next - where to land after signing in (a same-site path)
  */
 export function GoogleButton({ next }: { next?: string }) {
+  const { tx } = useI18n();
   const href = `/api/auth/google${next ? `?next=${encodeURIComponent(next)}` : ""}`;
   return (
     <a href={href} className="flex h-12 w-full items-center justify-center gap-3 rounded-2xl border bg-card text-[15px] font-medium transition-colors hover:bg-muted">
       <GoogleMark />
-      Continue with Google
+      {tx("Continue with Google")}
     </a>
   );
 }

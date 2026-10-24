@@ -1,7 +1,10 @@
 // FoodFlow wordmark + badge. Used in
 // the landing nav, login and every app shell.
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
 
 /** The standalone mark: the FoodFlow badge (public/brand/logo.svg — replace the file to change it). */
@@ -23,11 +26,12 @@ export function Logo({
   compact?: boolean;
   className?: string;
 }) {
+  const { tx } = useI18n();
   return (
     <Link
       href={href}
       className={cn("group inline-flex items-center gap-2 font-semibold tracking-tight", className)}
-      aria-label="FoodFlow home"
+      aria-label={tx("FoodFlow home")}
     >
       <LogoMark className="transition-transform duration-500 group-hover:rotate-[-8deg]" />
       {!compact && (

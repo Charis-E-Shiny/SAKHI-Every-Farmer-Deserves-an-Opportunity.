@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { AISourceBadge, QualityDisclaimer, flagLabel } from "@/components/ai/ai-labels";
 import { ScoreGauge } from "@/components/ai/score-gauge";
 import { MediaImage } from "@/components/common/media-image";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { ErrorState, SkeletonBlock } from "@/components/common/states";
 import { StatusBadge } from "@/components/common/status-badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,6 @@ import type { SerializedBatch } from "@/lib/batches";
 import { cropName } from "@/lib/crops";
 import { sendJSON } from "@/lib/fetcher";
 import { formatDate, formatDateTime, formatINR, formatQty, timeAgo } from "@/lib/format";
-import { translate } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DecisionDialog, type DecisionKind } from "./decision-dialog";
 import { queueKey, type QueueItem } from "./review-list";
@@ -57,6 +57,7 @@ const ACTION_LABEL: Record<string, string> = {
 
 /** Review screen for `/admin/review/[id]`. */
 export function ReviewDetail({ id }: { id: string }) {
+  const { tx, t, lang } = useI18n();
   const router = useRouter();
   const { mutate: globalMutate } = useSWRConfig();
   const { data, error, isLoading, mutate } = useSWR<Detail>(`/api/admin/batches/${id}`);
@@ -74,7 +75,7 @@ export function ReviewDetail({ id }: { id: string }) {
   async function decide(kind: DecisionKind, input: { note?: string; price?: number; grade?: "A" | "B" | "C" }) {
     try {
       await sendJSON(`/api/admin/batches/${id}`, { decision: kind, ...input });
-      toast.success(kind === "APPROVE" ? "Approved, listing is live" : kind === "REJECT" ? "Batch rejected" : "Sent back to the farmer");
+      toast.success(tx(kind === "APPROVE" ? "Approved, listing is live" : kind === "REJECT" ? "Batch rejected" : "Sent back to the farmer"));
       setDecision(null);
       // Jump to the next pending batch so the queue keeps flowing.
       const queue = await globalMutate<QueueItem[]>(queueKey("PENDING_REVIEW"));
@@ -82,7 +83,7 @@ export function ReviewDetail({ id }: { id: string }) {
       await mutate();
       router.push(next ? `/admin/review/${next.id}` : "/admin/review");
     } catch (e) {
-      toast.error((e as Error).message);
+      toast.error(tx((e as Error).message));
     }
   }
 
@@ -90,20 +91,20 @@ export function ReviewDetail({ id }: { id: string }) {
     // Container queries: the pane is narrow beside the queue on desktop, so layout follows its width, not the viewport.
     <div className="@container pb-4">
       <Link href="/admin/review" className="mb-3 inline-flex min-h-9 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground lg:hidden">
-        <ArrowLeft className="size-4" /> Queue
+        <ArrowLeft className="size-4" /> {tx("Queue")}
       </Link>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{cropName(data.crop)}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{cropName(data.crop, lang)}</h1>
             <StatusBadge status={data.status} pulse={pending} />
           </div>
           <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{data.farmer.name}</span>
             <span className="inline-flex items-center gap-1">
-              <MapPin className="size-3.5" /> {data.farmer.village ?? "-"} → {data.farmer.area}
+              <MapPin className="size-3.5" /> {data.farmer.village ? tx(data.farmer.village) : "-"} → {data.farmer.area && tx(data.farmer.area)}
             </span>
-            <span>· submitted {timeAgo(data.createdAt)}</span>
+            <span>· {tx("submitted {when}", { when: timeAgo(data.createdAt, lang) })}</span>
           </p>
         </div>
       </div>
@@ -111,20 +112,20 @@ export function ReviewDetail({ id }: { id: string }) {
       {data.duplicates.length > 0 && (
         <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} className="mt-4 rounded-2xl border border-warning/50 bg-warning/12 p-4">
           <p className="flex items-center gap-2 font-semibold">
-            <AlertTriangle className="size-5 text-warning" /> Duplicate image flag
+            <AlertTriangle className="size-5 text-warning" /> {tx("Duplicate image flag")}
           </p>
           <p className="mt-1 text-sm">
-            {data.media.filter((m) => m.isDuplicate).length} file(s) have exactly the same SHA-256 hash as media on:
+            {tx("{n} file(s) have exactly the same SHA-256 hash as media on:", { n: data.media.filter((m) => m.isDuplicate).length })}
           </p>
           <ul className="mt-2 space-y-1 text-sm">
             {data.duplicates.map((d) => (
               <li key={d.id} className="flex flex-wrap items-center gap-2">
-                <Copy className="size-3.5" /> {cropName(d.crop)} batch by <span className="font-medium">{d.farmer}</span>
-                <StatusBadge status={d.status} /> <span className="text-muted-foreground">{timeAgo(d.createdAt)}</span>
+                <Copy className="size-3.5" /> {tx("{crop} batch by", { crop: cropName(d.crop, lang) })} <span className="font-medium">{d.farmer}</span>
+                <StatusBadge status={d.status} /> <span className="text-muted-foreground">{timeAgo(d.createdAt, lang)}</span>
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-muted-foreground">A flag, not proof, the same photo can be re-used innocently. Use your judgement.</p>
+          <p className="mt-2 text-xs text-muted-foreground">{tx("A flag, not proof, the same photo can be re-used innocently. Use your judgement.")}</p>
         </motion.div>
       )}
 
@@ -144,14 +145,14 @@ export function ReviewDetail({ id }: { id: string }) {
               )}
             </AnimatePresence>
             {current?.isDuplicate && (
-              <span className="absolute top-3 left-3 rounded-full bg-warning px-3 py-1 text-xs font-semibold text-black">Duplicate flag</span>
+              <span className="absolute top-3 left-3 rounded-full bg-warning px-3 py-1 text-xs font-semibold text-black">{tx("Duplicate flag")}</span>
             )}
           </div>
           {current && (
             <div className="mt-2 space-y-1 text-xs text-muted-foreground">
               <p className="flex items-center gap-1.5">
-                <Clock className="size-3.5" /> {current.capturedAt ? `EXIF capture ${formatDateTime(current.capturedAt)}` : "No EXIF capture time"}
-                {current.isFrame && " · frame from in-app video"}
+                <Clock className="size-3.5" /> {current.capturedAt ? tx("EXIF capture {when}", { when: formatDateTime(current.capturedAt, lang) }) : tx("No EXIF capture time")}
+                {current.isFrame && ` · ${tx("frame from in-app video")}`}
               </p>
               <p className="flex items-center gap-1.5 break-all">
                 <Fingerprint className="size-3.5 shrink-0" /> sha256 {current.sha256.slice(0, 16)}…
@@ -170,14 +171,14 @@ export function ReviewDetail({ id }: { id: string }) {
                   i === active ? "ring-2 ring-foreground" : "ring-1 ring-border",
                   m.isDuplicate && "ring-2 ring-warning",
                 )}
-                aria-label={`Show file ${i + 1}`}
+                aria-label={tx("Show file {n}", { n: i + 1 })}
               >
                 {m.type === "VIDEO" ? (
-                  <span className="grid size-full place-items-center bg-black text-[10px] font-semibold text-white">VIDEO</span>
+                  <span className="grid size-full place-items-center bg-black text-[10px] font-semibold text-white">{tx("VIDEO")}</span>
                 ) : (
                   <MediaImage src={m.url} sizes="96px" />
                 )}
-                {m.isFrame && <span className="absolute bottom-0.5 left-0.5 rounded bg-black/60 px-1 text-[9px] text-white">frame</span>}
+                {m.isFrame && <span className="absolute bottom-0.5 left-0.5 rounded bg-black/60 px-1 text-[9px] text-white">{tx("frame")}</span>}
               </button>
             ))}
           </div>
@@ -186,29 +187,29 @@ export function ReviewDetail({ id }: { id: string }) {
         {/* AI assessment */}
         <section className="@container/ai rounded-3xl border bg-card p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="font-semibold">Visual assessment</p>
+            <p className="font-semibold">{tx("Visual assessment")}</p>
             <AISourceBadge source={data.aiSource} />
           </div>
           {data.aiQualityScore !== null ? (
             <div className="mt-4 flex flex-col items-center gap-4 @md/ai:flex-row @md/ai:items-start">
-              <ScoreGauge score={data.aiQualityScore} size={116} label={`Grade ${data.grade ?? "-"}`} />
+              <ScoreGauge score={data.aiQualityScore} size={116} label={tx("Grade {grade}", { grade: data.grade ?? "-" })} />
               <div className="min-w-0 flex-1">
                 <p className="text-[15px] leading-relaxed">{data.aiSummary}</p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {data.aiFlags.length ? (
                     data.aiFlags.map((f) => (
                       <span key={f} className="rounded-full bg-warning/20 px-2.5 py-1 text-xs font-medium">
-                        {flagLabel(f, (k) => translate("en", k))}
+                        {flagLabel(f, t)}
                       </span>
                     ))
                   ) : (
-                    <span className="rounded-full bg-success/12 px-2.5 py-1 text-xs font-medium text-success">No visual flags</span>
+                    <span className="rounded-full bg-success/12 px-2.5 py-1 text-xs font-medium text-success">{tx("No visual flags")}</span>
                   )}
                 </div>
               </div>
             </div>
           ) : (
-            <p className="mt-3 text-sm text-muted-foreground">No assessment yet.</p>
+            <p className="mt-3 text-sm text-muted-foreground">{tx("No assessment yet.")}</p>
           )}
           <QualityDisclaimer className="mt-4 border-t pt-3" />
         </section>
@@ -217,23 +218,23 @@ export function ReviewDetail({ id }: { id: string }) {
       <div className="mt-5 grid gap-5 @2xl:grid-cols-2">
         {/* Declaration */}
         <section className="rounded-3xl border bg-card p-5">
-          <p className="font-semibold">Farmer declaration</p>
+          <p className="font-semibold">{tx("Farmer declaration")}</p>
           <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
-            <Fact k="Quantity" v={formatQty(data.quantity, data.unit)} />
-            <Fact k="Harvested" v={formatDate(data.harvestDate)} />
-            <Fact k="Asking price" v={data.proposedPrice ? `${formatINR(data.proposedPrice)}/${data.unit}` : "-"} warn={priceOutlier} />
+            <Fact k="Quantity" v={formatQty(data.quantity, data.unit, lang)} />
+            <Fact k="Harvested" v={formatDate(data.harvestDate, lang)} />
+            <Fact k="Asking price" v={data.proposedPrice ? `${formatINR(data.proposedPrice)}/${tx(data.unit === "litre" ? "L" : data.unit)}` : "-"} warn={priceOutlier} />
             <Fact k="Indicative" v={data.price ? `${formatINR(data.price.suggested)} (${formatINR(data.price.min)}–${formatINR(data.price.max)})` : "-"} />
           </dl>
-          {priceOutlier && <p className="mt-2 text-xs text-tomato">Asking price is outside the indicative range for {data.price?.mandi}.</p>}
+          {priceOutlier && <p className="mt-2 text-xs text-tomato">{tx("Asking price is outside the indicative range for {mandi}.", { mandi: data.price?.mandi ?? "" })}</p>}
           {!data.categoryEnabled && (
-            <p className="mt-2 rounded-xl bg-warning/12 p-2 text-xs">This category isn&apos;t enabled in {data.farmer.area} yet, buyers there won&apos;t see it until it&apos;s switched on in Controls.</p>
+            <p className="mt-2 rounded-xl bg-warning/12 p-2 text-xs">{tx("This category isn't enabled in {area} yet, buyers there won't see it until it's switched on in Controls.", { area: data.farmer.area ? tx(data.farmer.area) : "" })}</p>
           )}
           {data.notes && <p className="mt-3 rounded-xl bg-muted/60 p-3 text-sm">“{data.notes}”</p>}
           {data.transcript && (
             <p className="mt-3 flex gap-2 rounded-xl border p-3 text-sm">
               <MessageSquareQuote className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
               <span>
-                <span className="text-xs text-muted-foreground">Voice ({data.inputLanguage}):</span> {data.transcript}
+                <span className="text-xs text-muted-foreground">{tx("Voice ({lang}):", { lang: data.inputLanguage ?? "" })}</span> {data.transcript}
               </span>
             </p>
           )}
@@ -243,11 +244,11 @@ export function ReviewDetail({ id }: { id: string }) {
         <section className="rounded-3xl border bg-card p-5">
           <div className="flex items-center justify-between">
             <p className="font-semibold">{data.farmer.farmName ?? data.farmer.name}</p>
-            <span className="text-xs text-muted-foreground">since {formatDate(data.farmer.memberSince)}</span>
+            <span className="text-xs text-muted-foreground">{tx("since {date}", { date: formatDate(data.farmer.memberSince, lang) })}</span>
           </div>
           <div className="mt-3">
             <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Reliability</span>
+              <span>{tx("Reliability")}</span>
               <span className="tabular font-semibold text-foreground">{Math.round(data.farmer.reliability * 100)}%</span>
             </div>
             <div className="mt-1 h-2 overflow-hidden rounded-full bg-muted">
@@ -269,7 +270,7 @@ export function ReviewDetail({ id }: { id: string }) {
               {data.farmer.recent.map((r) => (
                 <li key={r.id} className="flex items-center justify-between gap-2">
                   <span>
-                    {cropName(r.crop)} <span className="text-xs text-muted-foreground">{timeAgo(r.createdAt)}</span>
+                    {cropName(r.crop, lang)} <span className="text-xs text-muted-foreground">{timeAgo(r.createdAt, lang)}</span>
                   </span>
                   <StatusBadge status={r.status} />
                 </li>
@@ -282,15 +283,15 @@ export function ReviewDetail({ id }: { id: string }) {
       {/* Audit trail */}
       <section className="mt-5 rounded-3xl border bg-card p-5">
         <p className="flex items-center gap-2 font-semibold">
-          <ShieldCheck className="size-4" /> Audit trail
+          <ShieldCheck className="size-4" /> {tx("Audit trail")}
         </p>
         <ol className="mt-3 space-y-2 border-l pl-4 text-sm">
-          {data.trail.length === 0 && <li className="text-muted-foreground">Submitted, no decisions yet.</li>}
+          {data.trail.length === 0 && <li className="text-muted-foreground">{tx("Submitted, no decisions yet.")}</li>}
           {data.trail.map((t) => (
             <li key={t.id} className="relative">
               <span className="absolute top-1.5 -left-[21px] size-2.5 rounded-full border-2 border-background bg-foreground" />
-              <span className="font-medium">{ACTION_LABEL[t.action] ?? t.action}</span> · {t.actor}
-              <span className="ml-1 text-xs text-muted-foreground">{formatDateTime(t.createdAt)}</span>
+              <span className="font-medium">{ACTION_LABEL[t.action] ? tx(ACTION_LABEL[t.action]) : t.action}</span> · {t.actor}
+              <span className="ml-1 text-xs text-muted-foreground">{formatDateTime(t.createdAt, lang)}</span>
             </li>
           ))}
         </ol>
@@ -299,15 +300,15 @@ export function ReviewDetail({ id }: { id: string }) {
       {pending && (
         <div className="glass sticky bottom-0 z-30 -mx-4 mt-6 border-y px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:px-6 lg:bottom-4 lg:mx-0 lg:rounded-2xl lg:border lg:pb-3">
           <div className="flex gap-2">
-            <Button variant="destructive" size="lg" className="shrink-0 px-3.5 sm:px-6" onClick={() => setDecision("REJECT")} aria-label="Reject">
-              <X /> <span className="hidden sm:inline">Reject</span>
+            <Button variant="destructive" size="lg" className="shrink-0 px-3.5 sm:px-6" onClick={() => setDecision("REJECT")} aria-label={tx("Reject")}>
+              <X /> <span className="hidden sm:inline">{tx("Reject")}</span>
             </Button>
             <Button variant="outline" size="lg" className="min-w-0 flex-1 px-3 sm:px-6" onClick={() => setDecision("RESUBMIT")}>
-              <RotateCcw /> <span className="hidden sm:inline">Request changes</span>
-              <span className="sm:hidden">Changes</span>
+              <RotateCcw /> <span className="hidden sm:inline">{tx("Request changes")}</span>
+              <span className="sm:hidden">{tx("Changes")}</span>
             </Button>
             <Button variant="brand" size="lg" className="min-w-0 flex-[1.3] px-3 sm:px-6" onClick={() => setDecision("APPROVE")}>
-              <Check /> Approve
+              <Check /> {tx("Approve")}
             </Button>
           </div>
         </div>
@@ -325,19 +326,21 @@ export function ReviewDetail({ id }: { id: string }) {
 }
 
 function Fact({ k, v, warn }: { k: string; v: string; warn?: boolean }) {
+  const { tx } = useI18n();
   return (
     <div>
-      <dt className="text-xs text-muted-foreground">{k}</dt>
+      <dt className="text-xs text-muted-foreground">{tx(k)}</dt>
       <dd className={cn("tabular mt-0.5 font-semibold", warn && "text-tomato")}>{v}</dd>
     </div>
   );
 }
 
 function Stat({ k, v, warn }: { k: string; v: number; warn?: boolean }) {
+  const { tx } = useI18n();
   return (
     <div className={cn("rounded-2xl bg-muted/60 py-2", warn && "bg-tomato/12")}>
       <dd className="tabular text-xl font-semibold">{v}</dd>
-      <dt className="text-[11px] text-muted-foreground">{k}</dt>
+      <dt className="text-[11px] text-muted-foreground">{tx(k)}</dt>
     </div>
   );
 }
