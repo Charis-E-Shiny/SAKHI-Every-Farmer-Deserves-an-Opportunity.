@@ -6,6 +6,7 @@ import { ArrowRight, Mic, ShoppingBasket, Sprout } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { FirebaseAuthPanel, firebaseConfigured } from "@/components/auth/firebase-auth-panel";
 import { GoogleButton } from "@/components/auth/google-button";
 import { LoginForm } from "@/components/auth/login-form";
 import { WordReveal } from "@/components/motion/reveal";
@@ -89,7 +90,7 @@ export function Gateway({ next, google, error }: { next?: string; google?: { nam
             {tx("or")}
             <span className="h-px flex-1 bg-border" />
           </div>
-          <GoogleButton next={next} />
+          {firebaseConfigured ? <FirebaseAuthPanel next={next} /> : <GoogleButton next={next} />}
         </div>
       )}
 

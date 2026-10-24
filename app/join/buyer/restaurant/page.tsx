@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { getI18n } from "@/lib/i18n/server";
 import { getPendingGoogle } from "@/lib/auth/google";
+import { getPendingJoinProfile } from "@/lib/auth/firebase-pending";
 import { BackLink } from "@/components/auth/join/back-link";
 import { RestaurantForm } from "@/components/auth/join/restaurant-form";
 
@@ -14,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Restaurant sign-up screen. */
 export default async function RestaurantJoinPage() {
-  const google = await getPendingGoogle();
+  const google = (await getPendingGoogle()) ?? (await getPendingJoinProfile());
   const { tx } = await getI18n();
   return (
     <AuthShell width="max-w-2xl">

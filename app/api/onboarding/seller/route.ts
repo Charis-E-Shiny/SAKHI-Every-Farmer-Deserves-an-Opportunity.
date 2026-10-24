@@ -40,7 +40,7 @@ export const POST = handler({ body: sellerOnboardingSchema }, async ({ body, req
       onboarding: { create: { kind: "SELLER", data: answers } },
     },
   });
-  await creds.done();
+  await creds.done(user.id);
   await startSession({ id: user.id, role: "FARMER", name: user.name });
   return { user: { id: user.id, name: user.name, role: user.role }, redirect: ROLE_HOME.FARMER };
 });

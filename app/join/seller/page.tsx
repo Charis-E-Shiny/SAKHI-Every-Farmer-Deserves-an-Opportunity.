@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { getI18n } from "@/lib/i18n/server";
 import { getPendingGoogle } from "@/lib/auth/google";
+import { getPendingJoinProfile } from "@/lib/auth/firebase-pending";
 import { BackLink } from "@/components/auth/join/back-link";
 import { SellerWizard } from "@/components/auth/join/seller-wizard";
 
@@ -13,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 /** Seller setup screen. */
 export default async function SellerJoinPage() {
-  const google = await getPendingGoogle();
+  const google = (await getPendingGoogle()) ?? (await getPendingJoinProfile());
   const { tx } = await getI18n();
   return (
     <AuthShell width="max-w-2xl">
