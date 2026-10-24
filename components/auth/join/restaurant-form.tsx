@@ -1,5 +1,6 @@
 // Restaurant / hostel / community-kitchen sign-up: the business, its address,
-// optional licence numbers and rough weekly volume, plus sign-in details.
+// optional licence numbers and rough weekly volume, plus sign-in details (a
+// mobile number proven with a texted code and a PIN typed twice).
 // Creates a BULK_BUYER account.
 "use client";
 
@@ -9,7 +10,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Choices, Question } from "@/components/auth/join/choices";
-import { AreaField, LanguageField, PinField, SelectField, TextField } from "@/components/auth/join/fields";
+import { AreaField, LanguageField, NewPinFields, SelectField, TextField, pinsReady } from "@/components/auth/join/fields";
+import { PhoneVerify } from "@/components/auth/phone-verify";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { UNSERVED_AREAS } from "@/lib/areas";
@@ -22,8 +24,10 @@ import { ORG_TYPES, WEEKLY_NEED } from "@/lib/onboarding-options";
 export function RestaurantForm({ google }: { google?: { name: string; email: string } | null }) {
   const router = useRouter();
   const { tx, lang } = useI18n();
-  const [f, setF] = useState({ orgName: "", orgType: "RESTAURANT", contactName: google?.name ?? "", phone: "", pin: "", language: lang as string, addressLine: "", area: "", pincode: "", fssaiNumber: "", gstin: "", weeklyNeed: "" });
+  const [f, setF] = useState({ orgName: "", orgType: "RESTAURANT", contactName: google?.name ?? "", phone: "", pin: "", pin2: "", language: lang as string, addressLine: "", area: "", pincode: "", fssaiNumber: "", gstin: "", weeklyNeed: "" });
   const [agree, setAgree] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const ready = verified && (Boolean(google) || pinsReady(f.pin, f.pin2));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const set = (k: keyof typeof f) => (v: string) => setF((s) => ({ ...s, [k]: v }));
@@ -35,6 +39,7 @@ export function RestaurantForm({ google }: { google?: { name: string; email: str
     try {
       const res = await sendJSON<{ redirect: string }>("/api/onboarding/restaurant", {
         ...f,
+        pin2: undefined,
         pin: google ? undefined : f.pin,
         fssaiNumber: f.fssaiNumber || undefined,
         gstin: f.gstin || undefined,
@@ -56,7 +61,6 @@ export function RestaurantForm({ google }: { google?: { name: string; email: str
         <TextField label="Restaurant / kitchen name" id="orgName" value={f.orgName} onChange={set("orgName")} />
         <SelectField label="Type" id="orgType" value={f.orgType} onChange={set("orgType")} options={ORG_TYPES} />
         <TextField label="Contact person" id="contactName" autoComplete="name" value={f.contactName} onChange={set("contactName")} />
-        <TextField label="Mobile number" id="phone" inputMode="tel" autoComplete="tel-national" placeholder="98765 43210" value={f.phone} onChange={set("phone")} />
       </section>
 
       <section className="space-y-4">
@@ -80,9 +84,13 @@ export function RestaurantForm({ google }: { google?: { name: string; email: str
         </Question>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2">
-        {!google && <PinField value={f.pin} onChange={set("pin")} />}
-        <LanguageField value={f.language} onChange={set("language")} />
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold">Sign-in details</h2>
+        <PhoneVerify phone={f.phone} onPhone={set("phone")} purpose="SIGNUP" verified={verified} onVerified={setVerified} />
+        {!google && <NewPinFields pin={f.pin} onPin={set("pin")} confirm={f.pin2} onConfirm={set("pin2")} />}
+        <div className="sm:max-w-xs">
+          <LanguageField value={f.language} onChange={set("language")} />
+        </div>
       </section>
 
       {google && <p className="rounded-2xl bg-muted px-4 py-3 text-sm">{tx("Joining with Google ({email}). You'll use Google to sign in next time, so there's no PIN to remember.", { email: google.email })}</p>}
@@ -105,7 +113,7 @@ export function RestaurantForm({ google }: { google?: { name: string; email: str
           {tx(error)}
         </p>
       )}
-      <Button type="submit" size="lg" className="w-full" disabled={busy}>
+      <Button type="submit" size="lg" className="w-full" disabled={busy || !ready || !agree}>
         {busy ? <Loader2 className="animate-spin" /> : tx("Create account")}
       </Button>
       <p className="text-sm text-muted-foreground">
