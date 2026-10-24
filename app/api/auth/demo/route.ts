@@ -21,6 +21,7 @@ export const POST = handler({ body: demoLoginSchema }, async ({ body }) => {
   if (!user || !user.phone.startsWith(DEMO_PHONE_PREFIX)) {
     throw new HttpError(404, "Demo persona not found — run `npm run db:reset` to reseed");
   }
+  if (user.suspended) throw new HttpError(403, "This account is suspended. An admin can reinstate it from Trust & safety.");
   await startSession({ id: user.id, role: user.role as Role, name: user.name });
   return {
     user: { id: user.id, name: user.name, role: user.role },

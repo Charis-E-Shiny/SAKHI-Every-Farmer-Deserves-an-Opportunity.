@@ -8,7 +8,7 @@ import { CROPS, isCropSlug } from "@/lib/crops";
 import { db } from "@/lib/db";
 import { round2 } from "@/lib/fees";
 import { soldQty } from "@/lib/inventory";
-import { numberSetting } from "@/lib/settings";
+import { setting } from "@/lib/settings";
 
 const HOUR = 3_600_000;
 
@@ -53,13 +53,15 @@ export interface SurplusItem {
 /**
  * Evaluates a farmer's live listings.
  * At risk when sell-through is below the threshold after the minimum
- * listing age, or the harvest has used ≥ 70% of the crop's shelf life.
+ * listing age, or the harvest has used the configured share (default 70%)
+ * of the crop's shelf life. Thresholds are admin controls (lib/settings.ts).
  * @param onlyListingId - evaluate a single listing (AI endpoint)
  */
 export async function detectSurplus(farmerId: string, onlyListingId?: string): Promise<SurplusItem[]> {
-  const [threshold, minAge, farmer] = await Promise.all([
-    numberSetting("surplusSellThroughPct", 30),
-    numberSetting("surplusMinAgeHours", 24),
+  const [threshold, minAge, shelfPct, farmer] = await Promise.all([
+    setting("surplusSellThroughPct"),
+    setting("surplusMinAgeHours"),
+    setting("surplusShelfLifePct"),
     db.user.findUnique({ where: { id: farmerId }, select: { lat: true, lng: true, area: true } }),
   ]);
   const listings = await db.listing.findMany({
@@ -86,7 +88,7 @@ export async function detectSurplus(farmerId: string, onlyListingId?: string): P
       const hoursListed = Math.round((now - l.createdAt.getTime()) / HOUR);
       const harvestAgeDays = round2((now - l.harvestDate.getTime()) / (24 * HOUR));
       const slow = hoursListed >= minAge && sellThrough < threshold;
-      const ageing = harvestAgeDays >= shelf * 0.7;
+      const ageing = harvestAgeDays >= shelf * (shelfPct / 100);
       const atRisk = slow || ageing;
       const urgency = round2(Math.min(1, harvestAgeDays / shelf) * 0.6 + (1 - Math.min(1, sellThrough / Math.max(1, threshold))) * 0.4);
 

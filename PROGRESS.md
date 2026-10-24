@@ -77,9 +77,30 @@ Status of each build phase, what's next, and the decisions made along the way.
 - Bulk orders with printable invoice, recurring schedule (post next / stop), Browse & buy
 - Tests: 45 passing (+ ranking)
 
-## Next — Phase 5 (analytics & surplus)
+## Phase 5 — Analytics, surplus, trust & controls ✅
 
-Farmer dashboard → surplus detection + suggestions → admin analytics, trust & safety, platform controls.
+- Landing site (`/`): desktop-first and responsive to 360px. Interactive 3D hero (react-three-fiber,
+  falls back without WebGL, pauses off-screen), live mandi ticker, interface cards with one-tap demo
+  sign-in, scroll-linked how-it-works, live impact counters from the DB, SDG 2/1/12, honesty strip
+- Farmer dashboard (`/farmer`): earnings, sell-through, quality trend, at-risk lots
+- Surplus (`/farmer/surplus`): at risk when sell-through is below the threshold after the minimum
+  age, or the harvest has used the configured share of shelf life; one-tap rescue offers to open
+  community-kitchen demand at the buyer's target, floored at 70% of the mandi rate
+- Post-delivery feedback, issue reports and disputes; admin dispute resolution with refunds
+- Admin analytics (`/admin`), order monitor, delivery ops with the OTP / QR attempt log
+- Trust & safety (`/admin/trust`): re-used photos, farmers with repeated complaints (3+, or 2+ at
+  ≥ 20% of orders, last 30 days), listings above 1.5× / below 0.6× the retail reference; suspend /
+  reinstate accounts, pause / resume listings
+- Platform controls (`/admin/controls`): commission and surplus thresholds (range-validated
+  registry in `lib/settings.ts`), service areas on/off + base fee, cold-chain categories per area,
+  payout run
+- One-command setup for fresh clones (`npm run setup`)
+- Tests: 45 passing
+
+## Next — Phase 6 (polish & ship)
+
+Subscriptions → farmer UI i18n → responsive / states QA on every page → README with architecture
+and SDG mapping → deploy config (Vercel + Postgres) → final build → demo script at 360px.
 
 ## Decisions
 
@@ -108,4 +129,7 @@ Farmer dashboard → surplus detection + suggestions → admin analytics, trust 
 | Offers need a live listing | A bulk offer must point at one of the farmer's ACTIVE listings of that crop, so accepting it can reserve real stock atomically. Farmers without one are nudged to list a harvest. |
 | Offer ranking | Cost scored as a ratio to the cheapest delivered price (courier cost spread over the quantity), ×0.6 if the ETA misses the deadline; weights cost 30 / coverage 20 / ETA 15 / quality 15 / distance 10 / reliability 10. |
 | Bulk nav | Five phone tab slots; the bulk buyer's cart is reached via the floating cart bar. |
+| Trust flags are advisory | Duplicate photos, complaint rates and price outliers only surface items for a person; nothing is suspended or paused automatically. |
+| Suspension | Blocks PIN and demo sign-in, ends live sessions on the next request, and pauses the farmer's live listings. Reinstating leaves listings paused so the admin resumes them deliberately. |
+| Live landing numbers | The landing page reads impact counters and the mandi ticker from the database on each request and shows zeros (not invented numbers) if the DB is unreachable. |
 | Smart basket weights | Price 0.30, ETA 0.27, freshness 0.25, visual score 0.18, +0.12 per extra item a farm covers — so a marginally cheaper lot 60 km away loses to a nearby fresher one. |

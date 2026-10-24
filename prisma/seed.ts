@@ -158,6 +158,7 @@ async function main() {
       { key: "commissionPct", value: String(DEFAULT_COMMISSION_PCT) },
       { key: "surplusSellThroughPct", value: "30" },
       { key: "surplusMinAgeHours", value: "24" },
+      { key: "surplusShelfLifePct", value: "70" },
     ],
   });
   await prisma.serviceArea.createMany({
