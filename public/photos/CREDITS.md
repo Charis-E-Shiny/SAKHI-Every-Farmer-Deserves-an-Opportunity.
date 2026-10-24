@@ -1,6 +1,6 @@
 # Brand photography
 
-The files here are crops of the SAKHI reference imagery supplied by the
+The files here are crops of the FoodFlow reference imagery supplied by the
 project owner (AI-generated farm-to-table shots plus two supplied still
 lifes: fruit-basket.jpg and veg-basket.jpg). They are served locally, never
 hot-linked. Source resolution is modest (the largest crop is about 1670 px

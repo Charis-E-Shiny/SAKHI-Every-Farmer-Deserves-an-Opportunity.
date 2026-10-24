@@ -1,18 +1,12 @@
-<p align="center">
-  <img src="public/brand/logo.svg" width="112" alt="SAKHI logo: an open hand holding a sprout" />
-</p>
-
-# SAKHI
-
-**Your harvest. Your choices. Your future.**
+# FoodFlow — From Every Harvest to Every Table
 
 [![CI/CD](https://github.com/RachanaB5/SAKHI-Every-Farmer-Deserves-an-Opportunity./actions/workflows/ci.yml/badge.svg)](https://github.com/RachanaB5/SAKHI-Every-Farmer-Deserves-an-Opportunity./actions/workflows/ci.yml)
 
-**A trusted companion connecting farmers, buyers and communities.** Smallholder farmers sell their harvest
-direct to households, restaurants and community kitchens, by voice, in Kannada, Hindi or English, with AI
-that assists and people who decide.
+**A fresh-produce marketplace that connects smallholder farmers directly with households, restaurants
+and community kitchens — with AI that assists and people who decide.** Farmers have **Sakhi** (ಸಖಿ / सखी),
+a voice companion that takes them from sign-up to their first listing in Kannada, Hindi or English.
 
-![SAKHI landing page](docs/screenshots/landing.jpg)
+![FoodFlow landing page](docs/screenshots/landing.jpg)
 
 ---
 
@@ -23,7 +17,7 @@ pay — and perishable produce that doesn't sell in time is simply lost. Meanwhi
 markups for produce that is days old, restaurants juggle unreliable suppliers, and community kitchens
 that feed people for free struggle to source affordably.
 
-## What SAKHI does
+## What FoodFlow does
 
 One marketplace, five apps — each built mobile-first at 360px and scaling up to a full desktop web app.
 
@@ -43,10 +37,10 @@ One marketplace, five apps — each built mobile-first at 360px and scaling up t
 - **OTP or it didn't happen.** Only the customer's one-time code marks an order delivered and releases a payout.
 - **Works without a key.** Every AI feature has a deterministic fallback (multilingual parsers, an image heuristic, template text), labelled *Offline estimate* in the UI.
 
-### Farmer's Friend: ask by voice, in your language
+### Sakhi: ask by voice, in your language
 
-A helper button on every farmer screen opens **Farmer's Friend** (ರೈತ ಮಿತ್ರ / किसान मित्र): a side panel on
-desktop, a bottom sheet on phones. Farmers speak or type in Kannada, Hindi, English or a mix:
+A sprout button on every farmer screen opens **Sakhi** (ಸಖಿ / सखी), the farmer's voice companion: a side panel
+on desktop, a bottom sheet on phones. Farmers speak or type in Kannada, Hindi, English or a mix:
 
 - *"ಐವತ್ತು ಕಿಲೋ ಟೊಮೇಟೊ, ಕಿಲೋಗೆ ಇಪ್ಪತ್ತೈದು ರೂಪಾಯಿ"* → a harvest draft card, ready for a photo and review
 - *"इस हफ्ते मैंने कितना कमाया?"* → confirmed order value, fee, estimated net, and what is paid vs. still pending
@@ -63,15 +57,15 @@ How it stays trustworthy:
   the harvest to the admin queue.
 - **Natural, honest voice.** Indian English first (names, places and crops pronounced the way farmers say
   them), then the most natural voice on the device (Edge's *Natural* voices, Google and Apple enhanced
-  voices), with a female / male choice. Amounts are read the Indian way (*1 lakh 25 thousand*, *ಎರಡು ಸಾವಿರದ
+  voices), in a female voice by default with a male one a tap away. Amounts are read the Indian way (*1 lakh 25 thousand*, *ಎರಡು ಸಾವಿರದ
   ಐನೂರು*), order codes letter by letter, and replies sentence by sentence. Replies are fixed templates with
   numbers from the database. Kannada is never read by an English voice: where a device has no Kannada voice
   (desktop Chrome), a Hindi voice reads it from Devanagari letters, and the panel says so.
-- **From sign-up to first listing, by voice.** On seller sign-up, Farmer's Friend asks every question out loud
+- **From sign-up to first listing, by voice.** On seller sign-up, Sakhi asks every question out loud
   in Kannada, Hindi or English (the screens switch language too) and fills the form from the answers:
   *"ನನ್ನ ಹೆಸರು ರಮೇಶ್"*, *"ದೊಡ್ಡಬಳ್ಳಾಪುರ"* (district, nearest service area and PIN code follow), *"ಟೊಮೇಟೊ
   ಮತ್ತು ಈರುಳ್ಳಿ"*, *"about 200 kilo a week"*, *"UPI and cash"*. The PIN is typed, never spoken; a spoken
-  "yes" then creates the account. Farmer's Friend carries straight on in the farmer app, hands-free: the
+  "yes" then creates the account. Sakhi carries straight on in the farmer app, hands-free: the
   harvest, a photo, *"send it for review?"*, *"ಹೌದು"*. The first harvest is in the admin queue without the
   farmer touching a form.
 
@@ -87,20 +81,21 @@ What happens to voice and text: [docs/assistant-privacy.md](docs/assistant-priva
 | Live marketplace analytics | Dark mode |
 
 <p>
-  <img src="docs/screenshots/farmer-dashboard-kannada.jpg" alt="Farmer dashboard in Kannada" width="260" />
-  <img src="docs/screenshots/smart-basket.jpg" alt="Smart basket built from a grocery list" width="260" />
-  <img src="docs/screenshots/rider-handover.jpg" alt="Rider run screen" width="260" />
+  <img src="docs/screenshots/sakhi-kannada.jpg" alt="Sakhi drafting a harvest from a Kannada sentence" width="200" />
+  <img src="docs/screenshots/farmer-dashboard-kannada.jpg" alt="Farmer dashboard in Kannada" width="200" />
+  <img src="docs/screenshots/smart-basket.jpg" alt="Smart basket built from a grocery list" width="200" />
+  <img src="docs/screenshots/rider-handover.jpg" alt="Rider run screen" width="200" />
 </p>
 
-*Farmer dashboard in Kannada · a typed grocery list turned into a smart basket · the rider's run screen.*
+*Sakhi drafting a harvest from a Kannada sentence · farmer home in Kannada · a typed grocery list turned into a smart basket · the rider's run screen.*
 
 ## Try it in two minutes
 
 Requires **Node.js 20.9+**.
 
 ```bash
-git clone https://github.com/RachanaB5/SAKHI-Every-Farmer-Deserves-an-Opportunity..git sakhi
-cd sakhi
+git clone https://github.com/RachanaB5/SAKHI-Every-Farmer-Deserves-an-Opportunity..git foodflow
+cd foodflow
 npm install
 npm run setup   # creates .env, builds the SQLite database, seeds the Bengaluru pilot
 npm run dev
@@ -228,7 +223,7 @@ Copy `.env.example` to `.env` (`npm run setup` does this for you).
 | `GEMINI_MODEL`, `AI_TIMEOUT_MS` | no | Model name and per-call timeout before falling back |
 | `STORAGE_DRIVER` | no | `local` (default) writes uploads to `public/uploads`; falls back to inline on read-only hosts |
 | `CRON_SECRET` | no | Lets a scheduler call `/api/subscriptions/run-due` |
-| `NEXT_PUBLIC_STT_PROVIDER` | no | `browser` (default) uses the browser's speech recognition for Farmer's Friend. `server` is reserved for a self-hosted Indic model and is not implemented yet |
+| `NEXT_PUBLIC_STT_PROVIDER` | no | `browser` (default) uses the browser's speech recognition for Sakhi. `server` is reserved for a self-hosted Indic model and is not implemented yet |
 | `DEMO_MODE` | no | One-tap sign-in as seeded accounts (API only). Off in production unless set to `true`; keep it off on a live site |
 | `DIRECT_URL` | no | Direct (unpooled) Postgres URL for Neon / Supabase |
 

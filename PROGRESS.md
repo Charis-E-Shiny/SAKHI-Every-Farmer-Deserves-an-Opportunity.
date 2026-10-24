@@ -1,11 +1,11 @@
-# SAKHI — build progress
+# FoodFlow — build progress
 
 Status of each build phase, what's next, and the decisions made along the way.
 
 ## Phase 0 — Setup ✅
 
 - Next.js 16 (App Router, Turbopack) + strict TypeScript, Tailwind v4, ESLint + Prettier
-- shadcn/ui (Radix) with SAKHI tokens (ink / paper / harvest lime / tomato), light + dark themes,
+- shadcn/ui (Radix) with FoodFlow tokens (ink / paper / harvest lime / tomato), light + dark themes,
   Geist + Instrument Serif + Noto Devanagari/Kannada, 44px touch targets, 16px inputs
 - Prisma schema (all models from the brief + `OrderEvent`, `DeliveryAttempt`, `ServiceArea`,
   `Category`, `PlatformSetting`) and initial SQLite migration
@@ -146,7 +146,7 @@ a tight sign-up rate limit for shared Wi-Fi, and remaining untranslated farmer l
 | Test DB | Vitest builds a throwaway `prisma/test.db` by deleting the file and pushing the schema (no destructive reset of any real database). |
 | Confirm at checkout | Checkout places the order (payment AUTHORISED) and immediately confirms it (stock reserved + payment CAPTURED) in one transaction, so stock can't be oversold between cart and payment. A farm whose stock ran out gets a cancelled order with the authorisation released. |
 | Quote never errors for out-of-area | `/api/checkout/quote` returns `blocked` with a friendly message (no 4xx in the console); only placing the order returns 422. |
-| Courier pricing | Pooled routes: ₹15 + ₹1.5/km per order, capped at ₹60. The farmer pays only the shortfall over the buyer's delivery fee, and never more than 15% of the order value — SAKHI absorbs the rest, so a small order can't leave a farmer out of pocket. |
+| Courier pricing | Pooled routes: ₹15 + ₹1.5/km per order, capped at ₹60. The farmer pays only the shortfall over the buyer's delivery fee, and never more than 15% of the order value — FoodFlow absorbs the rest, so a small order can't leave a farmer out of pocket. |
 | Recipient generates the OTP | The plaintext OTP is returned only to the buyer when they tap "Show OTP" (kept in sessionStorage until expiry). The rider never sees it except from the customer. |
 | Pickup QR | A JWT bound to the order and the current OTP nonce, so regenerating the code invalidates old QRs. |
 | Offers need a live listing | A bulk offer must point at one of the farmer's ACTIVE listings of that crop, so accepting it can reserve real stock atomically. Farmers without one are nudged to list a harvest. |
