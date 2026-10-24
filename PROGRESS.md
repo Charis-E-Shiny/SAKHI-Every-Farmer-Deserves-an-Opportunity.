@@ -1,11 +1,11 @@
-# FoodFlow — build progress
+# SAKHI — build progress
 
 Status of each build phase, what's next, and the decisions made along the way.
 
 ## Phase 0 — Setup ✅
 
 - Next.js 16 (App Router, Turbopack) + strict TypeScript, Tailwind v4, ESLint + Prettier
-- shadcn/ui (Radix) with FoodFlow tokens (ink / paper / harvest lime / tomato), light + dark themes,
+- shadcn/ui (Radix) with SAKHI tokens (ink / paper / harvest lime / tomato), light + dark themes,
   Geist + Instrument Serif + Noto Devanagari/Kannada, 44px touch targets, 16px inputs
 - Prisma schema (all models from the brief + `OrderEvent`, `DeliveryAttempt`, `ServiceArea`,
   `Category`, `PlatformSetting`) and initial SQLite migration
@@ -81,7 +81,7 @@ Status of each build phase, what's next, and the decisions made along the way.
 
 - Landing site (`/`): desktop-first and responsive to 360px. Interactive 3D hero (react-three-fiber,
   falls back without WebGL, pauses off-screen), live mandi ticker, interface cards with one-tap demo
-  sign-in, scroll-linked how-it-works, live impact counters from the DB, SDG 2/1/12, honesty strip
+  sign-in, scroll-linked how-it-works, live impact counters from the DB, honesty strip
 - Farmer dashboard (`/farmer`): earnings, sell-through, quality trend, at-risk lots
 - Surplus (`/farmer/surplus`): at risk when sell-through is below the threshold after the minimum
   age, or the harvest has used the configured share of shelf life; one-tap rescue offers to open
@@ -112,7 +112,7 @@ Status of each build phase, what's next, and the decisions made along the way.
 - Date-driven forms (harvest wizard, demand form) use the user's local date and render client-only
 - Search matches names case-insensitively on Postgres as well as SQLite
 - Deploy: `vercel.json`, `npm run vercel-build` (Postgres switch + schema push), `CRON_SECRET`
-- README with architecture, order lifecycle, SDG mapping, screenshots, demo script and deploy guide
+- README with architecture, order lifecycle, screenshots, demo script and deploy guide
 - Demo script run end-to-end through the UI at 360px: all 7 steps pass with no console errors
 - Tests: 56 passing (+ subscriptions, search)
 
@@ -146,7 +146,7 @@ a tight sign-up rate limit for shared Wi-Fi, and remaining untranslated farmer l
 | Test DB | Vitest builds a throwaway `prisma/test.db` by deleting the file and pushing the schema (no destructive reset of any real database). |
 | Confirm at checkout | Checkout places the order (payment AUTHORISED) and immediately confirms it (stock reserved + payment CAPTURED) in one transaction, so stock can't be oversold between cart and payment. A farm whose stock ran out gets a cancelled order with the authorisation released. |
 | Quote never errors for out-of-area | `/api/checkout/quote` returns `blocked` with a friendly message (no 4xx in the console); only placing the order returns 422. |
-| Courier pricing | Pooled routes: ₹15 + ₹1.5/km per order, capped at ₹60. The farmer pays only the shortfall over the buyer's delivery fee, and never more than 15% of the order value — FoodFlow absorbs the rest, so a small order can't leave a farmer out of pocket. |
+| Courier pricing | Pooled routes: ₹15 + ₹1.5/km per order, capped at ₹60. The farmer pays only the shortfall over the buyer's delivery fee, and never more than 15% of the order value — SAKHI absorbs the rest, so a small order can't leave a farmer out of pocket. |
 | Recipient generates the OTP | The plaintext OTP is returned only to the buyer when they tap "Show OTP" (kept in sessionStorage until expiry). The rider never sees it except from the customer. |
 | Pickup QR | A JWT bound to the order and the current OTP nonce, so regenerating the code invalidates old QRs. |
 | Offers need a live listing | A bulk offer must point at one of the farmer's ACTIVE listings of that crop, so accepting it can reserve real stock atomically. Farmers without one are nudged to list a harvest. |

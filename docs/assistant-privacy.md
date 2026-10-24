@@ -21,19 +21,19 @@ page explains what happens to a farmer's voice and words, in plain terms.
 
 ## Where speech becomes text
 
-- Speech recognition is done by the **browser's own speech service** (the Web Speech API). FoodFlow's
+- Speech recognition is done by the **browser's own speech service** (the Web Speech API). SAKHI's
   servers **never receive, store or forward audio**.
 - Depending on the browser, that service may run on the device or in the browser vendor's cloud
   (Chrome and Edge use their vendor's online speech service; Safari may process on the device). That
-  is governed by the browser's privacy policy, not FoodFlow's.
+  is governed by the browser's privacy policy, not SAKHI's.
 - Firefox has no speech recognition; the panel says voice isn't supported and offers typing.
 - A server-side Indic speech model is **not implemented**. `ServerSttProvider` in
   `lib/assistant/stt.ts` is a stub that reports itself unavailable, so setting
   `NEXT_PUBLIC_STT_PROVIDER=server` today still uses the browser.
 
-## What FoodFlow receives and keeps
+## What SAKHI receives and keeps
 
-| What | Sent to FoodFlow? | Kept? |
+| What | Sent to SAKHI? | Kept? |
 | --- | --- | --- |
 | Audio | No | No |
 | The text of a request (typed, or recognised by the browser and shown for editing first) | Yes, to `/api/assistant/interpret` | Only when it creates a harvest draft: the sentence is saved on that draft as `voiceTranscript`, so the admin reviewing the listing can see what the farmer said. Other requests are not stored. |
@@ -43,7 +43,7 @@ page explains what happens to a farmer's voice and words, in plain terms.
 ## During seller sign-up
 
 - The sign-up guide on `/join/seller` runs entirely in the browser. It turns each answer into a value in
-  the form on screen, where the farmer can see and change it. Nothing is sent to FoodFlow until the account
+  the form on screen, where the farmer can see and change it. Nothing is sent to SAKHI until the account
   is created, exactly as with typing.
 - The guide never asks for the PIN out loud. It asks the farmer to type it, and only then asks "Shall I
   create your seller account now?". The account is created on that spoken "yes" (or a tap on **Create my
@@ -60,13 +60,13 @@ page explains what happens to a farmer's voice and words, in plain terms.
   account data). The model may only return a structured intent from a fixed list plus the values the
   farmer said (crop, quantity, price, date), validated against a schema.
 - The model never reads or writes the database and never writes a reply. Every reply is a fixed
-  template; amounts in it come from FoodFlow's records, or are the farmer's own values shown on a card
+  template; amounts in it come from SAKHI's records, or are the farmer's own values shown on a card
   to check before anything changes.
 - With no key, or when the model is slow or down, the rule parser answers on its own.
 
 ## Speaking back
 
-- Replies are spoken with the device's built-in voices (`speechSynthesis`); FoodFlow sends no text
+- Replies are spoken with the device's built-in voices (`speechSynthesis`); SAKHI sends no text
   anywhere to be spoken. (Some browsers' "online" voices are themselves provided by the browser vendor's
   service.)
 - The voice is chosen automatically: Indian English first for English (so names, places and crops are

@@ -1,13 +1,18 @@
-# FoodFlow — From Every Harvest to Every Table
+<p align="center">
+  <img src="public/brand/logo.svg" width="112" alt="SAKHI logo: an open hand holding a sprout" />
+</p>
 
-[![CI/CD](https://github.com/skypank-coder/FOODFLOW-From-Every-Harvest-to-Every-Table/actions/workflows/ci.yml/badge.svg)](https://github.com/skypank-coder/FOODFLOW-From-Every-Harvest-to-Every-Table/actions/workflows/ci.yml)
+# SAKHI
 
-AI-assisted fresh-produce marketplace connecting smallholder farmers directly with households,
-restaurants and community kitchens (UN SDG 2, Zero Hunger).
-**A fresh-produce marketplace that connects smallholder farmers directly with households, restaurants
-and community kitchens — with AI that assists and people who decide.** Built for UN SDG 2 — Zero Hunger.
+**Your harvest. Your choices. Your future.**
 
-![FoodFlow landing page](docs/screenshots/landing.jpg)
+[![CI/CD](https://github.com/RachanaB5/SAKHI-Every-Farmer-Deserves-an-Opportunity./actions/workflows/ci.yml/badge.svg)](https://github.com/RachanaB5/SAKHI-Every-Farmer-Deserves-an-Opportunity./actions/workflows/ci.yml)
+
+**A trusted companion connecting farmers, buyers and communities.** Smallholder farmers sell their harvest
+direct to households, restaurants and community kitchens, by voice, in Kannada, Hindi or English, with AI
+that assists and people who decide.
+
+![SAKHI landing page](docs/screenshots/landing.jpg)
 
 ---
 
@@ -18,7 +23,7 @@ pay — and perishable produce that doesn't sell in time is simply lost. Meanwhi
 markups for produce that is days old, restaurants juggle unreliable suppliers, and community kitchens
 that feed people for free struggle to source affordably.
 
-## What FoodFlow does
+## What SAKHI does
 
 One marketplace, five apps — each built mobile-first at 360px and scaling up to a full desktop web app.
 
@@ -94,8 +99,8 @@ What happens to voice and text: [docs/assistant-privacy.md](docs/assistant-priva
 Requires **Node.js 20.9+**.
 
 ```bash
-git clone https://github.com/skypank-coder/FOODFLOW-From-Every-Harvest-to-Every-Table.git
-cd FOODFLOW-From-Every-Harvest-to-Every-Table
+git clone https://github.com/RachanaB5/SAKHI-Every-Farmer-Deserves-an-Opportunity..git sakhi
+cd sakhi
 npm install
 npm run setup   # creates .env, builds the SQLite database, seeds the Bengaluru pilot
 npm run dev
@@ -192,14 +197,6 @@ stateDiagram-v2
 | **Subscriptions** | IST slot scheduling; a run claims the plan with a conditional update so overlapping schedulers place one order; falls back to the same farmer, then any farm, when stock runs out. | `lib/subscriptions.ts` |
 | **Trust & safety** | SHA-256 duplicate-photo detection across batches, complaint-rate flags, price outliers vs. the mandi reference. Flags only — suspension and pausing are human actions, audit-logged. | `lib/trust.ts` |
 
-## SDG mapping
-
-| Goal | Target | How FoodFlow contributes |
-| --- | --- | --- |
-| **SDG 2 — Zero Hunger** | 2.1 access to safe, nutritious food · 2.3 smallholder incomes | Surplus produce is routed to community kitchens before it spoils; households buy fresher food direct; farmers keep a larger share. |
-| **SDG 1 — No Poverty** | 1.4 equal access to economic resources | Direct market access for smallholders, fair indicative pricing, every fee shown line by line, payouts after every verified handover. |
-| **SDG 12 — Responsible Consumption & Production** | 12.3 halve food waste and reduce post-harvest loss | Shelf-life tracking, early surplus detection, one-tap rescue offers, and subscriptions that give farmers predictable demand. The landing page shows kg rescued, live from the database. |
-
 ## Tech stack
 
 Next.js 16 (App Router, Turbopack) · React 19 · TypeScript (strict) · Tailwind CSS 4 · shadcn/ui ·
@@ -291,6 +288,4 @@ project settings. If the Vercel project is also connected to this repo through V
 integration, add `"git": { "deploymentEnabled": { "main": false } }` to `vercel.json` so `main`
 deploys only after CI passes. Without that, each push deploys twice.
 
-Full documentation (architecture, SDG mapping, screenshots) lands at the end of the build — see
-[PROGRESS.md](PROGRESS.md) for what's done so far.
 Build notes and decisions: [PROGRESS.md](PROGRESS.md).
