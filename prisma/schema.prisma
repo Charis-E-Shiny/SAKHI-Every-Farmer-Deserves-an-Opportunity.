@@ -161,6 +161,23 @@ model FarmerProfile {
   crops    Json
   bio      String?
   upiId    String?
+  /// Farmer's Friend: the one-time welcome has been shown
+  assistantWelcomeSeen Boolean @default(false)
+  /// Farmer's Friend: speak the welcome / replies automatically
+  assistantAutoVoice   Boolean @default(true)
+}
+
+/// One row per confirmed Farmer's Friend action, keyed by the confirm
+/// token's id — makes every confirmation single-use and idempotent.
+model AssistantAction {
+  jti       String   @id
+  userId    String
+  intent    String
+  /// Stored reply, returned again if the same token is confirmed twice
+  result    Json?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }
 
 // ─── Harvest verification ─────────────────────────────────────────────────
