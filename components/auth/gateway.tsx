@@ -2,7 +2,7 @@
 // members can sign in right below without choosing.
 "use client";
 
-import { ArrowRight, ShoppingBasket, Sprout } from "lucide-react";
+import { ArrowRight, Mic, ShoppingBasket, Sprout } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -67,6 +67,11 @@ export function Gateway({ next, google, error }: { next?: string; google?: { nam
             </span>
             <span className="mt-4 text-2xl font-semibold tracking-tight">{c.title}</span>
             <span className="mt-1 text-[15px] text-muted-foreground">{c.body}</span>
+            {c.title === "Seller" && (
+              <span className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full bg-lime/30 px-2.5 py-1 text-xs font-medium">
+                <Mic className="size-3.5" /> Voice help in ಕನ್ನಡ, हिंदी and English
+              </span>
+            )}
             <span className="mt-auto flex items-center gap-1 pt-4 text-sm font-semibold">
               Continue <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </span>

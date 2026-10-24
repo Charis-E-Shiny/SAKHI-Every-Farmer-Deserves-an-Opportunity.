@@ -47,8 +47,8 @@ export function SelectField<V extends string>({ label, id, value, onChange, opti
   );
 }
 
-export const LanguageField = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
-  <SelectField label="Preferred language" id="lang" value={value} onChange={onChange} options={LANGUAGES} />
+export const LanguageField = ({ value, onChange, label = "Preferred language" }: { value: string; onChange: (v: string) => void; label?: string }) => (
+  <SelectField label={label} id="lang" value={value} onChange={onChange} options={LANGUAGES} />
 );
 
 /** Service-area dropdown; towns we don't serve yet are listed as "coming soon". */
@@ -61,8 +61,8 @@ export function AreaField({ value, onChange, label = "Your area", id = "area", s
 }
 
 /** The 4–6 digit PIN input. */
-export function PinField({ value, onChange, label = "Create a PIN" }: { value: string; onChange: (v: string) => void; label?: string }) {
+export function PinField({ value, onChange, label = "Create a PIN", hint = "You'll use your mobile number and this PIN to sign in." }: { value: string; onChange: (v: string) => void; label?: string; hint?: string }) {
   return (
-    <TextField label={label} id="pin" type="password" inputMode="numeric" autoComplete="new-password" maxLength={6} placeholder="4–6 digits" value={value} onChange={(v) => onChange(v.replace(/\D/g, ""))} hint="You'll use your mobile number and this PIN to sign in." />
+    <TextField label={label} id="pin" type="password" inputMode="numeric" autoComplete="new-password" maxLength={6} placeholder="4–6 digits" value={value} onChange={(v) => onChange(v.replace(/\D/g, ""))} hint={hint} />
   );
 }
