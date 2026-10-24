@@ -4,6 +4,7 @@
 "use client";
 
 import { ChevronDown } from "lucide-react";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { cn } from "@/lib/utils";
 
 export interface LegendItem {
@@ -31,6 +32,7 @@ export function ChartCard({
   className?: string;
   action?: React.ReactNode;
 }) {
+  const { t } = useI18n();
   return (
     <section className={cn("rounded-3xl border bg-card p-4 sm:p-5", className)}>
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -41,7 +43,7 @@ export function ChartCard({
         {action}
       </div>
       {legend && legend.length > 1 && (
-        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label="Legend">
+        <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground" aria-label={t("chart.legend")}>
           {legend.map((l) => (
             <li key={l.label} className="flex items-center gap-1.5">
               <span className="h-0.5 w-4 rounded-full" style={{ background: l.color }} />
@@ -54,7 +56,7 @@ export function ChartCard({
       {table && table.length > 1 && (
         <details className="group mt-2">
           <summary className="flex min-h-9 cursor-pointer list-none items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
-            <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" /> View data
+            <ChevronDown className="size-3.5 transition-transform group-open:rotate-180" /> {t("chart.viewData")}
           </summary>
           <div className="mt-2 max-h-64 overflow-auto rounded-xl border">
             <table className="w-full text-left text-xs">

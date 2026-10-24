@@ -46,7 +46,7 @@ export function CartView({ bulk = false }: { bulk?: boolean }) {
         <EmptyState
           icon={ShoppingBasket}
           title="Your basket is empty"
-          body="Add fresh produce straight from the farm — or let AI build a basket from your shopping list."
+          body="Add fresh produce straight from the farm, or let AI build a basket from your shopping list."
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Button asChild>
@@ -68,7 +68,7 @@ export function CartView({ bulk = false }: { bulk?: boolean }) {
 
   return (
     <div>
-      <PageHeader title="Your *basket*" description={`${items.length} item${items.length > 1 ? "s" : ""} from ${groups.length} farm${groups.length > 1 ? "s" : ""} — each farm packs and ships its own order.`} />
+      <PageHeader title="Your *basket*" description={`${items.length} item${items.length > 1 ? "s" : ""} from ${groups.length} farm${groups.length > 1 ? "s" : ""}, each farm packs and ships its own order.`} />
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
         <div className="space-y-4">
           {groups.map((g) => {

@@ -5,8 +5,10 @@
 import { Delete, Loader2, Mic } from "lucide-react";
 import { motion, useAnimationControls } from "framer-motion";
 import { useEffect } from "react";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { useSpeech } from "@/hooks/use-speech";
 import { normaliseNumbers } from "@/lib/ai/fallback/numbers";
+import { LANGS } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 /**
@@ -29,6 +31,7 @@ export function OtpKeypad({
   shakeKey?: number;
   error?: string | null;
 }) {
+  const { t, lang } = useI18n();
   const controls = useAnimationControls();
   useEffect(() => {
     if (shakeKey) controls.start({ x: [0, -12, 12, -8, 8, -4, 0], transition: { duration: 0.45 } });
@@ -50,7 +53,7 @@ export function OtpKeypad({
 
   return (
     <div>
-      <motion.div animate={controls} className="flex justify-center gap-2" aria-live="polite" aria-label={`${value.length} of 6 digits entered`}>
+      <motion.div animate={controls} className="flex justify-center gap-2" aria-live="polite" aria-label={t("otp.entered", { n: value.length })}>
         {Array.from({ length: 6 }).map((_, i) => (
           <span
             key={i}
@@ -64,20 +67,20 @@ export function OtpKeypad({
           </span>
         ))}
       </motion.div>
-      <p className={cn("mt-2 min-h-5 text-center text-sm", error ? "text-destructive" : "text-muted-foreground")}>{busy ? "Checking…" : error ?? "Ask the customer for their code"}</p>
+      <p className={cn("mt-2 min-h-5 text-center text-sm", error ? "text-destructive" : "text-muted-foreground")}>{busy ? t("otp.checking") : error ?? t("otp.ask")}</p>
       <div className="mx-auto mt-3 grid max-w-xs grid-cols-3 gap-2">
         {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((d) => (
           <Key key={d} onClick={() => press(d)} disabled={busy}>
             {d}
           </Key>
         ))}
-        <Key onClick={() => (speech.listening ? speech.stop() : speech.start("en-IN"))} disabled={busy || !speech.supported} label="Speak digits" active={speech.listening}>
+        <Key onClick={() => (speech.listening ? speech.stop() : speech.start(LANGS.find((l) => l.code === lang)?.speech ?? "en-IN"))} disabled={busy || !speech.supported} label={t("otp.speak")} active={speech.listening}>
           <Mic className="size-5" />
         </Key>
         <Key onClick={() => press("0")} disabled={busy}>
           0
         </Key>
-        <Key onClick={() => onChange(value.slice(0, -1))} disabled={busy || !value} label="Delete">
+        <Key onClick={() => onChange(value.slice(0, -1))} disabled={busy || !value} label={t("otp.delete")}>
           {busy ? <Loader2 className="size-5 animate-spin" /> : <Delete className="size-5" />}
         </Key>
       </div>

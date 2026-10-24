@@ -2,7 +2,7 @@
 // persists the choice to the user's profile.
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { sendJSON } from "@/lib/fetcher";
 import { translate, type Lang, type MessageKey } from "@/lib/i18n";
 
@@ -39,6 +39,10 @@ export function I18nProvider({
     },
     [persist],
   );
+  // Lets screen readers and the browser pick the right voice and fonts.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
   const value = useMemo<I18nValue>(
     () => ({ lang, setLang, t: (key, vars) => translate(lang, key, vars) }),
     [lang, setLang],

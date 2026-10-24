@@ -47,7 +47,7 @@ const patchSchema = z.object({ price: priceSchema.optional(), status: z.enum(["A
 export const PATCH = handler<z.infer<typeof patchSchema>, undefined, Params>({ roles: ["FARMER"], body: patchSchema }, async ({ user, params, body }) => {
   const l = must(await db.listing.findUnique({ where: { id: params.id } }), "Listing not found");
   if (l.farmerId !== user.id) throw new HttpError(403, "This listing belongs to another farmer");
-  if (l.status === "SOLD_OUT" && body.status === "ACTIVE") throw new HttpError(409, "Sold out — list a new harvest to sell more");
+  if (l.status === "SOLD_OUT" && body.status === "ACTIVE") throw new HttpError(409, "Sold out, list a new harvest to sell more");
   if (body.status === "ACTIVE" && l.availableQty <= 0) throw new HttpError(409, "No stock left to resume");
   const updated = await db.listing.update({
     where: { id: l.id },

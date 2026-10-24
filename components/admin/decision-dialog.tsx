@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 export type DecisionKind = "APPROVE" | "REJECT" | "RESUBMIT";
 
 const QUICK: Record<Exclude<DecisionKind, "APPROVE">, string[]> = {
-  RESUBMIT: ["Photo too dark — retake in daylight", "Show the whole lot, not just a close-up", "Quantity looks different from the photos", "Price is far above the market range"],
+  RESUBMIT: ["Photo too dark, retake in daylight", "Show the whole lot, not just a close-up", "Quantity looks different from the photos", "Price is far above the market range"],
   REJECT: ["Photo re-used from another listing", "Photos don't show the declared crop", "Visible rot or mould", "Harvest date doesn't match the photos"],
 };
 
@@ -67,7 +67,7 @@ export function DecisionDialog({
         {kind === "APPROVE" && (
           <>
             <p className="text-sm text-muted-foreground">
-              This creates a live listing buyers can order from. AI flags are advisory — you&apos;re making the call.
+              This creates a live listing buyers can order from. AI flags are advisory, you&apos;re making the call.
             </p>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">

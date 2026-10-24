@@ -13,8 +13,7 @@ import { Countdown } from "@/components/bulk/deadline";
 import { QtyStepper } from "@/components/common/qty-stepper";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
-import { offerStatusLabel } from "@/components/common/status-badge";
-import { FarmerStatusBadge } from "@/components/farmer/farmer-status-badge";
+import { FarmerStatusBadge, statusText } from "@/components/farmer/farmer-status-badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useLive } from "@/hooks/use-live";
 import type { SerializedDemand } from "@/lib/bulk";
+import { cropName } from "@/lib/crops";
+import type { MessageKey } from "@/lib/i18n";
 import { sendJSON } from "@/lib/fetcher";
 import { formatINR } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -33,9 +34,17 @@ type FeedItem = SerializedDemand & {
 
 const ORG_ICON: Record<string, typeof ChefHat> = { RESTAURANT: ChefHat, HOSTEL: Building2, COMMUNITY_KITCHEN: HandHeart };
 
+/** Offer status from the farmer's side ("Buyer countered", "Awaiting buyer"…). */
+function offerLabel(t: (key: MessageKey) => string, status: string, lastActor: string | null): string {
+  if (status === "PENDING") return t("offer.awaitingBuyer");
+  if (status === "COUNTERED") return lastActor === "BUYER" ? t("offer.buyerCountered") : t("offer.youCountered");
+  if (status === "REJECTED") return t("offer.declined");
+  return statusText(t, status);
+}
+
 /** /farmer/bulk */
 export function BulkFeed() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { data, error, isLoading, mutate } = useSWR<FeedItem[]>("/api/demands");
   useLive(["demand.updated", "offer.updated"], () => mutate());
   const [offerFor, setOfferFor] = useState<FeedItem | null>(null);
@@ -60,13 +69,13 @@ export function BulkFeed() {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm text-muted-foreground">{d.buyer.name}</p>
                   <p className="text-lg leading-tight font-semibold">
-                    {d.qtyKg} kg {d.cropName}
-                    {d.grade !== "ANY" && <span className="ml-1.5 rounded-md bg-lime/40 px-1.5 text-xs">Grade {d.grade}</span>}
+                    {d.qtyKg} {t("common.kg")} {cropName(d.crop, lang)}
+                    {d.grade !== "ANY" && <span className="ml-1.5 rounded-md bg-lime/40 px-1.5 text-xs">{t("common.grade", { grade: d.grade })}</span>}
                   </p>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                    <span>Target {formatINR(d.targetPrice)}/kg</span>
+                    <span>{t("bulk.target", { price: formatINR(d.targetPrice) })}</span>
                     <span>
-                      Needed <Countdown to={d.deadline} />
+                      {t("bulk.needed")} <Countdown to={d.deadline} />
                     </span>
                     {d.distanceKm !== null && (
                       <span className="inline-flex items-center gap-1">
@@ -78,12 +87,12 @@ export function BulkFeed() {
                 <div className="flex flex-col items-end gap-1">
                   {d.urgent && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-tomato px-2 py-0.5 text-[11px] font-semibold text-white">
-                      <Flame className="size-3" /> Urgent
+                      <Flame className="size-3" /> {t("bulk.urgent")}
                     </span>
                   )}
                   {d.recurring && (
                     <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px]">
-                      <Repeat className="size-3" /> {d.frequency === "DAILY" ? "Daily" : "Weekly"}
+                      <Repeat className="size-3" /> {d.frequency === "DAILY" ? t("bulk.daily") : t("bulk.weekly")}
                     </span>
                   )}
                 </div>
@@ -95,19 +104,18 @@ export function BulkFeed() {
               ) : canOffer ? (
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
                   <p className="flex items-center gap-1.5 text-sm">
-                    <Sprout className="size-4 text-success" /> You have {d.myListings.reduce((s, l) => s + l.availableQty, 0)} kg live
+                    <Sprout className="size-4 text-success" /> {t("bulk.youHave", { kg: d.myListings.reduce((s, l) => s + l.availableQty, 0) })}
                   </p>
                   <Button variant="brand" onClick={() => setOfferFor(d)}>
-                    <Send /> Make offer
+                    <Send /> {t("bulk.makeOffer")}
                   </Button>
                 </div>
               ) : (
                 <p className="mt-3 text-sm text-muted-foreground">
-                  No live {d.cropName.toLowerCase()} listing.{" "}
+                  {t("bulk.noListing", { crop: cropName(d.crop, lang) })}{" "}
                   <Link href="/farmer/batches/new" className="font-medium text-foreground underline">
-                    List a harvest
-                  </Link>{" "}
-                  to offer.
+                    {t("bulk.listToOffer")}
+                  </Link>
                 </p>
               )}
             </motion.li>
@@ -120,6 +128,7 @@ export function BulkFeed() {
 }
 
 function MyOffer({ demand, onChange, onRevise }: { demand: FeedItem; onChange: () => void; onRevise: () => void }) {
+  const { t } = useI18n();
   const o = demand.offers[0];
   const [counter, setCounter] = useState(String(Math.round(((o.counterPrice ?? o.pricePerKg) + o.pricePerKg) / 2)));
   const [busy, setBusy] = useState<string | null>(null);
@@ -127,7 +136,7 @@ function MyOffer({ demand, onChange, onRevise }: { demand: FeedItem; onChange: (
     setBusy(action);
     try {
       await sendJSON(`/api/offers/${o.id}`, { action, price });
-      toast.success(action === "ACCEPT_COUNTER" ? "Counter accepted — the buyer can now confirm" : action === "WITHDRAW" ? "Offer withdrawn" : "Counter sent");
+      toast.success(action === "ACCEPT_COUNTER" ? t("bulk.counterAccepted") : action === "WITHDRAW" ? t("bulk.withdrawn") : t("bulk.counterSent"));
       onChange();
     } catch (e) {
       toast.error((e as Error).message);
@@ -140,41 +149,39 @@ function MyOffer({ demand, onChange, onRevise }: { demand: FeedItem; onChange: (
     <div className="mt-3 rounded-2xl border p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm">
-          Your offer: <b>{o.qtyKg} kg</b> at <b>{formatINR(o.pricePerKg)}/kg</b> · {o.etaHours} h
+          {t("bulk.yourOffer")}: <b>{o.qtyKg} {t("common.kg")}</b> · <b>{formatINR(o.pricePerKg)}/{t("common.kg")}</b> · {t("time.hours", { n: o.etaHours })}
         </p>
-        <FarmerStatusBadge status={o.status} label={offerStatusLabel(o.status, o.lastActor, "FARMER")} pulse={buyerCountered} />
+        <FarmerStatusBadge status={o.status} label={offerLabel(t, o.status, o.lastActor)} pulse={buyerCountered} />
       </div>
-      {o.status === "ACCEPTED" && o.order && <p className="mt-2 text-sm text-success">Accepted — order {o.order.code} is in your Orders.</p>}
+      {o.status === "ACCEPTED" && o.order && <p className="mt-2 text-sm text-success">{t("bulk.acceptedOrder", { code: o.order.code })}</p>}
       {buyerCountered && (
         <div className="mt-3 space-y-2 rounded-xl bg-warning/12 p-3">
-          <p className="text-sm">
-            {demand.buyer.name} countered at <b>{formatINR(o.counterPrice)}/kg</b> (round {o.rounds} of 2)
-          </p>
+          <p className="text-sm">{t("bulk.buyerCountered", { buyer: demand.buyer.name, price: formatINR(o.counterPrice), round: o.rounds })}</p>
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="brand" onClick={() => act("ACCEPT_COUNTER")} disabled={busy !== null}>
-              {busy === "ACCEPT_COUNTER" && <Loader2 className="animate-spin" />} Accept {formatINR(o.counterPrice)}
+              {busy === "ACCEPT_COUNTER" && <Loader2 className="animate-spin" />} {t("bulk.accept", { price: formatINR(o.counterPrice) })}
             </Button>
             {o.rounds < 2 && (
               <span className="flex items-center gap-1">
-                <input aria-label="Counter price" inputMode="decimal" value={counter} onChange={(e) => setCounter(e.target.value.replace(/[^\d.]/g, ""))} className="h-9 w-20 rounded-lg border bg-background px-2 text-sm" />
+                <input aria-label={t("bulk.counterPrice")} inputMode="decimal" value={counter} onChange={(e) => setCounter(e.target.value.replace(/[^\d.]/g, ""))} className="h-9 w-20 rounded-lg border bg-background px-2 text-sm" />
                 <Button size="sm" variant="outline" onClick={() => act("COUNTER", Number(counter))} disabled={busy !== null || !Number(counter)}>
-                  Counter
+                  {t("bulk.counter")}
                 </Button>
               </span>
             )}
           </div>
         </div>
       )}
-      {o.status === "COUNTERED" && o.lastActor === "FARMER" && <p className="mt-2 text-sm text-muted-foreground">You countered at {formatINR(o.counterPrice)}/kg — waiting for the buyer.</p>}
+      {o.status === "COUNTERED" && o.lastActor === "FARMER" && <p className="mt-2 text-sm text-muted-foreground">{t("bulk.youCountered", { price: formatINR(o.counterPrice) })}</p>}
       {["PENDING", "COUNTERED"].includes(o.status) && (
         <div className="mt-2 flex gap-2">
           {o.status === "PENDING" && (
             <Button size="sm" variant="ghost" onClick={onRevise}>
-              Revise
+              {t("bulk.revise")}
             </Button>
           )}
           <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => act("WITHDRAW")} disabled={busy !== null}>
-            Withdraw
+            {t("bulk.withdraw")}
           </Button>
         </div>
       )}
@@ -183,6 +190,7 @@ function MyOffer({ demand, onChange, onRevise }: { demand: FeedItem; onChange: (
 }
 
 function OfferSheet({ demand, onClose, onDone }: { demand: FeedItem; onClose: () => void; onDone: () => void }) {
+  const { t, lang } = useI18n();
   const existing = demand.offers[0];
   const [listingId, setListingId] = useState(existing?.listing?.id ?? demand.myListings[0]?.id ?? "");
   const listing = demand.myListings.find((l) => l.id === listingId);
@@ -196,7 +204,7 @@ function OfferSheet({ demand, onClose, onDone }: { demand: FeedItem; onClose: ()
     setBusy(true);
     try {
       await sendJSON(`/api/demands/${demand.id}/offers`, { listingId, qtyKg: Number(qty), pricePerKg: Number(price), etaHours: Number(eta), note: note || undefined });
-      toast.success(existing ? "Offer updated" : `Offer sent to ${demand.buyer.name}`);
+      toast.success(existing ? t("bulk.offerUpdated") : t("bulk.offerSent", { buyer: demand.buyer.name }));
       onDone();
     } catch (e) {
       toast.error((e as Error).message);
@@ -206,16 +214,16 @@ function OfferSheet({ demand, onClose, onDone }: { demand: FeedItem; onClose: ()
 
   const gross = Number(qty) * Number(price);
   return (
-    <ResponsiveModal open onOpenChange={(o) => !o && onClose()} title={`Offer for ${demand.qtyKg} kg ${demand.cropName}`} description={`${demand.buyer.name} · target ${formatINR(demand.targetPrice)}/kg`}>
+    <ResponsiveModal open onOpenChange={(o) => !o && onClose()} title={t("bulk.offerFor", { qty: demand.qtyKg, crop: cropName(demand.crop, lang) })} description={t("bulk.offerDesc", { buyer: demand.buyer.name, price: formatINR(demand.targetPrice) })}>
       <div className="space-y-4">
         {demand.myListings.length > 1 && (
           <div className="space-y-1.5">
-            <Label>From listing</Label>
+            <Label>{t("bulk.fromListing")}</Label>
             <div className="grid gap-2">
               {demand.myListings.map((l) => (
                 <button key={l.id} type="button" onClick={() => setListingId(l.id)} className={cn("flex min-h-11 items-center justify-between rounded-xl border px-3 text-sm", listingId === l.id && "border-foreground bg-muted")}>
-                  <span>{l.title}</span>
-                  <span className="text-muted-foreground">{l.availableQty} kg live</span>
+                  <span>{cropName(l.crop, lang)}</span>
+                  <span className="text-muted-foreground">{t("bulk.kgLive", { kg: l.availableQty })}</span>
                 </button>
               ))}
             </div>
@@ -223,30 +231,33 @@ function OfferSheet({ demand, onClose, onDone }: { demand: FeedItem; onClose: ()
         )}
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
-            <Label htmlFor="oq">Quantity (kg){listing ? ` · max ${listing.availableQty}` : ""}</Label>
-            <QtyStepper id="oq" value={qty} onChange={setQty} step={5} min={1} max={listing?.availableQty ?? 100000} suffix="kg" />
+            <Label htmlFor="oq">
+              {t("bulk.qty")}
+              {listing ? ` · ${t("bulk.max", { n: listing.availableQty })}` : ""}
+            </Label>
+            <QtyStepper id="oq" value={qty} onChange={setQty} step={5} min={1} max={listing?.availableQty ?? 100000} suffix={t("common.kg")} />
           </div>
           <div className="space-y-1.5">
-            <Label htmlFor="op">Price (₹/kg)</Label>
-            <QtyStepper id="op" value={price} onChange={setPrice} step={1} min={1} suffix="/kg" />
+            <Label htmlFor="op">{t("bulk.price")}</Label>
+            <QtyStepper id="op" value={price} onChange={setPrice} step={1} min={1} suffix={`/${t("common.kg")}`} />
           </div>
         </div>
         <div className="space-y-1.5">
-          <Label>Can deliver within</Label>
+          <Label>{t("bulk.deliverWithin")}</Label>
           <div className="flex flex-wrap gap-2">
             {["12", "24", "36", "48"].map((h) => (
               <button key={h} type="button" onClick={() => setEta(h)} className={cn("min-h-11 rounded-full border px-4 text-sm", eta === h && "border-foreground bg-foreground text-background")}>
-                {h} h
+                {t("time.hours", { n: h })}
               </button>
             ))}
           </div>
         </div>
-        <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder="Note for the buyer (optional)" maxLength={200} />
+        <Textarea rows={2} value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("bulk.notePh")} maxLength={200} />
         <p className="rounded-xl bg-muted/60 p-3 text-sm">
-          Order value <b className="tabular">{formatINR(gross)}</b> · your stock is reserved only if they accept.
+          {t("bulk.orderValue", { value: formatINR(gross) })}
         </p>
         <Button size="lg" variant="brand" className="w-full" onClick={submit} disabled={busy || !listingId || !(Number(qty) > 0) || !(Number(price) > 0)}>
-          {busy ? <Loader2 className="animate-spin" /> : <Send />} {existing ? "Update offer" : "Send offer"}
+          {busy ? <Loader2 className="animate-spin" /> : <Send />} {existing ? t("bulk.updateOffer") : t("bulk.sendOffer")}
         </Button>
       </div>
     </ResponsiveModal>

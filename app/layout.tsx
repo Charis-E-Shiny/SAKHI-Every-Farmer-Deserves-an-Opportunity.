@@ -2,23 +2,24 @@
 // global providers, metadata and mobile viewport settings.
 import type { Metadata, Viewport } from "next";
 import {
+  Fredoka,
   Geist,
   Geist_Mono,
   Instrument_Serif,
   Noto_Sans_Devanagari,
   Noto_Sans_Kannada,
+  Nunito,
 } from "next/font/google";
 import { Providers } from "@/components/providers/providers";
 import "./globals.css";
 
-const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
+// Rounded, friendly type to match the storybook illustrations: Fredoka for headings, Nunito for text.
+const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"] });
+const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin"], weight: ["400", "500", "600", "700"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
-const instrument = Instrument_Serif({
-  variable: "--font-instrument",
-  subsets: ["latin"],
-  weight: "400",
-  style: ["normal", "italic"],
-});
+// The FoodFlow wordmark and the landing page keep the original pairing: Geist with an Instrument Serif italic.
+const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
+const instrument = Instrument_Serif({ variable: "--font-instrument", subsets: ["latin"], weight: "400", style: ["normal", "italic"] });
 const deva = Noto_Sans_Devanagari({
   variable: "--font-deva",
   subsets: ["devanagari"],
@@ -27,9 +28,9 @@ const deva = Noto_Sans_Devanagari({
 const knda = Noto_Sans_Kannada({ variable: "--font-knda", subsets: ["kannada"], preload: false });
 
 export const metadata: Metadata = {
-  title: { default: "FoodFlow — From every harvest to every table", template: "%s · FoodFlow" },
+  title: { default: "FoodFlow: from every harvest to every table", template: "%s · FoodFlow" },
   description:
-    "AI-assisted fresh-produce marketplace connecting farmers directly with households, restaurants and community kitchens. Built for UN SDG 2 — Zero Hunger.",
+    "AI-assisted fresh-produce marketplace connecting farmers directly with households, restaurants and community kitchens. Built for UN SDG 2. Zero Hunger.",
   applicationName: "FoodFlow",
 };
 
@@ -38,8 +39,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: "cover",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf9f4" },
-    { media: "(prefers-color-scheme: dark)", color: "#0d1611" },
+    { media: "(prefers-color-scheme: light)", color: "#f6faf7" },
+    { media: "(prefers-color-scheme: dark)", color: "#2a3a2e" },
   ],
 };
 
@@ -52,7 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geist.variable} ${geistMono.variable} ${instrument.variable} ${deva.variable} ${knda.variable} h-full antialiased`}
+      className={`${nunito.variable} ${fredoka.variable} ${geist.variable} ${instrument.variable} ${geistMono.variable} ${deva.variable} ${knda.variable} h-full antialiased`}
     >
       <body className="grain flex min-h-full flex-col">
         <Providers>{children}</Providers>

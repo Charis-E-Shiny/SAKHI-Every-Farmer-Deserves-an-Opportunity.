@@ -19,7 +19,7 @@ export const POST = handler<z.infer<typeof body>, undefined, Params>({ roles: []
   const allowed =
     (user.id === order.buyerId && buyerWindow) || (user.id === order.farmerId && preHandover) || (user.role === "ADMIN" && preHandover);
   if (!allowed) {
-    throw new HttpError(409, user.id === order.buyerId ? "Your farmer has already packed this order — contact support to cancel" : "This order can no longer be cancelled");
+    throw new HttpError(409, user.id === order.buyerId ? "Your farmer has already packed this order, contact support to cancel" : "This order can no longer be cancelled");
   }
   await cancelOrder(order.id, user.id, body.reason);
   if (user.id === order.farmerId) await recomputeReliability(order.farmerId);

@@ -84,7 +84,7 @@ export function HandoverPanel({ order, onChange }: { order: SerializedOrder; onC
 
       {!current || expired ? (
         <Button size="lg" variant="brand" className="mt-4 w-full" onClick={generate} disabled={busy}>
-          {busy ? <Loader2 className="animate-spin" /> : <KeyRound />} {expired ? "Code expired — get a new one" : `Show ${pickup ? "QR & code" : "OTP"}`}
+          {busy ? <Loader2 className="animate-spin" /> : <KeyRound />} {expired ? "Code expired, get a new one" : `Show ${pickup ? "QR & code" : "OTP"}`}
         </Button>
       ) : (
         <div className="mt-4">
@@ -125,7 +125,7 @@ export function HandoverPanel({ order, onChange }: { order: SerializedOrder; onC
           </div>
           {(order.delivery?.otpAttempts ?? 0) > 0 && (
             <p className="mt-2 text-xs text-warning">
-              {order.delivery?.otpAttempts} wrong attempt{order.delivery?.otpAttempts === 1 ? "" : "s"} so far — generate a new code if you didn&apos;t share it.
+              {order.delivery?.otpAttempts} wrong attempt{order.delivery?.otpAttempts === 1 ? "" : "s"} so far, generate a new code if you didn&apos;t share it.
             </p>
           )}
         </div>

@@ -9,6 +9,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
 import { MediaImage } from "@/components/common/media-image";
+import { Photo } from "@/components/common/photo";
 import { StatusBadge } from "@/components/common/status-badge";
 import { CountUp } from "@/components/motion/count-up";
 import { PageHeader } from "@/components/shell/page-header";
@@ -49,6 +50,10 @@ export function BulkHome({ orgName }: { orgName: string }) {
         }
       />
       <BulkTabs />
+      <div className="relative mb-5 overflow-hidden rounded-3xl">
+        <Photo name="field-panorama" scrim="left" position="50% 75%" sizes="(max-width: 1152px) 100vw, 1100px" className="h-28 w-full sm:h-36" />
+        <p className="absolute inset-y-0 left-0 flex max-w-[70%] items-center px-5 text-base font-semibold text-white sm:px-7 sm:text-xl">Sourced direct from verified farms, handed over with an OTP.</p>
+      </div>
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {[
@@ -70,7 +75,7 @@ export function BulkHome({ orgName }: { orgName: string }) {
       {isLoading && <SkeletonRows count={3} />}
       {error && <ErrorState message={error.message} onRetry={() => mutate()} />}
       {data?.length === 0 && (
-        <EmptyState icon={Handshake} title="No requirements yet" body="Post your first bulk requirement — farmers nearby are notified instantly." action={<Button asChild><Link href="/bulk/demands/new">Post requirement</Link></Button>} />
+        <EmptyState icon={Handshake} title="No requirements yet" body="Post your first bulk requirement, farmers nearby are notified instantly." action={<Button asChild><Link href="/bulk/demands/new">Post requirement</Link></Button>} />
       )}
       <ul className="grid gap-3 md:grid-cols-2">
         {data?.map((d, i) => {

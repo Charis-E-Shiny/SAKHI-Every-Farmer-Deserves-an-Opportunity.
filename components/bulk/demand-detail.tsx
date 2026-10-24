@@ -201,7 +201,7 @@ function OfferCard({
       {ranking && live && <span className="absolute inset-x-0 top-0 h-0.5 animate-shimmer bg-gradient-to-r from-transparent via-lime to-transparent bg-[length:200%_100%]" />}
       <div className="flex items-start gap-3">
         <span className={cn("grid size-11 shrink-0 place-items-center rounded-2xl text-lg font-semibold", pos === 1 && live ? "bg-lime text-lime-foreground" : "bg-muted")}>
-          {pos === 1 && live ? <Crown className="size-5" /> : pos ? `#${pos}` : "—"}
+          {pos === 1 && live ? <Crown className="size-5" /> : pos ? `#${pos}` : "-"}
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -273,7 +273,7 @@ function OfferCard({
 
       {live && (
         <div className="mt-3 space-y-2">
-          {waitingFarmer && <p className="text-sm text-muted-foreground">You countered at {formatINR(o.counterPrice)}/kg — waiting for the farmer (round {o.rounds}/2).</p>}
+          {waitingFarmer && <p className="text-sm text-muted-foreground">You countered at {formatINR(o.counterPrice)}/kg, waiting for the farmer (round {o.rounds}/2).</p>}
           <div className="flex flex-wrap gap-2">
             {!waitingFarmer && (
               <Button variant="brand" onClick={onAccept}>
@@ -317,7 +317,7 @@ function AcceptDialog({ demand, offer, onClose, onDone }: { demand: SerializedDe
     setBusy(true);
     try {
       const r = await sendJSON<{ code: string; awarded: boolean }>(`/api/offers/${offer!.id}`, { action: "ACCEPT" });
-      toast.success(`Order ${r.code} placed${r.awarded ? " — requirement fully covered" : ""}`);
+      toast.success(`Order ${r.code} placed${r.awarded ? ", requirement fully covered" : ""}`);
       onDone();
     } catch (e) {
       toast.error((e as Error).message);
@@ -350,7 +350,7 @@ function AcceptDialog({ demand, offer, onClose, onDone }: { demand: SerializedDe
         <Button size="lg" variant="brand" className="w-full" onClick={accept} disabled={busy}>
           {busy ? <Loader2 className="animate-spin" /> : <Check />} Place bulk order
         </Button>
-        {demand.qtyKg > offer.qtyKg && <p className="text-center text-xs text-muted-foreground">Covers {offer.qtyKg} of {demand.qtyKg} kg — you can accept more offers for the rest.</p>}
+        {demand.qtyKg > offer.qtyKg && <p className="text-center text-xs text-muted-foreground">Covers {offer.qtyKg} of {demand.qtyKg} kg, you can accept more offers for the rest.</p>}
       </div>
     </ResponsiveModal>
   );

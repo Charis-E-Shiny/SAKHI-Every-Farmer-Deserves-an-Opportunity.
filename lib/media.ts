@@ -55,7 +55,7 @@ export async function findDuplicate(hash: string, batchId: string): Promise<stri
  */
 export function provenanceNote(capturedAt: Date | null, harvestDate: Date, isFrame: boolean): string {
   if (isFrame) return "Frame extracted in-app from the farmer's video";
-  if (!capturedAt) return "No camera timestamp (EXIF) — common for screenshots or edited files";
+  if (!capturedAt) return "No camera timestamp (EXIF), common for screenshots or edited files";
   const days = Math.round((harvestDate.getTime() - capturedAt.getTime()) / 86_400_000);
   if (Math.abs(days) <= 2) return `Camera timestamp ${capturedAt.toISOString().slice(0, 16).replace("T", " ")} matches the harvest date`;
   return `Camera timestamp is ${Math.abs(days)} day(s) ${days > 0 ? "before" : "after"} the declared harvest date`;

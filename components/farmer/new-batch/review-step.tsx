@@ -5,7 +5,7 @@ import { AlertTriangle, ShieldCheck } from "lucide-react";
 import Image from "next/image";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { CROPS, cropName } from "@/lib/crops";
-import { formatDate, formatINR, formatQty } from "@/lib/format";
+import { formatDate, formatINR, formatQty, unitName } from "@/lib/format";
 import type { DraftFields, UploadTile } from "./types";
 
 /**
@@ -36,14 +36,14 @@ export function ReviewStep({
           <div className="absolute inset-x-5 bottom-4 text-white">
             <p className="text-2xl font-semibold">{cropName(fields.crop, lang)}</p>
             <p className="text-sm opacity-85">
-              {formatQty(qty, fields.unit)} · {formatDate(`${fields.harvestDate}T12:00:00`)}
+              {formatQty(qty, fields.unit, lang)} · {formatDate(`${fields.harvestDate}T12:00:00`, lang)}
             </p>
           </div>
         </div>
         <dl className="grid grid-cols-2 divide-x divide-y border-t text-sm sm:grid-cols-3 sm:divide-y-0">
-          <Fact label={t("batch.price")} value={`${formatINR(price)} / ${fields.unit}`} />
-          <Fact label="Potential gross" value={formatINR(qty * price)} />
-          <Fact label={t("batch.stepMedia")} value={`${done.length} file${done.length === 1 ? "" : "s"}`} />
+          <Fact label={t("batch.price")} value={`${formatINR(price)} / ${unitName(fields.unit, lang)}`} />
+          <Fact label={t("batch.potentialGross")} value={formatINR(qty * price)} />
+          <Fact label={t("batch.stepMedia")} value={done.length === 1 ? t("batch.oneFile") : t("batch.files", { n: done.length })} />
         </dl>
         {fields.notes && <p className="border-t px-5 py-3 text-sm text-muted-foreground">“{fields.notes}”</p>}
       </div>
@@ -57,7 +57,7 @@ export function ReviewStep({
       )}
       <p className="flex gap-2 rounded-2xl bg-muted/60 p-3 text-sm text-muted-foreground">
         <ShieldCheck className="mt-0.5 size-4 shrink-0" />
-        An admin checks every harvest before it goes live. You&apos;ll get a notification here when it&apos;s approved.
+        {t("batch.adminChecks")}
       </p>
     </div>
   );

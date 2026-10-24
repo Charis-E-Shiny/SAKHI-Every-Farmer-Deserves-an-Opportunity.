@@ -1,7 +1,6 @@
 // Decorative left panel on the login/register screens (desktop only):
-// drifting light orbs, a 3D produce ring and the mission line.
-import { LogoMark } from "@/components/brand/logo";
-import { ProduceRing } from "@/components/motion/produce-ring";
+// drifting light orbs, a farm photo and the mission line.
+import { Photo } from "@/components/common/photo";
 
 /** Always-dark brand panel; the `dark` class re-themes its subtree. */
 export function AuthAside() {
@@ -11,25 +10,17 @@ export function AuthAside() {
       <div className="absolute -top-24 -left-24 size-[28rem] animate-orb rounded-full bg-lime/25 blur-[110px]" />
       <div className="absolute -right-24 bottom-0 size-[24rem] animate-orb rounded-full bg-tomato/25 blur-[120px] [animation-delay:-6s]" />
 
-      <div className="relative flex items-center gap-2 text-sm text-muted-foreground">
-        <LogoMark className="size-6" />
-        <span className="font-mono">foodflow / pilot-01 / bengaluru</span>
-      </div>
+      <span aria-hidden />
 
-      <ProduceRing className="relative my-6" radius={290} card={136} />
+      <Photo name="farmer-lettuce" scrim="bottom" position="60% 45%" sizes="(min-width: 1024px) 45vw, 0px" className="relative my-6 aspect-[16/9] w-full rounded-[2rem] shadow-2xl ring-1 ring-white/10" />
 
       <div className="relative">
         <p className="max-w-md text-4xl leading-[1.05] font-semibold tracking-tight xl:text-5xl">
           Every harvest deserves a <span className="font-serif font-normal text-lime italic">table.</span>
         </p>
         <p className="mt-4 max-w-sm text-sm text-muted-foreground">
-          Farmers list by voice. AI checks the harvest. Buyers get it fresh — and nothing goes to waste.
+          Farmers list by voice. AI checks the harvest. Buyers get it fresh, and nothing goes to waste.
         </p>
-        <div className="mt-8 flex gap-8 font-mono text-xs text-muted-foreground">
-          <span>SDG 2 · Zero Hunger</span>
-          <span>SDG 1 · No Poverty</span>
-          <span>SDG 12 · Responsible Consumption</span>
-        </div>
       </div>
     </aside>
   );

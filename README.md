@@ -3,7 +3,7 @@
 [![CI/CD](https://github.com/skypank-coder/FOODFLOW-From-Every-Harvest-to-Every-Table/actions/workflows/ci.yml/badge.svg)](https://github.com/skypank-coder/FOODFLOW-From-Every-Harvest-to-Every-Table/actions/workflows/ci.yml)
 
 AI-assisted fresh-produce marketplace connecting smallholder farmers directly with households,
-restaurants and community kitchens (UN SDG 2 — Zero Hunger).
+restaurants and community kitchens (UN SDG 2, Zero Hunger).
 **A fresh-produce marketplace that connects smallholder farmers directly with households, restaurants
 and community kitchens — with AI that assists and people who decide.** Built for UN SDG 2 — Zero Hunger.
 
@@ -67,8 +67,9 @@ npm run setup   # creates .env, builds the SQLite database, seeds the Bengaluru 
 npm run dev
 ```
 
-Open **http://localhost:3000** and press **Try the demo** to jump into any interface — or sign in at
-`/login` with a demo phone number and PIN **1234**:
+Open **http://localhost:3000** and press **Get started**: choose **Buyer** (household or restaurant) or
+**Seller** and follow the sign-up. The seeded sample accounts below can sign in at `/login` (choose
+"I already have an account") with their mobile number and PIN **1234**:
 
 | Role | Phone | Persona |
 | --- | --- | --- |
@@ -79,7 +80,15 @@ Open **http://localhost:3000** and press **Try the demo** to jump into any inter
 | Admin | 9000000001 | Meera Krishnan |
 | Delivery | 9000000401 | Imran Pasha |
 
-Start over with fresh demo data any time: `npm run db:reset`.
+**Sign in with Google** needs your own OAuth client: set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env`
+and add `<NEXT_PUBLIC_APP_URL>/api/auth/google/callback` as an authorised redirect URI (see `.env.example`).
+Members whose account has the same email, or who joined with Google, are signed straight in; new people choose
+Buyer or Seller, add a mobile number and finish.
+
+Your location in the top bar follows your device (the browser asks first) and each account can save several
+addresses. Messages from the home page's contact form are stored in the `ContactMessage` table.
+
+To start over with fresh sample data at any time: `npm run db:reset`.
 
 ### Demo script
 
@@ -187,7 +196,7 @@ Copy `.env.example` to `.env` (`npm run setup` does this for you).
 | `GEMINI_MODEL`, `AI_TIMEOUT_MS` | no | Model name and per-call timeout before falling back |
 | `STORAGE_DRIVER` | no | `local` (default) writes uploads to `public/uploads`; falls back to inline on read-only hosts |
 | `CRON_SECRET` | no | Lets a scheduler call `/api/subscriptions/run-due` |
-| `DEMO_MODE` | no | Set to `false` to disable one-tap demo sign-in |
+| `DEMO_MODE` | no | One-tap sign-in as seeded accounts (API only). Off in production unless set to `true`; keep it off on a live site |
 | `DIRECT_URL` | no | Direct (unpooled) Postgres URL for Neon / Supabase |
 
 ## Deploy (Vercel + Postgres)

@@ -57,7 +57,7 @@ export async function quoteCheckout(buyer: User, input: CheckoutInput) {
       total: 0,
       blocked: {
         code: "OUT_OF_AREA" as const,
-        message: `We don't deliver to ${place} yet — FoodFlow currently delivers in ${open.join(", ")}. Choose one of those areas or switch to self-pickup.`,
+        message: `We don't deliver to ${place} yet, FoodFlow currently delivers in ${open.join(", ")}. Choose one of those areas or switch to self-pickup.`,
       },
     };
   }

@@ -114,7 +114,7 @@ export function AdminOverview() {
           </div>
           <div className="text-right">
             <p className="text-sm text-muted-foreground">Average buyer rating</p>
-            <p className="tabular text-3xl font-semibold">{k.avgRating ?? "—"} ★</p>
+            <p className="tabular text-3xl font-semibold">{k.avgRating ?? "-"} ★</p>
           </div>
         </div>
       </section>

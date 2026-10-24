@@ -51,7 +51,7 @@ export function FeedbackPanel({ order, onDone }: { order: SerializedOrder; onDon
         </div>
         {order.feedback.issue && order.feedback.issue !== "NONE" && <p className="mt-2 text-sm">Reported: {ISSUES.find((x) => x.v === order.feedback!.issue)?.l}</p>}
         {order.feedback.comment && <p className="mt-1 text-sm text-muted-foreground">“{order.feedback.comment}”</p>}
-        {order.status === "DISPUTED" && <p className="mt-2 rounded-xl bg-warning/12 p-2 text-sm">Our team is reviewing this — you&apos;ll hear back within 24 hours.</p>}
+        {order.status === "DISPUTED" && <p className="mt-2 rounded-xl bg-warning/12 p-2 text-sm">Our team is reviewing this, you&apos;ll hear back within 24 hours.</p>}
       </section>
     );
   }
@@ -66,7 +66,7 @@ export function FeedbackPanel({ order, onDone }: { order: SerializedOrder; onDon
       if (comment) form.append("comment", comment);
       if (photo) form.append("photo", photo);
       const r = await sendForm<{ disputed: boolean }>(`/api/orders/${order.id}/feedback`, form);
-      toast.success(r.disputed ? "Thanks — we've opened a case and will refund if needed" : "Thanks for rating your farmer!");
+      toast.success(r.disputed ? "Thanks, we've opened a case and will refund if needed" : "Thanks for rating your farmer!");
       onDone();
     } catch (e) {
       toast.error((e as Error).message);

@@ -110,6 +110,9 @@ model User {
   id               String   @id @default(cuid())
   name             String
   phone            String   @unique
+  /// Set when the account was created with (or linked to) Google sign-in
+  email            String?  @unique
+  googleId         String?  @unique
   /// scrypt hash of the 4–6 digit login PIN (lib/auth/password.ts)
   pinHash          String
   role             Role
@@ -130,6 +133,8 @@ model User {
   createdAt        DateTime @default(now())
 
   farmerProfile FarmerProfile?
+  addresses     Address[]
+  onboarding    OnboardingProfile?
   batches       Batch[]
   listings      Listing[]
   orders        Order[]         @relation("BuyerOrders")
@@ -559,4 +564,55 @@ model Category {
 model PlatformSetting {
   key   String @id
   value String
+}
+
+// ─── Onboarding, addresses & contact ──────────────────────────────────────
+
+/// A saved delivery / pickup address. One of a user's addresses is "active":
+/// its values are copied onto User.area / address / lat / lng, which is what
+/// the rest of the app (nearest farms, delivery fees) reads.
+model Address {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Home | Work | Farm | Kitchen | Other | Current location
+  label             String
+  line              String
+  /// Nearest service area when the address is inside one
+  area              String?
+  lat               Float?
+  lng               Float?
+  /// Created from the browser's live location (replaced on the next detection)
+  isCurrentLocation Boolean  @default(false)
+  createdAt         DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// What a seller or restaurant told us while joining. `data` is the validated
+/// wizard answers (preferences only): confirmed orders, stock and payouts live
+/// in their own records. Bank details are never stored here.
+model OnboardingProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// SELLER | RESTAURANT
+  kind      String
+  data      Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// Messages from the landing page's "Connect with us" form.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  topic     String
+  message   String
+  handled   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([handled, createdAt])
 }

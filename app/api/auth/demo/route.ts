@@ -19,7 +19,7 @@ export const POST = handler({ body: demoLoginSchema }, async ({ body }) => {
       ? await db.user.findUnique({ where: { phone: DEMO_PHONE_BY_ROLE[body.role] } })
       : null;
   if (!user || !user.phone.startsWith(DEMO_PHONE_PREFIX)) {
-    throw new HttpError(404, "Demo persona not found — run `npm run db:reset` to reseed");
+    throw new HttpError(404, "Demo persona not found, run `npm run db:reset` to reseed");
   }
   if (user.suspended) throw new HttpError(403, "This account is suspended. An admin can reinstate it from Trust & safety.");
   await startSession({ id: user.id, role: user.role as Role, name: user.name });

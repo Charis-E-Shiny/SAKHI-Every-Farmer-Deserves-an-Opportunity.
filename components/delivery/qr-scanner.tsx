@@ -5,6 +5,7 @@
 
 import { CameraOff } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { useI18n } from "@/components/providers/i18n-provider";
 
 type Scanner = import("html5-qrcode").Html5Qrcode;
 
@@ -32,7 +33,8 @@ async function release(scanner: Scanner | null) {
  */
 export function QrScanner({ onResult }: { onResult: (text: string) => void }) {
   const id = useId().replace(/:/g, "");
-  const [error, setError] = useState<string | null>(null);
+  const { t } = useI18n();
+  const [error, setError] = useState(false);
   const done = useRef(false);
   const cb = useRef(onResult);
   useEffect(() => {
@@ -62,7 +64,7 @@ export function QrScanner({ onResult }: { onResult: (text: string) => void }) {
         // Unmounted while the camera was still starting: turn it off again.
         if (cancelled) void release(scanner);
       } catch {
-        if (!cancelled) setError("Camera unavailable — allow camera access, or type the code instead.");
+        if (!cancelled) setError(true);
       }
     })();
     return () => {
@@ -78,7 +80,7 @@ export function QrScanner({ onResult }: { onResult: (text: string) => void }) {
         <div className="absolute inset-0 grid place-items-center p-6 text-center text-sm text-white/80">
           <div>
             <CameraOff className="mx-auto mb-2 size-8" />
-            {error}
+            {t("pickup.cameraError")}
           </div>
         </div>
       ) : (

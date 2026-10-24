@@ -14,7 +14,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import type { SerializedBatch } from "@/lib/batches";
 import { CROPS, cropName, isCropSlug } from "@/lib/crops";
-import { formatQty, timeAgo } from "@/lib/format";
+import { formatQty, timeAgo, unitName } from "@/lib/format";
 import { useLive } from "@/hooks/use-live";
 
 type Row = SerializedBatch & { listing: { id: string; status: string } | null };
@@ -66,15 +66,15 @@ export function BatchList() {
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="font-semibold">{cropName(b.crop, lang)}</p>
                   <FarmerStatusBadge status={b.status} pulse={b.status === "PENDING_REVIEW"} />
-                  {b.media.some((m) => m.isDuplicate) && <FarmerStatusBadge status="FLAG" label={t("batches.duplicate")} className="bg-warning/20" />}
+                  {b.media.some((m) => m.isDuplicate) && <FarmerStatusBadge status="FLAG" label={t("batch.duplicateFlag")} className="bg-warning/20" />}
                 </div>
                 <p className="mt-0.5 text-sm text-muted-foreground">
-                  {formatQty(b.quantity, b.unit)}
-                  {b.proposedPrice ? ` · ₹${b.proposedPrice}/${b.unit}` : ""} · {timeAgo(b.createdAt, lang)}
+                  {formatQty(b.quantity, b.unit, lang)}
+                  {b.proposedPrice ? ` · ₹${b.proposedPrice}/${unitName(b.unit, lang)}` : ""} · {timeAgo(b.createdAt, lang)}
                 </p>
                 {b.aiQualityScore !== null && (
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {t("batches.visualScore")} <span className="tabular font-semibold text-foreground">{b.aiQualityScore}</span> · {t("batches.grade", { grade: b.grade ?? "—" })}
+                    {t("batches.visualScore", { score: b.aiQualityScore, grade: b.grade ?? "-" })}
                   </p>
                 )}
                 {b.adminNote && (b.status === "RESUBMIT" || b.status === "REJECTED") && (

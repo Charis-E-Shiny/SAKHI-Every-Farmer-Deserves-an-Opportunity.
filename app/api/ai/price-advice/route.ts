@@ -4,6 +4,7 @@
 import { explainPrice } from "@/lib/ai";
 import { PRICE_LABEL } from "@/lib/ai/schemas";
 import { handler, HttpError } from "@/lib/api";
+import { toLang } from "@/lib/i18n";
 import { computePriceAdvice } from "@/lib/pricing";
 import { rateLimit } from "@/lib/rate-limit";
 import { priceAdviceInput, type PriceAdviceInput } from "@/lib/validators/batch";
@@ -16,7 +17,8 @@ export const POST = handler<PriceAdviceInput>(
     const advice = await computePriceAdvice(body.crop, body.area ?? user.area, body.grade);
     if (!advice) throw new HttpError(404, "No market data for this crop yet");
     const { facts, basis: computedBasis, ...numbers } = advice;
-    const basis = await explainPrice(facts, computedBasis);
+    // Only the farmer interface is localised; other roles read English.
+    const basis = await explainPrice(facts, computedBasis, user.role === "FARMER" ? toLang(user.language) : "en");
     return { ...numbers, basis: basis.data, source: basis.source, label: PRICE_LABEL };
   },
 );

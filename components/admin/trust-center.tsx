@@ -43,7 +43,7 @@ export function TrustCenter() {
     }
   }
   const setSuspended = (id: string, name: string, suspended: boolean) =>
-    run(id, () => sendJSON(`/api/admin/users/${id}`, { suspended }, "PATCH"), suspended ? `${name} suspended — live listings paused` : `${name} reinstated`);
+    run(id, () => sendJSON(`/api/admin/users/${id}`, { suspended }, "PATCH"), suspended ? `${name} suspended, live listings paused` : `${name} reinstated`);
   const setListing = (id: string, status: "ACTIVE" | "PAUSED") =>
     run(id, () => sendJSON(`/api/admin/listings/${id}`, { status }, "PATCH"), status === "PAUSED" ? "Listing paused" : "Listing resumed");
 
@@ -59,7 +59,7 @@ export function TrustCenter() {
 
   return (
     <div className="space-y-8">
-      <PageHeader title="Trust & *safety*" description="Signals that need a person to look. Flags assist — they never decide on their own." />
+      <PageHeader title="Trust & *safety*" description="Signals that need a person to look. Flags assist, they never decide on their own." />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tiles.map((t, i) => (
@@ -71,7 +71,7 @@ export function TrustCenter() {
         ))}
       </div>
 
-      <Section title="Re-used photos" hint="Identical file bytes seen on another batch. Often an honest re-upload — sometimes a borrowed photo.">
+      <Section title="Re-used photos" hint="Identical file bytes seen on another batch. Often an honest re-upload, sometimes a borrowed photo.">
         {data.duplicates.length === 0 ? (
           <EmptyState icon={ImageOff} title="No re-used photos" body="Every photo on file is unique." />
         ) : (

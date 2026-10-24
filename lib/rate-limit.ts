@@ -15,7 +15,7 @@ export function rateLimit(key: string, limit: number, windowMs: number): void {
   const recent = (hits.get(key) ?? []).filter((t) => now - t < windowMs);
   if (recent.length >= limit) {
     const retry = Math.ceil((windowMs - (now - recent[0])) / 1000);
-    throw new HttpError(429, `Too many requests — try again in ${retry < 90 ? `${retry} seconds` : `${Math.ceil(retry / 60)} minutes`}`);
+    throw new HttpError(429, `Too many requests, try again in ${retry < 90 ? `${retry} seconds` : `${Math.ceil(retry / 60)} minutes`}`);
   }
   recent.push(now);
   hits.set(key, recent);

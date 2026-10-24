@@ -1,5 +1,5 @@
-// Admin interface layout: role guard + responsive app shell.
-import { AppShell } from "@/components/shell/app-shell";
+// Admin interface layout: role guard + the two-bar top navigation shell.
+import { TopNavShell } from "@/components/shell/top-nav-shell";
 import { requirePageUser } from "@/lib/auth/page-guard";
 import { publicUser } from "@/lib/auth/public-user";
 
@@ -7,8 +7,8 @@ import { publicUser } from "@/lib/auth/public-user";
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await requirePageUser(["ADMIN"], "/admin");
   return (
-    <AppShell role={"ADMIN"} user={publicUser(user)}>
+    <TopNavShell role="ADMIN" user={publicUser(user)}>
       {children}
-    </AppShell>
+    </TopNavShell>
   );
 }

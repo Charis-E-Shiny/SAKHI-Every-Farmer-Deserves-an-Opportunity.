@@ -5,7 +5,8 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { isCropSlug } from "@/lib/crops";
-import { geminiFromEnv } from "./gemini";
+import type { Lang } from "@/lib/i18n";
+import { geminiFromEnv, isOutage } from "./gemini";
 import { AIUnavailableError, type AIImage, type AIProvider } from "./provider";
 import {
   groceryPrompt,
@@ -32,6 +33,19 @@ import { SAMPLE_GROCERY_LIST, parseGroceryFallback } from "./fallback/grocery-pa
 import { isoDay, parseListingFallback } from "./fallback/listing-parser";
 import { qualityHeuristic } from "./fallback/quality-heuristic";
 
+// Circuit breaker: after a few outages in a row (timeouts, HTTP errors, no
+// network) skip the model for a minute, so users get the instant offline
+// answer instead of waiting out a timeout on every request.
+const BREAKER_THRESHOLD = 3;
+const BREAKER_COOLDOWN_MS = 60_000;
+const breaker = { failures: 0, openUntil: 0 };
+
+/** Clears the breaker (tests). */
+export function resetAIBreaker() {
+  breaker.failures = 0;
+  breaker.openUntil = 0;
+}
+
 /**
  * Runs `ai` with the configured provider, falling back on any failure.
  * @param task - label for logs
@@ -47,14 +61,55 @@ export async function withFallback<T>(
   } catch (e) {
     return { data: await fallback(), source: "fallback", note: (e as Error).message };
   }
+  if (Date.now() < breaker.openUntil) {
+    return { data: await fallback(), source: "fallback", note: "AI paused briefly after repeated errors" };
+  }
   try {
-    return { data: await ai(provider), source: "ai" };
+    const data = await ai(provider);
+    breaker.failures = 0;
+    return { data, source: "ai" };
   } catch (e) {
     const err = e as Error;
+    // Unusable output is a problem with one answer, not an outage, so it doesn't count.
+    if (isOutage(err) && ++breaker.failures >= BREAKER_THRESHOLD) {
+      breaker.openUntil = Date.now() + BREAKER_COOLDOWN_MS;
+      breaker.failures = 0;
+    }
     const note = err.name === "TimeoutError" || err.name === "AbortError" ? "AI timed out" : err instanceof AIUnavailableError ? err.message : "AI response unusable";
-    console.warn(`[ai:${task}] using fallback — ${err.message}`);
+    console.warn(`[ai:${task}] using fallback, ${err.message}`);
     return { data: await fallback(), source: "fallback", note };
   }
+}
+
+// Repeat questions (same facts, same language) are answered from memory for
+// ten minutes. Only real model answers are kept, so a recovered API is used at once.
+const ANSWER_TTL_MS = 10 * 60_000;
+const answers = new Map<string, { at: number; value: AIResult<unknown> }>();
+
+/**
+ * `withFallback` plus a short-lived cache of model answers.
+ * @param cacheKey - anything that fully determines the answer (facts, language…)
+ */
+export async function withFallbackCached<T>(
+  task: string,
+  cacheKey: string,
+  ai: (provider: AIProvider) => Promise<T>,
+  fallback: () => Promise<T> | T,
+): Promise<AIResult<T>> {
+  const key = createHash("sha256").update(task).update("\0").update(cacheKey).digest("hex");
+  const hit = answers.get(key);
+  if (hit && Date.now() - hit.at < ANSWER_TTL_MS) return hit.value as AIResult<T>;
+  const result = await withFallback(task, ai, fallback);
+  if (result.source === "ai") {
+    answers.set(key, { at: Date.now(), value: result });
+    if (answers.size > 300) answers.delete(answers.keys().next().value!);
+  }
+  return result;
+}
+
+/** Clears cached answers (tests). */
+export function clearAIAnswers() {
+  answers.clear();
 }
 
 /** Grade is always derived from the score so model output can't contradict itself. */
@@ -196,16 +251,18 @@ export async function parseGrocery(input: {
  * Turns computed price facts into farmer-friendly sentences.
  * @param facts - newline-separated numeric facts
  * @param fallbackBasis - deterministic sentences used when AI is unavailable
+ * @param lang - language the farmer reads (the model writes in it)
  */
-export async function explainPrice(facts: string, fallbackBasis: string[]): Promise<AIResult<string[]>> {
-  return withFallback(
+export async function explainPrice(facts: string, fallbackBasis: string[], lang: Lang = "en"): Promise<AIResult<string[]>> {
+  return withFallbackCached(
     "price-advice",
+    `${lang}\n${facts}`,
     async (p) =>
       (
         await p.generateJSON({
           task: "price-advice",
           system: priceExplainPrompt.system,
-          prompt: priceExplainPrompt.user(facts),
+          prompt: priceExplainPrompt.user(facts, lang),
           schema: priceExplanationSchema,
         })
       ).basis,

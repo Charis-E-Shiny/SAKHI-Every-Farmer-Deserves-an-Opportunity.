@@ -165,9 +165,9 @@ export function NewBatchWizard({ farmerCrops, initial }: { farmerCrops: CropSlug
         await saveDraft();
         go(1);
       } else if (step === 1) {
-        if (tiles.some((x) => x.status === "uploading")) return toast("Wait for uploads to finish");
+        if (tiles.some((x) => x.status === "uploading")) return toast(t("batch.waitUploads"));
         if (!tiles.some((x) => x.status === "done" && x.media?.type === "IMAGE")) {
-          return toast.error("Add at least one photo of the harvest");
+          return toast.error(t("batch.needPhoto"));
         }
         go(2);
       } else if (step === 2) {
@@ -195,10 +195,10 @@ export function NewBatchWizard({ farmerCrops, initial }: { farmerCrops: CropSlug
     for (const file of files) {
       // Videos upload as evidence; three stills are pulled out client-side for the visual check.
       if (file.type.startsWith("video/") && kind === "media") {
-        setFraming("Extracting frames from your video…");
+        setFraming(t("batch.extractingFrames"));
         extractFrames(file)
           .then((frames) => addFiles(frames, "frame"))
-          .catch(() => toast.error("Couldn't read frames from that video — add a photo instead"))
+          .catch(() => toast.error(t("batch.framesFailed")))
           .finally(() => setFraming(null));
       }
       const key = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -226,7 +226,7 @@ export function NewBatchWizard({ farmerCrops, initial }: { farmerCrops: CropSlug
             }
             return ts.map((x) => (x.key === key ? { ...x, status: "done", progress: 1, media } : x));
           });
-          if (media.isDuplicate) toast.warning("Duplicate photo flagged for admin review");
+          if (media.isDuplicate) toast.warning(t("batch.duplicateToast"));
         })
         .catch((e: Error) => {
           setTiles((ts) => ts.map((x) => (x.key === key ? { ...x, status: "error", error: e.message } : x)));
@@ -261,7 +261,7 @@ export function NewBatchWizard({ farmerCrops, initial }: { farmerCrops: CropSlug
       <PageHeader title={t("batch.title")} back={{ href: "/farmer", label: t("common.back") }} />
       {initial?.status === "RESUBMIT" && initial.adminNote && (
         <p className="-mt-2 mb-5 rounded-2xl border border-warning/40 bg-warning/10 px-4 py-3 text-sm">
-          <span className="font-semibold">Admin asked for changes:</span> {initial.adminNote}
+          <span className="font-semibold">{t("batch.adminAsked")}</span> {initial.adminNote}
         </p>
       )}
       <StepIndicator steps={steps} current={step} onJump={(i) => go(i)} />
@@ -307,7 +307,7 @@ export function NewBatchWizard({ farmerCrops, initial }: { farmerCrops: CropSlug
         </motion.div>
       </AnimatePresence>
 
-      <div className="glass sticky bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-30 -mx-4 mt-8 border-y px-4 py-3 sm:-mx-6 sm:px-6 lg:bottom-4 lg:mx-0 lg:rounded-2xl lg:border">
+      <div className="glass sticky bottom-0 z-30 -mx-4 mt-8 border-y px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:px-6 lg:bottom-4 lg:mx-0 lg:rounded-2xl lg:border lg:pb-3">
         <div className="flex gap-3">
           {step > 0 && (
             <Button type="button" variant="outline" size="lg" onClick={() => go(step - 1)} disabled={busy}>
@@ -338,18 +338,16 @@ function SuccessView({ batch, onAnother }: { batch: SerializedBatch; onAnother: 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center py-10 text-center">
       <SuccessBurst />
-      <h1 className="mt-8 text-3xl font-semibold tracking-tight">
-        Sent for <span className="font-serif font-normal italic">verification</span>
-      </h1>
+      <h1 className="mt-8 text-3xl font-semibold tracking-tight">{t("batch.sentTitle")}</h1>
       <p className="mt-2 max-w-sm text-muted-foreground">{t("batch.submitted")}</p>
       {batch.aiQualityScore !== null && (
         <p className="mt-4 rounded-full border px-4 py-1.5 text-sm">
-          {t("batch.score")}: <span className="tabular font-semibold">{batch.aiQualityScore}/100</span> · Grade {batch.grade}
+          {t("batch.score")}: <span className="tabular font-semibold">{batch.aiQualityScore}/100</span> · {t("common.grade", { grade: batch.grade ?? "-" })}
         </p>
       )}
       <div className="mt-8 grid w-full max-w-sm gap-3">
         <Button asChild size="lg">
-          <Link href="/farmer/batches">{t("nav.batches")}</Link>
+          <Link href="/farmer">{t("home.title")}</Link>
         </Button>
         <Button size="lg" variant="outline" onClick={onAnother}>
           {t("dash.newHarvest")}

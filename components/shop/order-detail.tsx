@@ -66,7 +66,7 @@ export function OrderDetail({
     setBusy(true);
     try {
       await sendJSON(`/api/orders/${id}/cancel`, { reason });
-      toast.success("Order cancelled — refund issued");
+      toast.success("Order cancelled, refund issued");
       setCancelOpen(false);
       mutate();
     } catch (e) {

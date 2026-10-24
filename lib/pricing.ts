@@ -85,7 +85,7 @@ export async function computePriceAdvice(crop: string, area: string | null, grad
       : `Prices are ${trend} ${Math.abs(trendPct)}% week on week.`,
     comparableMedian
       ? `${compPrices.length} similar FoodFlow listing${compPrices.length > 1 ? "s" : ""}${area ? ` in ${area}` : ""} sell at a median ₹${comparableMedian}/${unitLabel}.`
-      : `No other FoodFlow listings for ${info.names.en.toLowerCase()} right now — you set the pace.`,
+      : `No other FoodFlow listings for ${info.names.en.toLowerCase()} right now, you set the pace.`,
     grade !== "ANY" && gradeFactor !== 1
       ? `Grade ${grade} ${gradeFactor > 1 ? "adds" : "removes"} about ${Math.round(Math.abs(gradeFactor - 1) * 100)}%.`
       : "Direct-to-buyer pricing sits about 15% above wholesale, still below street retail.",

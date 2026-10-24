@@ -123,7 +123,7 @@ export function ControlsPanel() {
             {data.payouts.lastRun
               ? `Last run ${timeAgo(data.payouts.lastRun.at)}${data.payouts.lastRun.meta?.count ? ` · ${data.payouts.lastRun.meta.count} payouts, ${formatINR(data.payouts.lastRun.meta.amount ?? 0)}` : ""}`
               : "No payout run yet."}{" "}
-            Simulated — in production this follows the gateway&apos;s transfer confirmation.
+            Simulated, in production this follows the gateway&apos;s transfer confirmation.
           </p>
         </Card>
 

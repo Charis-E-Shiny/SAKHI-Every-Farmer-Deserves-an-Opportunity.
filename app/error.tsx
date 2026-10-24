@@ -18,7 +18,7 @@ export default function RouteError({ error, reset }: { error: Error & { digest?:
         <AlertTriangle className="size-6" />
       </span>
       <h1 className="mt-6 text-3xl font-semibold tracking-tight">Something went wrong</h1>
-      <p className="mt-2 max-w-md text-muted-foreground">Nothing you did — this page hit an error loading. Your cart and orders are safe.</p>
+      <p className="mt-2 max-w-md text-muted-foreground">Nothing you did, this page hit an error loading. Your cart and orders are safe.</p>
       {error.digest && <p className="mt-3 font-mono text-xs text-muted-foreground">ref {error.digest}</p>}
       <div className="mt-8 flex flex-col gap-2 sm:flex-row">
         <Button size="lg" className="min-h-12" onClick={reset}>

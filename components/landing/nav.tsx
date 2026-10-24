@@ -1,5 +1,6 @@
 // Landing page top bar: logo, section links (desktop), theme toggle,
-// sign-in and the "Try the demo" call to action. Turns glassy on scroll.
+// sign-in and the "Get started" call to action. Light-on-photo at the top
+// (over the hero), turns glassy and theme-aware on scroll.
 "use client";
 
 import { ArrowRight } from "lucide-react";
@@ -14,7 +15,7 @@ import { cn } from "@/lib/utils";
 const LINKS = [
   { href: "#how", label: "How it works" },
   { href: "#interfaces", label: "For everyone" },
-  { href: "#impact", label: "Impact" },
+  { href: "#contact", label: "Contact" },
 ];
 
 /** Sticky landing navigation. */
@@ -23,7 +24,7 @@ export function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
   useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
   return (
-    <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className={cn("fixed inset-x-0 top-0 z-50 transition-all duration-300", scrolled && "glass border-b")}>
+    <motion.header initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className={cn("fixed inset-x-0 top-0 z-50 text-foreground transition-all duration-300", scrolled ? "glass border-b" : "dark")}>
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
         <Logo />
         <nav className="ml-8 hidden items-center gap-1 whitespace-nowrap lg:flex" aria-label="Sections">
@@ -39,9 +40,9 @@ export function LandingNav() {
             <Link href="/login">Sign in</Link>
           </Button>
           <Button asChild variant="brand" className="px-3 sm:px-4">
-            <a href="#demo">
-              Try the demo <ArrowRight className="hidden sm:block" />
-            </a>
+            <Link href="/login">
+              Get started <ArrowRight className="hidden sm:block" />
+            </Link>
           </Button>
         </div>
       </div>

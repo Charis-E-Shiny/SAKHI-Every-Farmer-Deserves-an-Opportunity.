@@ -1,5 +1,5 @@
-// Restaurant & community interface layout: role guard + responsive app shell.
-import { AppShell } from "@/components/shell/app-shell";
+// Restaurant & community interface layout: role guard + the two-bar top navigation shell.
+import { TopNavShell } from "@/components/shell/top-nav-shell";
 import { requirePageUser } from "@/lib/auth/page-guard";
 import { publicUser } from "@/lib/auth/public-user";
 
@@ -7,8 +7,8 @@ import { publicUser } from "@/lib/auth/public-user";
 export default async function BulkLayout({ children }: { children: React.ReactNode }) {
   const user = await requirePageUser(["BULK_BUYER"], "/bulk");
   return (
-    <AppShell role={"BULK_BUYER"} user={publicUser(user)}>
+    <TopNavShell role="BULK_BUYER" user={publicUser(user)}>
       {children}
-    </AppShell>
+    </TopNavShell>
   );
 }

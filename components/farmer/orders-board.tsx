@@ -10,11 +10,12 @@ import { useState } from "react";
 import useSWR from "swr";
 import { toast } from "sonner";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
-import { FarmerStatusBadge } from "@/components/farmer/farmer-status-badge";
+import { FarmerStatusBadge, statusText } from "@/components/farmer/farmer-status-badge";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { useLive } from "@/hooks/use-live";
+import { cropName } from "@/lib/crops";
 import { settlementFor } from "@/lib/fees";
 import { sendJSON } from "@/lib/fetcher";
 import { formatINR, formatQty, timeAgo } from "@/lib/format";
@@ -55,7 +56,13 @@ export function OrdersBoard() {
     setBusy(`${o.id}:${action}`);
     try {
       const res = await sendJSON<{ worker?: { name: string } }>(`/api/orders/${o.id}/advance`, { action });
-      toast.success(action === "BOOK_DELIVERY" ? `Rider ${res.worker?.name ?? ""} is on the way to you` : action === "PACK" ? "Marked packed" : "Buyer notified — ready for pickup");
+      toast.success(
+        action === "BOOK_DELIVERY"
+          ? t("orders.riderOnWay", { name: res.worker?.name ?? "" })
+          : action === "PACK"
+            ? t("orders.packedToast")
+            : t("orders.buyerNotified"),
+      );
       mutate();
     } catch (e) {
       toast.error((e as Error).message);
@@ -81,7 +88,7 @@ export function OrdersBoard() {
 
       {isLoading && <SkeletonRows count={4} />}
       {error && <ErrorState message={error.message} onRetry={() => mutate()} />}
-      {data && rows.length === 0 && <EmptyState icon={ClipboardList} title={tab === "pack" ? "Nothing to pack right now" : t("common.empty")} />}
+      {data && rows.length === 0 && <EmptyState icon={ClipboardList} title={tab === "pack" ? t("orders.nothingToPack") : t("common.empty")} />}
 
       <ul className="space-y-3">
         {rows.map((o, i) => {
@@ -109,7 +116,7 @@ export function OrdersBoard() {
                   <li key={it.id} className="flex justify-between gap-2">
                     <span className="break-words">
                       <Package className="mr-1.5 inline size-3.5 text-muted-foreground" />
-                      {it.title} · <b>{formatQty(it.qty, it.unit)}</b>
+                      {it.crop ? cropName(it.crop, lang) : it.title} · <b>{formatQty(it.qty, it.unit, lang)}</b>
                     </span>
                     <span className="tabular text-muted-foreground">{formatINR(it.qty * it.unitPrice)}</span>
                   </li>
@@ -137,7 +144,8 @@ export function OrdersBoard() {
               </div>
               {o.delivery?.worker && o.fulfilment === "DELIVERY" && (
                 <p className="mt-2 text-sm">
-                  <Bike className="mr-1 inline size-4" /> Rider <b>{o.delivery.worker.name}</b> · {o.delivery.distanceKm ? `${Math.round(o.delivery.distanceKm)} km run` : ""} · {o.delivery.status.replace("_", " ").toLowerCase()}
+                  <Bike className="mr-1 inline size-4" /> {t("orders.rider")} <b>{o.delivery.worker.name}</b>
+                  {o.delivery.distanceKm ? ` · ${t("orders.kmRun", { km: Math.round(o.delivery.distanceKm) })}` : ""} · {statusText(t, o.delivery.status)}
                 </p>
               )}
 

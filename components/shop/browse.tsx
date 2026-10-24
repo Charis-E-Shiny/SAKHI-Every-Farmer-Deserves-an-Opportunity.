@@ -3,10 +3,10 @@
 "use client";
 
 import { ArrowUpRight, Leaf, Search, SlidersHorizontal, Sparkles, X } from "lucide-react";
-import { LayoutGroup, motion } from "framer-motion";
 import Link from "next/link";
 import { useDeferredValue, useMemo, useState } from "react";
 import useSWR from "swr";
+import { MediaImage } from "@/components/common/media-image";
 import { EmptyState, ErrorState, SkeletonCards } from "@/components/common/states";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { PageHeader } from "@/components/shell/page-header";
@@ -16,6 +16,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { useLive } from "@/hooks/use-live";
 import type { SerializedListing } from "@/lib/listings";
+import { PHOTOS } from "@/lib/photos";
 import { cn } from "@/lib/utils";
 import { CartBar } from "./cart-bar";
 import { ListingCard } from "./listing-card";
@@ -33,6 +34,15 @@ interface Filters {
   freshDays: number | null;
   gradeA: boolean;
 }
+/** Category card photos: brand photography where we have it, seed crop photos otherwise. */
+const CATEGORY_PHOTO: Record<string, { src: string; cls?: string }> = {
+  "": { src: PHOTOS["veg-basket"].src },
+  vegetables: { src: PHOTOS["crate-topdown"].src },
+  leafy: { src: "/seed/spinach-1.jpg" },
+  dairy: { src: "/seed/milk-1.jpg" },
+  eggs: { src: "/seed/eggs-1.jpg" },
+  poultry: { src: "/seed/chicken-1.jpg" },
+};
 const DEFAULTS: Filters = { sort: "nearest", maxPrice: null, freshDays: null, gradeA: false };
 const SORTS: { key: Sort; label: string }[] = [
   { key: "nearest", label: "Nearest farm" },
@@ -46,6 +56,7 @@ const SORTS: { key: Sort; label: string }[] = [
  * @param categories - category chips with availability in that area
  * @param detailBase - route prefix for cards (e.g. /shop/listing)
  * @param bulk - bulk-buyer mode (bigger quantity steps, no grocery promo)
+ * @param initialQuery - search text from the top bar (`?q=`)
  */
 export function Browse({
   area,
@@ -54,6 +65,7 @@ export function Browse({
   bulk = false,
   title = "Fresh from the *farm*",
   top,
+  initialQuery = "",
 }: {
   area: string | null;
   categories: CategoryChip[];
@@ -62,8 +74,9 @@ export function Browse({
   title?: string;
   /** Rendered under the header (e.g. the bulk buyer tabs). */
   top?: React.ReactNode;
+  initialQuery?: string;
 }) {
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(initialQuery);
   const query = useDeferredValue(q.trim());
   const [category, setCategory] = useState("");
   const [filters, setFilters] = useState<Filters>(DEFAULTS);
@@ -113,28 +126,32 @@ export function Browse({
         </Button>
       </div>
 
-      <LayoutGroup id="cat-chips">
-        <div className="mt-4 flex flex-wrap gap-2">
-          {[{ slug: "", name: "All", available: true }, ...categories].map((c) => {
-            const on = category === c.slug;
-            return (
-              <button
-                key={c.slug || "all"}
-                type="button"
-                onClick={() => setCategory(c.slug)}
-                className={cn(
-                  "relative h-10 rounded-full px-4 text-sm font-medium transition-colors",
-                  on ? "text-background" : "border text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {on && <motion.span layoutId="cat-pill" className="absolute inset-0 -z-10 rounded-full bg-foreground" transition={{ type: "spring", stiffness: 500, damping: 35 }} />}
+      <div role="group" aria-label="Categories" className="-mx-4 mt-4 flex snap-x gap-2.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 [&::-webkit-scrollbar]:hidden">
+        {[{ slug: "", name: "All", available: true }, ...categories].map((c) => {
+          const on = category === c.slug;
+          const img = CATEGORY_PHOTO[c.slug];
+          return (
+            <button
+              key={c.slug || "all"}
+              type="button"
+              onClick={() => setCategory(c.slug)}
+              aria-pressed={on}
+              className={cn(
+                "group relative h-20 w-32 shrink-0 snap-start overflow-hidden rounded-2xl text-left ring-offset-2 ring-offset-background transition-all active:scale-[0.97] sm:w-36",
+                on ? "ring-2 ring-foreground" : "ring-1 ring-border hover:ring-foreground/40",
+              )}
+            >
+              {img && <MediaImage src={img.src} sizes="144px" className={cn("transition-transform duration-500 group-hover:scale-105", img.cls)} />}
+              <span aria-hidden className={cn("absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent", !c.available && "bg-black/30")} />
+              <span className="absolute inset-x-2.5 bottom-2 flex items-end justify-between gap-1 text-[13px] leading-tight font-semibold text-white">
                 {c.name}
-                {!c.available && <span className={cn("ml-1.5 rounded-full px-1.5 text-[10px]", on ? "bg-background/20" : "bg-muted")}>Soon</span>}
-              </button>
-            );
-          })}
-        </div>
-      </LayoutGroup>
+                {!c.available && <span className="rounded-full bg-white/25 px-1.5 text-[10px] font-medium backdrop-blur">Soon</span>}
+              </span>
+              {on && <span aria-hidden className="absolute top-1.5 right-1.5 size-2.5 rounded-full bg-lime ring-2 ring-black/40" />}
+            </button>
+          );
+        })}
+      </div>
 
       {!bulk && !query && !category && (
         <Link
@@ -147,7 +164,7 @@ export function Browse({
           </span>
           <span className="relative min-w-0 flex-1">
             <span className="block font-semibold">Snap your shopping list</span>
-            <span className="block text-sm text-muted-foreground">Handwritten or spoken — AI builds the best basket across farms.</span>
+            <span className="block text-sm text-muted-foreground">Handwritten or spoken. AI builds the best basket across farms.</span>
           </span>
           <ArrowUpRight className="relative size-5 shrink-0 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>

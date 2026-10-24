@@ -16,6 +16,7 @@ import { useI18n } from "@/components/providers/i18n-provider";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { useLive } from "@/hooks/use-live";
+import { cropName } from "@/lib/crops";
 import { sendJSON } from "@/lib/fetcher";
 import { formatINR, formatQty } from "@/lib/format";
 import type { SerializedOrder } from "@/lib/orders/queries";
@@ -25,7 +26,7 @@ type Result = { code: string; ok: true; already: boolean; settlementNet?: number
 
 /** /farmer/pickup */
 export function PickupVerify() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const params = useSearchParams();
   const [mode, setMode] = useState<"scan" | "code">(params.get("code") ? "code" : "scan");
   const [code, setCode] = useState((params.get("code") ?? "").replace(/^FF-/, ""));
@@ -75,12 +76,10 @@ export function PickupVerify() {
         {done ? (
           <motion.div key="done" initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center rounded-3xl border bg-card p-8 text-center">
             <SuccessBurst />
-            <p className="mt-6 text-2xl font-semibold">
-              {done.code} <span className="font-serif font-normal italic">collected</span>
-            </p>
-            {done.net !== undefined && <p className="mt-1 text-muted-foreground">{formatINR(done.net, true)} added to pending settlement</p>}
+            <p className="mt-6 text-2xl font-semibold">{t("pickup.collected", { code: done.code })}</p>
+            {done.net !== undefined && <p className="mt-1 text-muted-foreground">{t("pickup.addedPending", { amount: formatINR(done.net, true) })}</p>}
             <Button size="lg" className="mt-6" onClick={() => { setDone(null); setCode(""); setScanKey((k) => k + 1); }}>
-              Next customer
+              {t("pickup.next")}
             </Button>
           </motion.div>
         ) : (
@@ -88,8 +87,8 @@ export function PickupVerify() {
             <LayoutGroup id="pickup-mode">
               <div className="mb-5 grid grid-cols-2 gap-1 rounded-2xl border p-1">
                 {[
-                  { k: "scan" as const, icon: ScanLine, l: "Scan QR" },
-                  { k: "code" as const, icon: Keyboard, l: "Code + OTP" },
+                  { k: "scan" as const, icon: ScanLine, l: t("pickup.scan") },
+                  { k: "code" as const, icon: Keyboard, l: t("pickup.codeOtp") },
                 ].map((m) => (
                   <button key={m.k} type="button" onClick={() => setMode(m.k)} className={cn("relative flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium", mode === m.k ? "text-background" : "text-muted-foreground")}>
                     {mode === m.k && <motion.span layoutId="pickup-pill" className="absolute inset-0 -z-10 rounded-xl bg-foreground" />}
@@ -110,12 +109,12 @@ export function PickupVerify() {
                   <input
                     value={code}
                     onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 5))}
-                    placeholder="ORDER"
-                    aria-label="Order code"
+                    placeholder={t("pickup.codePh")}
+                    aria-label={t("pickup.orderCode")}
                     className="min-w-0 flex-1 bg-transparent font-mono text-xl tracking-[0.3em] uppercase outline-none"
                   />
                 </label>
-                <OtpKeypad value={otp} onChange={(v) => { setOtp(v); setErr(null); }} onSubmit={(o) => (code.length === 5 ? submit({ code: `FF-${code}`, otp: o }) : setErr("Enter the order code first"))} busy={busy} shakeKey={shake} error={err} />
+                <OtpKeypad value={otp} onChange={(v) => { setOtp(v); setErr(null); }} onSubmit={(o) => (code.length === 5 ? submit({ code: `FF-${code}`, otp: o }) : setErr(t("pickup.enterCodeFirst")))} busy={busy} shakeKey={shake} error={err} />
               </div>
             )}
           </motion.div>
@@ -123,7 +122,7 @@ export function PickupVerify() {
       </AnimatePresence>
 
       <section className="mt-8">
-        <h2 className="mb-2 text-sm font-semibold tracking-wide text-muted-foreground uppercase">Waiting for pickup</h2>
+        <h2 className="mb-2 text-sm font-semibold tracking-wide text-muted-foreground uppercase">{t("pickup.waiting")}</h2>
         {waiting?.length ? (
           <ul className="space-y-2">
             {waiting.map((o) => (
@@ -133,7 +132,7 @@ export function PickupVerify() {
                   <span className="min-w-0 flex-1">
                     <span className="block font-mono font-semibold">{o.code}</span>
                     <span className="block text-sm break-words text-muted-foreground">
-                      {o.buyer.name} · {o.items.map((i) => `${i.title} ${formatQty(i.qty, i.unit)}`).join(", ")}
+                      {o.buyer.name} · {o.items.map((i) => `${i.crop ? cropName(i.crop, lang) : i.title} ${formatQty(i.qty, i.unit, lang)}`).join(", ")}
                     </span>
                   </span>
                 </button>
@@ -141,7 +140,7 @@ export function PickupVerify() {
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-muted-foreground">No orders are waiting right now.</p>
+          <p className="text-sm text-muted-foreground">{t("pickup.none")}</p>
         )}
       </section>
     </div>

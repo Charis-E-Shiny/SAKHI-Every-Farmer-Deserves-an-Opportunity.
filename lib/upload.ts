@@ -23,7 +23,7 @@ export function uploadWithProgress<T>(url: string, form: FormData, onProgress?: 
       if (xhr.status >= 200 && xhr.status < 300 && body?.ok) resolve(body.data as T);
       else reject(new ApiError(body?.error ?? `Upload failed (${xhr.status})`, xhr.status));
     };
-    xhr.onerror = () => reject(new ApiError("Network error — check your connection", 0));
+    xhr.onerror = () => reject(new ApiError("Network error, check your connection", 0));
     xhr.send(form);
   });
 }

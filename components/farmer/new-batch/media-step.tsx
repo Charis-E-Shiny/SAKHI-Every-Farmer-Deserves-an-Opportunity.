@@ -50,13 +50,13 @@ export function MediaStep({
           <p className="mt-1 text-sm text-muted-foreground">{t("batch.captureHint")}</p>
           <div className="mt-5 grid grid-cols-3 gap-2 sm:gap-3">
             <Button type="button" size="lg" variant="brand" className="px-2" onClick={() => cameraRef.current?.click()}>
-              <Camera /> Photo
+              <Camera /> {t("batch.photo")}
             </Button>
             <Button type="button" size="lg" variant="outline" className="px-2" onClick={() => videoRef.current?.click()}>
-              <Video /> Video
+              <Video /> {t("batch.video")}
             </Button>
             <Button type="button" size="lg" variant="outline" className="px-2" onClick={() => galleryRef.current?.click()}>
-              <ImagePlus /> Gallery
+              <ImagePlus /> {t("batch.gallery")}
             </Button>
           </div>
           {busyLabel && (
@@ -107,7 +107,7 @@ export function MediaStep({
                   <img src={tile.previewUrl} alt="" className="size-full object-cover" />
                 )}
                 {tile.kind === "frame" && (
-                  <span className="absolute top-1.5 left-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white">frame</span>
+                  <span className="absolute top-1.5 left-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-medium text-white">{t("batch.frame")}</span>
                 )}
                 {tile.status === "uploading" && <ProgressRing progress={tile.progress} />}
                 {tile.status === "error" && (
@@ -117,7 +117,7 @@ export function MediaStep({
                 )}
                 {tile.media?.isDuplicate && (
                   <span className="absolute inset-x-1.5 bottom-1.5 rounded-lg bg-warning px-1.5 py-1 text-[10px] leading-tight font-semibold text-black">
-                    Duplicate flag
+                    {t("batch.duplicateFlag")}
                   </span>
                 )}
                 {tile.media && !tile.media.isDuplicate && tile.media.capturedAt && (
@@ -128,7 +128,7 @@ export function MediaStep({
                 <button
                   type="button"
                   onClick={() => onRemove(tile)}
-                  aria-label="Remove"
+                  aria-label={t("batch.remove")}
                   className="absolute top-1 right-1 grid size-8 place-items-center rounded-full bg-black/55 text-white opacity-90 transition hover:bg-black/75"
                 >
                   <X className="size-4" />

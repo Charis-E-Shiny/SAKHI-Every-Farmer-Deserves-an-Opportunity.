@@ -47,8 +47,12 @@ export interface SurplusItem {
   /** 0–1: how urgent (shelf life used × slow sales). */
   urgency: number;
   reasons: string[];
+  /** Which reasons apply, so the farmer UI can word them in its own language. */
+  reasonCodes: SurplusReason[];
   suggestions: SurplusSuggestion[];
 }
+
+export type SurplusReason = "slow" | "ageing" | "unsold";
 
 /**
  * Evaluates a farmer's live listings.
@@ -93,8 +97,12 @@ export async function detectSurplus(farmerId: string, onlyListingId?: string): P
       const urgency = round2(Math.min(1, harvestAgeDays / shelf) * 0.6 + (1 - Math.min(1, sellThrough / Math.max(1, threshold))) * 0.4);
 
       const reasons: string[] = [];
+      const reasonCodes: SurplusReason[] = [];
+      if (slow) reasonCodes.push("slow");
+      if (ageing) reasonCodes.push("ageing");
+      if (atRisk) reasonCodes.push("unsold");
       if (slow) reasons.push(`Only ${sellThrough}% sold after ${hoursListed} h listed`);
-      if (ageing) reasons.push(`Harvested ${harvestAgeDays < 1 ? "today" : `${Math.round(harvestAgeDays * 10) / 10} days ago`} — ${l.crop} keeps about ${shelf} day${shelf > 1 ? "s" : ""}`);
+      if (ageing) reasons.push(`Harvested ${harvestAgeDays < 1 ? "today" : `${Math.round(harvestAgeDays * 10) / 10} days ago`}, ${l.crop} keeps about ${shelf} day${shelf > 1 ? "s" : ""}`);
       if (atRisk) reasons.push(`${l.availableQty} ${l.unit} still unsold`);
 
       const modal = prices.find((p) => p.crop === l.crop && p.area === mandi)?.modalPrice ?? prices.find((p) => p.crop === l.crop)?.modalPrice ?? null;
@@ -124,7 +132,7 @@ export async function detectSurplus(farmerId: string, onlyListingId?: string): P
           distanceKm,
           offerQty,
           offerPrice,
-          label: `${who} needs ${remaining} kg${d.urgent ? " urgently" : ""} — offer ${offerQty} kg at ₹${offerPrice}/kg`,
+          label: `${who} needs ${remaining} kg${d.urgent ? " urgently" : ""}, offer ${offerQty} kg at ₹${offerPrice}/kg`,
         });
       }
       // Community kitchens first (SDG 2), then urgent, then nearest.
@@ -154,6 +162,7 @@ export async function detectSurplus(farmerId: string, onlyListingId?: string): P
         atRisk,
         urgency,
         reasons,
+        reasonCodes,
         suggestions,
       };
     })

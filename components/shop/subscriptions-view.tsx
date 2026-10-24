@@ -68,7 +68,7 @@ export function SubscriptionsView() {
   const header = (
     <PageHeader
       title="Fresh, on *repeat*"
-      description="Milk every morning, vegetables every Sunday — set it once, pause any time."
+      description="Milk every morning, vegetables every Sunday, set it once, pause any time."
       actions={
         <Button className="min-h-11" onClick={() => setCreating(true)}>
           <Plus /> New plan
@@ -136,11 +136,11 @@ export function SubscriptionsView() {
                   <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-muted/60 px-3 py-2.5 text-sm">
                     <span className="inline-flex items-center gap-1.5">
                       <CalendarClock className="size-4 text-muted-foreground" />
-                      {p.nextDeliveryAt ? deliveryLabel(p.nextDeliveryAt, p.preferredSlot) : "Paused — no deliveries"}
+                      {p.nextDeliveryAt ? deliveryLabel(p.nextDeliveryAt, p.preferredSlot) : "Paused, no deliveries"}
                     </span>
                     {p.estimate !== null && <span className="tabular text-muted-foreground">≈ {formatINR(p.estimate)} per delivery</span>}
                   </div>
-                  {unavailable && <p className="mt-2 text-xs text-muted-foreground">This farm is running low — the next delivery will come from another nearby farm&apos;s {p.crop} if needed.</p>}
+                  {unavailable && <p className="mt-2 text-xs text-muted-foreground">This farm is running low, the next delivery will come from another nearby farm&apos;s {p.crop} if needed.</p>}
 
                   <div className="mt-4 flex flex-wrap gap-2">
                     <Button variant="outline" className="min-h-11" disabled={!p.active || busy === `run:${p.id}`} onClick={() => runNow(p)}>

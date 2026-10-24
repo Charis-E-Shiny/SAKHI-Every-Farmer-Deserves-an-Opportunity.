@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 export type PayPhase = "authorising" | "reserving" | "done" | "error";
 
 const STEPS: { key: PayPhase; label: string; sub: string }[] = [
-  { key: "authorising", label: "Authorising payment", sub: "Amount held on your UPI/card — not taken yet" },
+  { key: "authorising", label: "Authorising payment", sub: "Amount held on your UPI/card, not taken yet" },
   { key: "reserving", label: "Reserving farm stock", sub: "Locking your quantities so nobody else can buy them" },
   { key: "done", label: "Payment captured", sub: "Charged only for orders whose stock was reserved" },
 ];
@@ -23,7 +23,7 @@ const STEPS: { key: PayPhase; label: string; sub: string }[] = [
 export function PaymentSheet({ phase, amount, error, onClose }: { phase: PayPhase | null; amount: string; error?: string | null; onClose: () => void }) {
   const idx = phase === "error" ? -1 : STEPS.findIndex((s) => s.key === phase);
   return (
-    <ResponsiveModal open={phase !== null} onOpenChange={(o) => !o && (phase === "error" || phase === "done") && onClose()} title={`Paying ${amount}`} description="Demo payment — no real money moves.">
+    <ResponsiveModal open={phase !== null} onOpenChange={(o) => !o && (phase === "error" || phase === "done") && onClose()} title={`Paying ${amount}`} description="Demo payment, no real money moves.">
       <ol className="space-y-4 py-2">
         {STEPS.map((s, i) => {
           const state = phase === "error" ? (i === 0 ? "done" : "todo") : i < idx || phase === "done" ? "done" : i === idx ? "active" : "todo";
@@ -62,7 +62,7 @@ export function PaymentSheet({ phase, amount, error, onClose }: { phase: PayPhas
           <li className="flex gap-3 rounded-2xl bg-destructive/10 p-3 text-sm">
             <X className="mt-0.5 size-4 shrink-0 text-destructive" />
             <span>
-              {error ?? "Something went wrong."} Your authorisation was released — you haven&apos;t been charged.
+              {error ?? "Something went wrong."} Your authorisation was released, you haven&apos;t been charged.
             </span>
           </li>
         )}

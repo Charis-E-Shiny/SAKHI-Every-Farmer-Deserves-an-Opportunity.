@@ -37,7 +37,7 @@ export function OrdersMonitor() {
   const params = useSearchParams();
   const [filter, setFilter] = useState(params.get("status") === "DISPUTED" ? "DISPUTED" : "active");
   const [type, setType] = useState<"" | "RETAIL" | "BULK">("");
-  const [q, setQ] = useState("");
+  const [q, setQ] = useState(params.get("q") ?? "");
   const query = useDeferredValue(q.trim());
   const f = FILTERS.find((x) => x.k === filter)!;
   const key = `/api/orders?${f.q}&limit=150${type ? `&type=${type}` : ""}${query ? `&q=${encodeURIComponent(query)}` : ""}`;
@@ -126,7 +126,7 @@ function OrderSheet({ orderId, onClose, onChanged }: { orderId: string; onClose:
     setBusy(action);
     try {
       const r = await sendJSON<{ recoveryNeeded: boolean }>(`/api/admin/orders/${orderId}/resolve`, { action, note });
-      toast.success(action === "REFUND" ? `Refunded${r.recoveryNeeded ? " — farmer was already paid, flagged for recovery" : " — pending payout reversed"}` : "Dispute closed");
+      toast.success(action === "REFUND" ? `Refunded${r.recoveryNeeded ? ", farmer was already paid, flagged for recovery" : ", pending payout reversed"}` : "Dispute closed");
       mutate();
       onChanged();
     } catch (e) {
@@ -139,7 +139,7 @@ function OrderSheet({ orderId, onClose, onChanged }: { orderId: string; onClose:
     setBusy("CANCEL");
     try {
       await sendJSON(`/api/orders/${orderId}/cancel`, { reason: note || "Cancelled by FoodFlow support" });
-      toast.success("Cancelled — stock released, buyer refunded");
+      toast.success("Cancelled, stock released, buyer refunded");
       mutate();
       onChanged();
     } catch (e) {

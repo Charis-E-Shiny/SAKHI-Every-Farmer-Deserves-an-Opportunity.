@@ -1,6 +1,8 @@
-// Navigation per role. `tab` items sit in the mobile bottom bar, `fab` is
-// the raised centre action, everything else lives under "More" on phones.
-// The desktop sidebar always shows every item.
+// Navigation per role. Farmers, households, bulk buyers and admins get a
+// top services bar (hamburger menu on phones) where `fab` is the lime pill
+// and the cart moves up beside the account. The delivery app keeps a phone
+// tab bar: `tab` items sit in it, `fab` is the raised centre action and
+// everything else lives under "More".
 import {
   BadgeIndianRupee,
   Bike,
@@ -20,7 +22,6 @@ import {
   ShoppingBag,
   SlidersHorizontal,
   Sparkles,
-  Sprout,
   Store,
   Truck,
   type LucideIcon,
@@ -44,15 +45,16 @@ export interface NavItem {
 
 export const NAV: Record<Role, NavItem[]> = {
   FARMER: [
-    { href: "/farmer", labelKey: "nav.home", icon: LayoutGrid, tab: true },
-    { href: "/farmer/listings", labelKey: "nav.listings", icon: Package, tab: true },
-    { href: "/farmer/batches/new", labelKey: "nav.newBatch", icon: Plus, fab: true },
-    { href: "/farmer/orders", labelKey: "nav.orders", icon: ClipboardList, tab: true },
-    { href: "/farmer/batches", labelKey: "nav.batches", icon: Sprout },
+    // Home is the harvest list with its own big + button, so neither "New
+    // harvest" nor "Harvests" needs a slot; Home stays lit on those pages.
+    { href: "/farmer", labelKey: "nav.home", icon: LayoutGrid },
+    { href: "/farmer/orders", labelKey: "nav.orders", icon: ClipboardList },
+    { href: "/farmer/listings", labelKey: "nav.listings", icon: Package },
+    { href: "/farmer/payments", labelKey: "nav.payments", icon: BadgeIndianRupee },
     { href: "/farmer/bulk", labelKey: "nav.bulk", icon: Handshake },
     { href: "/farmer/surplus", labelKey: "nav.surplus", icon: Recycle },
-    { href: "/farmer/payments", labelKey: "nav.payments", icon: BadgeIndianRupee },
     { href: "/farmer/pickup", labelKey: "nav.pickup", icon: ScanLine },
+    { href: "/farmer/insights", labelKey: "nav.insights", icon: ChartNoAxesCombined },
   ],
   CONSUMER: [
     { href: "/shop", labelKey: "nav.shop", icon: Store, tab: true },

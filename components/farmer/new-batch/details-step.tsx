@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CROPS, type CropSlug, type Unit } from "@/lib/crops";
+import { unitName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { CropPicker } from "./crop-picker";
 import { isoDaysAgo, type DraftFields } from "./types";
@@ -35,11 +36,11 @@ export function DetailsStep({
   voice?: React.ReactNode;
   cropOrder?: CropSlug[];
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const dateChips = [
-    { label: "Today", value: isoDaysAgo(0) },
-    { label: "Yesterday", value: isoDaysAgo(1) },
-    { label: "2 days ago", value: isoDaysAgo(2) },
+    { label: t("time.today"), value: isoDaysAgo(0) },
+    { label: t("time.yesterdayCap"), value: isoDaysAgo(1) },
+    { label: t("time.twoDaysAgo"), value: isoDaysAgo(2) },
   ];
   const custom = fields.harvestDate && !dateChips.some((c) => c.value === fields.harvestDate);
   const flag = (k: string) => missing.includes(k);
@@ -85,7 +86,7 @@ export function DetailsStep({
                 )}
               >
                 {fields.unit === u && <motion.span layoutId="unit-pill" className="absolute inset-0 -z-10 rounded-xl bg-lime/30" />}
-                {u}
+                {unitName(u, lang)}
               </button>
             ))}
           </div>
@@ -112,7 +113,7 @@ export function DetailsStep({
             <CalendarDays className="size-4 text-muted-foreground" />
             <Input
               type="date"
-              aria-label="Other date"
+              aria-label={t("batch.otherDate")}
               min={isoDaysAgo(10)}
               max={isoDaysAgo(0)}
               value={custom ? fields.harvestDate : ""}
@@ -131,7 +132,7 @@ export function DetailsStep({
           id="notes"
           rows={2}
           maxLength={400}
-          placeholder="Variety, farming method, sorting…"
+          placeholder={t("batch.notesPh")}
           value={fields.notes}
           onChange={(e) => set({ notes: e.target.value })}
         />

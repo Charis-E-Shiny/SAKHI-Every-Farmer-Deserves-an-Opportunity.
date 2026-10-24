@@ -24,11 +24,11 @@ export const POST = handler<z.infer<typeof body>, undefined, Params>({ roles: ["
   await withTxRetry(async (tx) => {
     if (body.action === "DISMISS") {
       const ok = await moveOrder(tx, order.id, order.fulfilment === "PICKUP" ? "COLLECTED" : "DELIVERED", { from: ["DISPUTED"], actorId: user.id, note: `Dispute closed: ${body.note}` });
-      if (!ok) throw new HttpError(409, "Order changed — refresh and try again");
+      if (!ok) throw new HttpError(409, "Order changed, refresh and try again");
       return;
     }
-    const ok = await moveOrder(tx, order.id, "CANCELLED", { from: ["DISPUTED"], actorId: user.id, note: `Refunded: ${body.note}`, data: { cancelReason: `Refunded after dispute — ${body.note}` } });
-    if (!ok) throw new HttpError(409, "Order changed — refresh and try again");
+    const ok = await moveOrder(tx, order.id, "CANCELLED", { from: ["DISPUTED"], actorId: user.id, note: `Refunded: ${body.note}`, data: { cancelReason: `Refunded after dispute, ${body.note}` } });
+    if (!ok) throw new HttpError(409, "Order changed, refresh and try again");
     if (order.payment) await tx.payment.update({ where: { orderId: order.id }, data: { status: "REFUNDED", refundedAt: new Date() } });
     if (order.settlement?.status === "PENDING") {
       // Farmer hasn't been paid yet: reverse the payout instead of paying for rejected goods.

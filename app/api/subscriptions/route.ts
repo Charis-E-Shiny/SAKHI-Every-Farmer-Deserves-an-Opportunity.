@@ -52,7 +52,7 @@ export const POST = handler({ roles: ["CONSUMER"], body: createSubscriptionSchem
   if (!(await visibleCategories(area.name)).includes(listing.category)) throw new HttpError(422, `${listing.title} isn't sold in ${area.name} yet`);
   if (body.qty < listing.minOrderQty) throw new HttpError(400, `Minimum ${listing.minOrderQty} ${listing.unit} per delivery`);
   const dup = await db.subscription.findFirst({ where: { buyerId: user.id, crop: listing.crop, active: true } });
-  if (dup) throw new HttpError(409, `You already have an active ${listing.crop} plan — edit that one instead`);
+  if (dup) throw new HttpError(409, `You already have an active ${listing.crop} plan, edit that one instead`);
 
   const dayOfWeek = body.frequency === "WEEKLY" ? (body.dayOfWeek ?? 0) : null;
   const { runAt } = nextRun(body.frequency, dayOfWeek, body.preferredSlot);

@@ -3,6 +3,7 @@
 "use client";
 
 import { Minus, Plus } from "lucide-react";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -35,6 +36,7 @@ export function QtyStepper({
   className?: string;
   ariaLabel?: string;
 }) {
+  const { t } = useI18n();
   const n = Number(value) || 0;
   const bump = (d: number) => {
     const next = Math.min(max, Math.max(min, Math.round((n + d) * 100) / 100));
@@ -43,7 +45,7 @@ export function QtyStepper({
   const big = size === "lg";
   return (
     <div className={cn("flex items-stretch gap-2", className)}>
-      <Button type="button" variant="outline" size={big ? "icon-lg" : "icon"} onClick={() => bump(-step)} disabled={n <= min} aria-label="Decrease">
+      <Button type="button" variant="outline" size={big ? "icon-lg" : "icon"} onClick={() => bump(-step)} disabled={n <= min} aria-label={t("common.decrease")}>
         <Minus />
       </Button>
       <div className="relative min-w-0 flex-1">
@@ -65,7 +67,7 @@ export function QtyStepper({
           </span>
         )}
       </div>
-      <Button type="button" variant="outline" size={big ? "icon-lg" : "icon"} onClick={() => bump(step)} disabled={n >= max} aria-label="Increase">
+      <Button type="button" variant="outline" size={big ? "icon-lg" : "icon"} onClick={() => bump(step)} disabled={n >= max} aria-label={t("common.increase")}>
         <Plus />
       </Button>
     </div>

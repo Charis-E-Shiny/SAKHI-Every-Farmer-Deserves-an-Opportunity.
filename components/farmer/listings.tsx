@@ -13,15 +13,14 @@ import { QtyStepper } from "@/components/common/qty-stepper";
 import { MediaImage } from "@/components/common/media-image";
 import { ResponsiveModal } from "@/components/common/responsive-modal";
 import { EmptyState, ErrorState, SkeletonRows } from "@/components/common/states";
-import { FarmerStatusBadge, statusText } from "@/components/farmer/farmer-status-badge";
+import { FarmerStatusBadge } from "@/components/farmer/farmer-status-badge";
 import { useI18n } from "@/components/providers/i18n-provider";
-import type { MessageKey } from "@/lib/i18n";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { useLive } from "@/hooks/use-live";
 import { cropName } from "@/lib/crops";
 import { sendJSON } from "@/lib/fetcher";
-import { formatINR, formatQty, harvestDays } from "@/lib/format";
+import { formatINR, formatQty, harvestAge, unitName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface Row {
@@ -43,12 +42,6 @@ interface Row {
   grade: string | null;
 }
 
-/** "Picked today / yesterday / N days ago" in the farmer's language. */
-function pickedLabel(t: (key: MessageKey, vars?: Record<string, string | number>) => string, d: string): string {
-  const days = harvestDays(d);
-  return days === 0 ? t("listings.pickedToday") : days === 1 ? t("listings.pickedYesterday") : t("listings.pickedDays", { n: days });
-}
-
 /** /farmer/listings */
 export function FarmerListings() {
   const { t, lang } = useI18n();
@@ -60,16 +53,22 @@ export function FarmerListings() {
 
   const rows = data?.filter((r) => r.status === tab) ?? [];
   const tabs: { k: Row["status"]; l: string }[] = [
-    { k: "ACTIVE", l: statusText(t, "ACTIVE") },
-    { k: "PAUSED", l: statusText(t, "PAUSED") },
-    { k: "SOLD_OUT", l: statusText(t, "SOLD_OUT") },
+    { k: "ACTIVE", l: t("status.ACTIVE") },
+    { k: "PAUSED", l: t("status.PAUSED") },
+    { k: "SOLD_OUT", l: t("status.SOLD_OUT") },
   ];
 
   async function patch(r: Row, body: { price?: number; status?: "ACTIVE" | "PAUSED" }) {
     setBusy(r.id);
     try {
       await sendJSON(`/api/listings/${r.id}`, body, "PATCH");
-      toast.success(body.price ? `Price updated to ${formatINR(body.price)}/${r.unit}` : body.status === "PAUSED" ? "Paused — hidden from buyers" : "Live again");
+      toast.success(
+        body.price
+          ? t("listings.priceUpdated", { price: formatINR(body.price), unit: unitName(r.unit, lang) })
+          : body.status === "PAUSED"
+            ? t("listings.pausedToast")
+            : t("listings.liveToast"),
+      );
       setEditing(null);
       mutate();
     } catch (e) {
@@ -115,8 +114,8 @@ export function FarmerListings() {
                   {r.quality !== null && <span className="text-xs text-muted-foreground">{t("listings.visual", { score: r.quality })}</span>}
                 </div>
                 <p className="mt-0.5 text-sm">
-                  <b className="tabular">{formatINR(r.price)}</b>/{r.unit}
-                  {r.suggestedPrice ? <span className="text-xs text-muted-foreground"> · {t("listings.suggested", { price: formatINR(r.suggestedPrice) })}</span> : null}
+                  <b className="tabular">{formatINR(r.price)}</b>/{unitName(r.unit, lang)}
+                  {r.suggestedPrice ? <span className="text-xs text-muted-foreground"> · {t("listings.suggestedShort", { price: formatINR(r.suggestedPrice) })}</span> : null}
                 </p>
                 <div className="mt-2 flex h-2 gap-0.5 overflow-hidden rounded-full">
                   <span className="bg-foreground" style={{ width: pct(r.sold) }} />
@@ -124,7 +123,8 @@ export function FarmerListings() {
                   <span className="flex-1 bg-muted" />
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {formatQty(r.available, r.unit)} {t("listings.available")} · {formatQty(r.reserved, r.unit)} {t("listings.reserved")} · {formatQty(r.sold, r.unit)} {t("listings.sold")} · {pickedLabel(t, r.harvestDate)}
+                  {formatQty(r.available, r.unit, lang)} {t("listings.available")} · {formatQty(r.reserved, r.unit, lang)} {t("listings.reserved")} ·{" "}
+                  {formatQty(r.sold, r.unit, lang)} {t("listings.sold")} · {harvestAge(r.harvestDate, lang)}
                 </p>
                 {r.status !== "SOLD_OUT" && (
                   <div className="mt-2 flex flex-wrap gap-2">
@@ -153,16 +153,16 @@ function PriceEditor({ row, busy, onClose, onSave }: { row: Row; busy: boolean; 
   return (
     <ResponsiveModal open onOpenChange={(o) => !o && onClose()} title={`${t("listings.editPrice")} · ${cropName(row.crop, lang)}`}>
       <div className="space-y-4">
-        <QtyStepper size="lg" value={price} onChange={setPrice} step={1} min={1} suffix={`/${row.unit}`} ariaLabel="New price" />
+        <QtyStepper size="lg" value={price} onChange={setPrice} step={1} min={1} suffix={`/${unitName(row.unit, lang)}`} ariaLabel={t("listings.newPrice")} />
         {row.suggestedPrice && (
           <p className="text-sm text-muted-foreground">
-            Indicative suggestion when listed: {formatINR(row.suggestedPrice)}/{row.unit}.{" "}
+            {t("listings.suggestionWhenListed", { price: formatINR(row.suggestedPrice), unit: unitName(row.unit, lang) })}{" "}
             <button type="button" className="font-semibold underline" onClick={() => setPrice(String(row.suggestedPrice))}>
-              Use it
+              {t("listings.useIt")}
             </button>
           </p>
         )}
-        <p className="text-xs text-muted-foreground">New price applies to future orders. Orders already confirmed keep the price the buyer paid.</p>
+        <p className="text-xs text-muted-foreground">{t("listings.priceNote")}</p>
         <Button size="lg" className="w-full" onClick={() => onSave(Number(price))} disabled={busy || !(Number(price) > 0)}>
           {busy ? <Loader2 className="animate-spin" /> : t("common.save")}
         </Button>

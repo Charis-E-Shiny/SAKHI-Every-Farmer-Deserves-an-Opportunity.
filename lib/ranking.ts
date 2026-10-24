@@ -91,7 +91,7 @@ type Scored = { o: RankInputOffer; factors: Record<Factor, number>; score: numbe
 function reasonFor(s: Scored, rank: number, best: Scored, demand: RankInputDemand, cheapest: number): string {
   const phrase: Record<Factor, (good: boolean) => string> = {
     cost: (g) =>
-      g && s.deliveredPerKg <= cheapest ? `₹${s.deliveredPerKg}/kg delivered — the best price` : g ? `₹${s.deliveredPerKg}/kg delivered` : `costs ₹${s.deliveredPerKg}/kg delivered`,
+      g && s.deliveredPerKg <= cheapest ? `₹${s.deliveredPerKg}/kg delivered, the best price` : g ? `₹${s.deliveredPerKg}/kg delivered` : `costs ₹${s.deliveredPerKg}/kg delivered`,
     coverage: (g) => (g ? `covers all ${demand.qtyKg} kg` : `only covers ${Math.round(s.factors.coverage * 100)}% of the ${demand.qtyKg} kg`),
     eta: (g) => (g ? `arrives in ~${s.o.etaHours} h, well before the deadline` : s.factors.eta === 0 ? "would miss the deadline" : `tight for the deadline (~${s.o.etaHours} h)`),
     quality: (g) => (g ? `strong visual score${s.o.qualityScore ? ` (${s.o.qualityScore})` : ""}${s.o.grade ? `, grade ${s.o.grade}` : ""}` : `weaker visual evidence${s.o.qualityScore ? ` (${s.o.qualityScore})` : ""}`),

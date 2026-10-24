@@ -139,7 +139,7 @@ export function DeliveriesOps() {
                 <span className="min-w-0 flex-1">
                   <span className="font-mono font-semibold">{p.code}</span> · {p.reason}
                   <span className="block text-xs text-muted-foreground">
-                    {p.worker ?? "—"} · {p.area} · {timeAgo(p.createdAt)}
+                    {p.worker ?? "-"} · {p.area} · {timeAgo(p.createdAt)}
                   </span>
                 </span>
                 <StatusBadge status={p.orderStatus} />

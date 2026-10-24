@@ -15,8 +15,8 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
-    // Seed photos and user uploads are served from /public.
-    localPatterns: [{ pathname: "/seed/**" }, { pathname: "/uploads/**" }],
+    // Seed photos, brand photography (/photos) and user uploads are served from /public.
+    localPatterns: [{ pathname: "/seed/**" }, { pathname: "/uploads/**" }, { pathname: "/photos/**" }],
   },
   // Prisma's native engine must stay external to the server bundle.
   serverExternalPackages: ["@prisma/client", ".prisma/client"],

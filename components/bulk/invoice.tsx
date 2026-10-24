@@ -89,7 +89,7 @@ export function Invoice({ order, backHref, buyerAddress }: { order: SerializedOr
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground">Delivery</span>
-            <span className="tabular">{order.deliveryFee ? formatINR(order.deliveryFee, true) : "—"}</span>
+            <span className="tabular">{order.deliveryFee ? formatINR(order.deliveryFee, true) : "-"}</span>
           </div>
           <div className="flex justify-between border-t pt-2 text-base font-semibold">
             <span>Total</span>

@@ -1,13 +1,21 @@
 // Every prompt FoodFlow sends to a model lives here. All of them demand
 // strict JSON matching the Zod schemas in ./schemas.ts.
 import { CROP_SLUGS } from "@/lib/crops";
+import type { Lang } from "@/lib/i18n";
 import { QUALITY_FLAGS } from "./schemas";
 
-const JSON_RULE = "Respond with a single JSON object only — no markdown, no commentary.";
+const LANGUAGE_NAME: Record<Lang, string> = { en: "English", hi: "Hindi (Devanagari script)", kn: "Kannada (Kannada script)" };
+
+/** Instruction that makes the model write for a farmer with little schooling, in their language. */
+function plainWords(lang: Lang): string {
+  return `Write in ${LANGUAGE_NAME[lang]}, in very simple everyday words and short sentences, for a farmer with little schooling. Keep every number, ₹ amount, unit and place name exactly as given.`;
+}
+
+const JSON_RULE = "Respond with a single JSON object only, no markdown, no commentary. Never use em dashes in any text you write.";
 
 export const qualityPrompt = {
   system: `You inspect photos of freshly harvested produce for an Indian farm-to-table marketplace.
-You give a VISUAL assessment only — you cannot judge taste, pesticide residue, or food safety, and must not claim to.
+You give a VISUAL assessment only, you cannot judge taste, pesticide residue, or food safety, and must not claim to.
 Be conservative: if photos are dark, blurry, or not produce, say so via flags and lower the score. ${JSON_RULE}`,
   user: (crop: string | null, frames: number) =>
     `Assess these ${frames} photo(s)${crop ? ` of ${crop}` : ""}.
@@ -19,7 +27,7 @@ Return JSON: {"score": integer 0-100, "grade": "A"|"B"|"C", "flags": string[], "
 
 export const parseListingPrompt = {
   system: `You turn a farmer's spoken description of a harvest (Hindi, Kannada, Tamil, Telugu, English or a mix, possibly transliterated) into structured listing fields.
-Never invent values that were not said — use null and list the field in "missing". ${JSON_RULE}`,
+Never invent values that were not said, use null and list the field in "missing". ${JSON_RULE}`,
   user: (transcript: string, lang: string, today: string) =>
     `Speech language hint: ${lang}. Today's date: ${today}.
 Transcript: """${transcript}"""
@@ -46,19 +54,19 @@ Convert grams to kg (500g → 0.5 kg) and ml to litres. If no quantity is writte
 
 export const priceExplainPrompt = {
   system: `You explain an already-computed indicative price suggestion to a smallholder farmer in short, plain sentences. Do not change the numbers. ${JSON_RULE}`,
-  user: (facts: string) =>
-    `Facts:\n${facts}\nReturn JSON: {"basis": string[] (2–4 short bullet sentences explaining why this price is suggested)}`,
+  user: (facts: string, lang: Lang = "en") =>
+    `Facts:\n${facts}\n${plainWords(lang)}\nReturn JSON: {"basis": string[] (2–4 short bullet sentences explaining why this price is suggested)}`,
 };
 
 export const rankOffersPrompt = {
   system: `You help a restaurant or community kitchen compare farmer offers for a bulk produce requirement. You are given pre-computed factor scores; weigh them sensibly and explain briefly. ${JSON_RULE}`,
   user: (demand: string, offers: string) =>
     `Requirement:\n${demand}\n\nOffers (with computed factors, each 0–1):\n${offers}
-Return JSON: {"ranking": [{"offerId": string, "score": 0-100, "reason": one short sentence naming the deciding factor}]} — include every offer, best first.`,
+Return JSON: {"ranking": [{"offerId": string, "score": 0-100, "reason": one short sentence naming the deciding factor}]}, include every offer, best first.`,
 };
 
 export const surplusPrompt = {
   system: `You advise a farmer whose listing is selling slowly, so produce isn't wasted. Suggestions must be actions the farmer can take on FoodFlow; never suggest dumping. ${JSON_RULE}`,
-  user: (facts: string) =>
-    `Facts:\n${facts}\nReturn JSON: {"reasons": string[] (why it's at risk), "suggestions": string[] (concrete next steps, most impactful first)}`,
+  user: (facts: string, lang: Lang = "en") =>
+    `Facts:\n${facts}\n${plainWords(lang)}\nReturn JSON: {"reasons": string[] (why it's at risk), "suggestions": string[] (concrete next steps, most impactful first)}`,
 };

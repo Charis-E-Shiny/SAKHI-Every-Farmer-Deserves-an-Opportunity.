@@ -46,7 +46,7 @@ async function saveLocal(bytes: Buffer, sha256: string, mimeType: string): Promi
 
 function saveInline(bytes: Buffer, mimeType: string): StoredFile {
   if (bytes.length > INLINE_MAX_BYTES) {
-    throw new Error("File too large for inline storage on this deployment — use a smaller photo.");
+    throw new Error("File too large for inline storage on this deployment, use a smaller photo.");
   }
   return { url: `data:${mimeType};base64,${bytes.toString("base64")}`, driver: "inline" };
 }

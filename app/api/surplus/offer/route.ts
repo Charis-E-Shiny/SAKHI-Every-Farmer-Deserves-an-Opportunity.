@@ -14,6 +14,6 @@ export const POST = handler<z.infer<typeof body>>({ roles: ["FARMER"], body }, a
   const [item] = await detectSurplus(user.id, body.listingId);
   const s = item?.suggestions.find((x) => x.kind === "DEMAND" && x.demandId === body.demandId);
   if (!item || !s || s.kind !== "DEMAND") throw new HttpError(409, "That requirement is no longer a match for this listing");
-  const offer = await makeOffer(user, body.demandId, { listingId: item.listingId, qtyKg: s.offerQty, pricePerKg: s.offerPrice, etaHours: 12, note: "Fresh surplus — can deliver today" }, { fromSurplus: true });
+  const offer = await makeOffer(user, body.demandId, { listingId: item.listingId, qtyKg: s.offerQty, pricePerKg: s.offerPrice, etaHours: 12, note: "Fresh surplus, can deliver today" }, { fromSurplus: true });
   return { offerId: offer.id, qtyKg: s.offerQty, pricePerKg: s.offerPrice, buyer: s.buyer };
 });

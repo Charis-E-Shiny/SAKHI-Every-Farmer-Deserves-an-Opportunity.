@@ -2,7 +2,7 @@
 // anything that fails validation falls back to the deterministic path.
 import { z } from "zod";
 
-export const QUALITY_DISCLAIMER = "Visual assessment — not a freshness or food-safety certification";
+export const QUALITY_DISCLAIMER = "Visual assessment, not a freshness or food-safety certification";
 export const PRICE_LABEL = "Indicative";
 
 /** Visual flags a model or the heuristic may raise. */

@@ -3,7 +3,12 @@
 
 import type { Role } from "./token";
 
-export const DEMO_ENABLED = process.env.DEMO_MODE !== "false";
+/**
+ * One-tap sign-in as a seeded account (API only, the site no longer offers it). On by default in
+ * development and tests; in production it stays off unless DEMO_MODE is explicitly "true",
+ * because it lets anyone sign in as any seeded account, admin included.
+ */
+export const DEMO_ENABLED = process.env.NODE_ENV === "production" ? process.env.DEMO_MODE === "true" : process.env.DEMO_MODE !== "false";
 
 /** Seeded phone numbers used by the one-tap role switcher. */
 export const DEMO_PHONE_BY_ROLE: Record<Role, string> = {

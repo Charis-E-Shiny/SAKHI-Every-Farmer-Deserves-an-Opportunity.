@@ -72,7 +72,7 @@ export async function createPlacedOrder(o: NewOrder) {
       throw e;
     }
   }
-  throw new HttpError(500, "Could not create the order — please try again");
+  throw new HttpError(500, "Could not create the order, please try again");
 }
 
 export type ConfirmResult = { ok: true } | { ok: false; reason: string; listingId: string };
@@ -101,7 +101,7 @@ export async function confirmOrder(orderId: string, actorId?: string | null): Pr
     await withTxRetry(async (tx) => {
       const moved = await moveOrder(tx, orderId, "CANCELLED", { from: ["PLACED"], note: e.message, data: { cancelReason: e.message } });
       if (moved) {
-        await tx.payment.update({ where: { orderId }, data: { status: "FAILED", failureReason: "Stock unavailable — authorisation released, no money taken" } });
+        await tx.payment.update({ where: { orderId }, data: { status: "FAILED", failureReason: "Stock unavailable, authorisation released, no money taken" } });
       }
     });
     await notify(orderId);

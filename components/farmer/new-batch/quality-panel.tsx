@@ -24,7 +24,7 @@ export interface QualityState {
   note?: string;
 }
 
-const SCAN_STEPS = ["Reading colour and ripeness", "Looking for bruises and spots", "Comparing sizes", "Checking for mould"];
+const SCAN_STEPS = ["batch.scan1", "batch.scan2", "batch.scan3", "batch.scan4"] as const;
 
 /**
  * @param batchId - draft batch whose stored media is checked
@@ -47,7 +47,7 @@ export function QualityPanel({
   const stills = tiles.filter((x) => x.status === "done" && !x.isVideo).sort((a, b) => Number(b.kind === "frame") - Number(a.kind === "frame")).slice(0, 4);
 
   async function run() {
-    if (!batchId || !stills.length) return toast.error("Add a photo or video first");
+    if (!batchId || !stills.length) return toast.error(t("batch.addPhotoFirst"));
     setLoading(true);
     try {
       const started = Date.now();
@@ -83,9 +83,7 @@ export function QualityPanel({
           </span>
           <div className="min-w-0 flex-1">
             <p className="font-semibold">{t("batch.score")}</p>
-            <p className="text-sm text-muted-foreground">
-              Optional preview — the check runs again automatically when you send for verification.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("batch.optionalPreview")}</p>
           </div>
           <Button type="button" variant="brand" onClick={run} disabled={!stills.length}>
             <Sparkles /> {t("batch.analyse")}
@@ -98,6 +96,7 @@ export function QualityPanel({
 
 /** Laser-scan animation across the frames being checked. */
 function Scanning({ previews, label }: { previews: string[]; label: string }) {
+  const { t } = useI18n();
   const [i, setI] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setI((n) => (n + 1) % SCAN_STEPS.length), 900);
@@ -137,7 +136,7 @@ function Scanning({ previews, label }: { previews: string[]; label: string }) {
               exit={{ opacity: 0, y: -6 }}
               className="font-mono text-xs text-muted-foreground"
             >
-              {SCAN_STEPS[i]}…
+              {t(SCAN_STEPS[i])}…
             </motion.p>
           </AnimatePresence>
         </div>
@@ -151,26 +150,28 @@ function Scanning({ previews, label }: { previews: string[]; label: string }) {
  * @param onRerun - optional re-check button
  */
 export function QualityCard({ result, onRerun, compact = false }: { result: QualityState; onRerun?: () => void; compact?: boolean }) {
+  const { t, lang } = useI18n();
   return (
     <div className="rounded-3xl border bg-card p-5">
       <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
-        <ScoreGauge score={result.score} size={compact ? 104 : 132} label="out of 100" />
+        <ScoreGauge score={result.score} size={compact ? 104 : 132} label={t("batch.outOf100")} />
         <div className="min-w-0 flex-1 text-center sm:text-left">
           <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-start">
             <span className="grid size-9 place-items-center rounded-xl bg-foreground text-lg font-semibold text-background">{result.grade}</span>
-            <span className="text-sm font-medium">Grade {result.grade}</span>
+            <span className="text-sm font-medium">{t("common.grade", { grade: result.grade })}</span>
             <AISourceBadge source={result.source} />
           </div>
-          <p className="mt-3 text-[15px] leading-relaxed">{result.summary}</p>
+          {/* The summary is written in English; the score, grade and flags carry the result in other languages. */}
+          {lang === "en" && <p className="mt-3 text-[15px] leading-relaxed">{result.summary}</p>}
           <div className="mt-3 flex flex-wrap justify-center gap-1.5 sm:justify-start">
             {result.flags.length === 0 ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-success/12 px-2.5 py-1 text-xs font-medium text-success">
-                <CheckCircle2 className="size-3.5" /> No visual issues spotted
+                <CheckCircle2 className="size-3.5" /> {t("batch.noIssues")}
               </span>
             ) : (
               result.flags.map((f) => (
                 <span key={f} className="rounded-full bg-warning/18 px-2.5 py-1 text-xs font-medium">
-                  {flagLabel(f)}
+                  {flagLabel(f, t)}
                 </span>
               ))
             )}
@@ -181,7 +182,7 @@ export function QualityCard({ result, onRerun, compact = false }: { result: Qual
         <QualityDisclaimer />
         {onRerun && (
           <Button type="button" variant="ghost" size="sm" onClick={onRerun} className="self-start sm:self-auto">
-            <RotateCw /> Re-check
+            <RotateCw /> {t("batch.recheck")}
           </Button>
         )}
       </div>

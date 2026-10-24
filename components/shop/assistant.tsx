@@ -60,7 +60,7 @@ export function GroceryAssistant() {
     setParsed(p);
     setItems(p.items);
     setBasket(null);
-    if (!p.items.length) toast("We couldn't find any items — add them below.");
+    if (!p.items.length) toast("We couldn't find any items, add them below.");
   }
 
   async function parseImage(file: File) {
@@ -137,7 +137,7 @@ export function GroceryAssistant() {
     <div className="pb-28 lg:pb-8">
       <PageHeader
         title="Your list → a *smart basket*"
-        description="Snap a handwritten list, say it, or type it. We find the best farm for each item — and you choose."
+        description="Snap a handwritten list, say it, or type it. We find the best farm for each item, and you choose."
       />
 
       {!basket && (
@@ -176,7 +176,7 @@ export function GroceryAssistant() {
                       <ShoppingBasket className="size-8" />
                     </span>
                     <p className="mt-3 font-semibold">Photo of your shopping list</p>
-                    <p className="text-sm text-muted-foreground">Handwritten is fine — English or Indian languages.</p>
+                    <p className="text-sm text-muted-foreground">Handwritten is fine. English or Indian languages.</p>
                   </div>
                 )}
                 <div className="mt-4 grid grid-cols-2 gap-3">
@@ -209,7 +209,7 @@ export function GroceryAssistant() {
                 <div className="relative flex flex-col items-center">
                   <MicOrb listening={speech.listening} onClick={() => (speech.listening ? speech.stop() : speech.start(lang))} disabled={!speech.supported || parsing} label="Dictate your list" />
                   <p className="-mt-3 min-h-12 max-w-md text-center">
-                    {speech.listening ? speech.interim || "Listening…" : parsing ? "Reading…" : !speech.supported ? "Voice isn't supported in this browser — use Type." : speech.error ?? "e.g. “two kilo onion, one kilo tomato, milk two litre”"}
+                    {speech.listening ? speech.interim || "Listening…" : parsing ? "Reading…" : !speech.supported ? "Voice isn't supported in this browser, use Type." : speech.error ?? "e.g. “two kilo onion, one kilo tomato, milk two litre”"}
                   </p>
                 </div>
               </div>
@@ -233,7 +233,7 @@ export function GroceryAssistant() {
                 </div>
                 {parsed.sample && (
                   <p className="mt-3 rounded-2xl bg-warning/12 p-3 text-sm">
-                    Reading photos needs the AI service, which isn&apos;t configured here — so this is a <b>sample list</b>. Edit it, or switch to Type/Speak.
+                    Reading photos needs the AI service, which isn&apos;t configured here, so this is a <b>sample list</b>. Edit it, or switch to Type/Speak.
                   </p>
                 )}
                 <ul className="mt-3 space-y-2">
@@ -285,7 +285,7 @@ export function GroceryAssistant() {
             ))}
           </ul>
           {chosenList && chosenList.length > 0 && (
-            <div className="fixed inset-x-3 bottom-[calc(5.6rem+env(safe-area-inset-bottom))] z-40 mx-auto max-w-md lg:static lg:mx-0 lg:mt-6 lg:max-w-none">
+            <div className="fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-40 mx-auto max-w-md lg:static lg:mx-0 lg:mt-6 lg:max-w-none">
               <Button size="lg" variant="brand" className="h-14 w-full text-base shadow-xl" onClick={addAll}>
                 Add {chosenList.length} items to cart · {formatINR(total)} <ArrowRight />
               </Button>
@@ -303,7 +303,7 @@ function PickRow({ pick, current, onChoose, index }: { pick: BasketPick; current
   if (!pick.best || !current) {
     return (
       <motion.li initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: index * 0.05 }} className="rounded-3xl border border-dashed p-4 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">{label}</span> — not on FoodFlow right now.
+        <span className="font-medium text-foreground">{label}</span>, not on FoodFlow right now.
       </motion.li>
     );
   }

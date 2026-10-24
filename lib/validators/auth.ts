@@ -8,7 +8,8 @@ export const registerSchema = z
   .object({
     name: z.string().trim().min(2, "Name is too short").max(80),
     phone: phoneSchema,
-    pin: pinSchema,
+    /** Optional only when a Google profile is attached (the route enforces this). */
+    pin: pinSchema.optional(),
     role: z.enum(["FARMER", "CONSUMER", "BULK_BUYER"]),
     area: z.string().min(2).max(60),
     language: langSchema.default("en"),
@@ -16,6 +17,8 @@ export const registerSchema = z
     orgType: z.enum(["RESTAURANT", "HOSTEL", "COMMUNITY_KITCHEN"]).optional(),
     village: z.string().trim().max(60).optional(),
     farmName: z.string().trim().max(80).optional(),
+    /** Delivery address typed at sign-up; becomes the first saved address. */
+    address: z.string().trim().max(200).optional(),
   })
   .refine((v) => v.role !== "BULK_BUYER" || (v.orgName && v.orgType), {
     message: "Organisation name and type are required for bulk buyers",

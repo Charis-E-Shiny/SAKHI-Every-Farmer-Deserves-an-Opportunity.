@@ -63,24 +63,24 @@ export async function verifyHandover(orderId: string, actor: Pick<User, "id" | "
   };
 
   if (!d.otpHash || !d.otpNonce || !d.otpExpiresAt) {
-    return fail("no_otp", "The recipient hasn't generated a code yet — ask them to open the order and tap “Show OTP”.", OTP_MAX_ATTEMPTS);
+    return fail("no_otp", "The recipient hasn't generated a code yet, ask them to open the order and tap “Show OTP”.", OTP_MAX_ATTEMPTS);
   }
-  if (d.otpExpiresAt < new Date()) return fail("expired", "This code has expired — ask the recipient for a fresh one.", 0);
+  if (d.otpExpiresAt < new Date()) return fail("expired", "This code has expired, ask the recipient for a fresh one.", 0);
 
   if ("otp" in proof) {
     // Count the attempt BEFORE comparing, atomically, so parallel guesses can't exceed the limit.
     const claimed = await db.delivery.updateMany({ where: { id: d.id, otpAttempts: { lt: OTP_MAX_ATTEMPTS } }, data: { otpAttempts: { increment: 1 } } });
-    if (claimed.count !== 1) return fail("locked", "Too many wrong attempts — the recipient needs to generate a new code.", 0);
+    if (claimed.count !== 1) return fail("locked", "Too many wrong attempts, the recipient needs to generate a new code.", 0);
     const used = d.otpAttempts + 1;
     if (!otpMatches(proof.otp.trim(), d)) {
       const left = Math.max(0, OTP_MAX_ATTEMPTS - used);
-      return fail(left ? "mismatch" : "locked", left ? `That code doesn't match. ${left} attempt${left === 1 ? "" : "s"} left.` : "Too many wrong attempts — the recipient needs to generate a new code.", left);
+      return fail(left ? "mismatch" : "locked", left ? `That code doesn't match. ${left} attempt${left === 1 ? "" : "s"} left.` : "Too many wrong attempts, the recipient needs to generate a new code.", left);
     }
   } else {
     const token = await readPickupToken(proof.qrToken);
     // The QR must be for this order AND carry the current nonce (regenerating kills old QRs).
     if (!token || token.orderId !== order.id || token.nonce !== d.otpNonce) {
-      return fail("bad_qr", "This QR is invalid or out of date — ask the buyer to refresh it.", OTP_MAX_ATTEMPTS - d.otpAttempts);
+      return fail("bad_qr", "This QR is invalid or out of date, ask the buyer to refresh it.", OTP_MAX_ATTEMPTS - d.otpAttempts);
     }
   }
 
@@ -99,7 +99,7 @@ export async function verifyHandover(orderId: string, actor: Pick<User, "id" | "
     });
     if (moved.count !== 1) return false;
     const ok = await moveOrder(tx, order.id, finalStatus, { actorId: actor.id, note: `Verified by ${method}` });
-    if (!ok) throw new HttpError(409, "Order changed during handover — try again");
+    if (!ok) throw new HttpError(409, "Order changed during handover, try again");
     await commitItems(tx, order.items);
     try {
       await tx.settlement.create({ data: { farmerId: order.farmerId, orderId: order.id, ...amounts, status: "PENDING" } });

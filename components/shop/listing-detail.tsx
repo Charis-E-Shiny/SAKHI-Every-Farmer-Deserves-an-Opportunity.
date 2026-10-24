@@ -153,7 +153,7 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
             <div className="rounded-2xl border p-3">
               <MapPin className="size-4 text-muted-foreground" />
               <p className="mt-1.5 font-medium">Self-pickup</p>
-              <p className="text-xs text-muted-foreground">{data.farmer.village} — OTP or QR at handover</p>
+              <p className="text-xs text-muted-foreground">{data.farmer.village}. OTP or QR at handover</p>
             </div>
           </div>
         </div>
@@ -195,7 +195,7 @@ export function ListingDetail({ id, backHref = "/shop", detailBase = "/shop/list
             <div className="rounded-2xl bg-muted/60 p-3">
               <dt className="text-xs text-muted-foreground">Buyer rating</dt>
               <dd className="flex items-center gap-1 text-xl font-semibold">
-                {data.farmerRating.average ?? "—"} <Star className="size-4 fill-warning text-warning" />
+                {data.farmerRating.average ?? "-"} <Star className="size-4 fill-warning text-warning" />
                 <span className="text-xs font-normal text-muted-foreground">({data.farmerRating.count})</span>
               </dd>
             </div>

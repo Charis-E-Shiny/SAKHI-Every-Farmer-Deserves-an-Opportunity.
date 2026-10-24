@@ -162,12 +162,12 @@ export function PaymentTrail({ order }: { order: SerializedOrder }) {
       </div>
       <p className="mt-2 text-xs text-muted-foreground">
         {p.status === "FAILED"
-          ? p.failureReason ?? "Authorisation released — you weren't charged."
+          ? p.failureReason ?? "Authorisation released, you weren't charged."
           : p.status === "REFUNDED"
             ? "Refunded to your original payment method (simulated)."
             : p.status === "CAPTURED"
               ? `${p.method}, ref ${p.ref}. The farmer is paid only after the handover is verified.`
-              : "Held on your account — not yet charged."}
+              : "Held on your account, not yet charged."}
       </p>
     </div>
   );

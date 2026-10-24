@@ -21,6 +21,7 @@ import type { SerializedBatch } from "@/lib/batches";
 import { cropName } from "@/lib/crops";
 import { sendJSON } from "@/lib/fetcher";
 import { formatDate, formatDateTime, formatINR, formatQty, timeAgo } from "@/lib/format";
+import { translate } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { DecisionDialog, type DecisionKind } from "./decision-dialog";
 import { queueKey, type QueueItem } from "./review-list";
@@ -48,7 +49,7 @@ interface Detail extends SerializedBatch {
 const ACTION_LABEL: Record<string, string> = {
   BATCH_SUBMITTED: "Submitted by farmer",
   BATCH_RESUBMITTED: "Resubmitted with changes",
-  BATCH_APPROVED: "Approved — listing created",
+  BATCH_APPROVED: "Approved, listing created",
   BATCH_REJECTED: "Rejected",
   BATCH_RESUBMIT_REQUESTED: "Changes requested",
   MEDIA_DUPLICATE_FLAGGED: "Duplicate photo flagged",
@@ -73,7 +74,7 @@ export function ReviewDetail({ id }: { id: string }) {
   async function decide(kind: DecisionKind, input: { note?: string; price?: number; grade?: "A" | "B" | "C" }) {
     try {
       await sendJSON(`/api/admin/batches/${id}`, { decision: kind, ...input });
-      toast.success(kind === "APPROVE" ? "Approved — listing is live" : kind === "REJECT" ? "Batch rejected" : "Sent back to the farmer");
+      toast.success(kind === "APPROVE" ? "Approved, listing is live" : kind === "REJECT" ? "Batch rejected" : "Sent back to the farmer");
       setDecision(null);
       // Jump to the next pending batch so the queue keeps flowing.
       const queue = await globalMutate<QueueItem[]>(queueKey("PENDING_REVIEW"));
@@ -100,7 +101,7 @@ export function ReviewDetail({ id }: { id: string }) {
           <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{data.farmer.name}</span>
             <span className="inline-flex items-center gap-1">
-              <MapPin className="size-3.5" /> {data.farmer.village ?? "—"} → {data.farmer.area}
+              <MapPin className="size-3.5" /> {data.farmer.village ?? "-"} → {data.farmer.area}
             </span>
             <span>· submitted {timeAgo(data.createdAt)}</span>
           </p>
@@ -123,7 +124,7 @@ export function ReviewDetail({ id }: { id: string }) {
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-xs text-muted-foreground">A flag, not proof — the same photo can be re-used innocently. Use your judgement.</p>
+          <p className="mt-2 text-xs text-muted-foreground">A flag, not proof, the same photo can be re-used innocently. Use your judgement.</p>
         </motion.div>
       )}
 
@@ -190,14 +191,14 @@ export function ReviewDetail({ id }: { id: string }) {
           </div>
           {data.aiQualityScore !== null ? (
             <div className="mt-4 flex flex-col items-center gap-4 @md/ai:flex-row @md/ai:items-start">
-              <ScoreGauge score={data.aiQualityScore} size={116} label={`Grade ${data.grade ?? "—"}`} />
+              <ScoreGauge score={data.aiQualityScore} size={116} label={`Grade ${data.grade ?? "-"}`} />
               <div className="min-w-0 flex-1">
                 <p className="text-[15px] leading-relaxed">{data.aiSummary}</p>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {data.aiFlags.length ? (
                     data.aiFlags.map((f) => (
                       <span key={f} className="rounded-full bg-warning/20 px-2.5 py-1 text-xs font-medium">
-                        {flagLabel(f)}
+                        {flagLabel(f, (k) => translate("en", k))}
                       </span>
                     ))
                   ) : (
@@ -220,12 +221,12 @@ export function ReviewDetail({ id }: { id: string }) {
           <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
             <Fact k="Quantity" v={formatQty(data.quantity, data.unit)} />
             <Fact k="Harvested" v={formatDate(data.harvestDate)} />
-            <Fact k="Asking price" v={data.proposedPrice ? `${formatINR(data.proposedPrice)}/${data.unit}` : "—"} warn={priceOutlier} />
-            <Fact k="Indicative" v={data.price ? `${formatINR(data.price.suggested)} (${formatINR(data.price.min)}–${formatINR(data.price.max)})` : "—"} />
+            <Fact k="Asking price" v={data.proposedPrice ? `${formatINR(data.proposedPrice)}/${data.unit}` : "-"} warn={priceOutlier} />
+            <Fact k="Indicative" v={data.price ? `${formatINR(data.price.suggested)} (${formatINR(data.price.min)}–${formatINR(data.price.max)})` : "-"} />
           </dl>
           {priceOutlier && <p className="mt-2 text-xs text-tomato">Asking price is outside the indicative range for {data.price?.mandi}.</p>}
           {!data.categoryEnabled && (
-            <p className="mt-2 rounded-xl bg-warning/12 p-2 text-xs">This category isn&apos;t enabled in {data.farmer.area} yet — buyers there won&apos;t see it until it&apos;s switched on in Controls.</p>
+            <p className="mt-2 rounded-xl bg-warning/12 p-2 text-xs">This category isn&apos;t enabled in {data.farmer.area} yet, buyers there won&apos;t see it until it&apos;s switched on in Controls.</p>
           )}
           {data.notes && <p className="mt-3 rounded-xl bg-muted/60 p-3 text-sm">“{data.notes}”</p>}
           {data.transcript && (
@@ -284,7 +285,7 @@ export function ReviewDetail({ id }: { id: string }) {
           <ShieldCheck className="size-4" /> Audit trail
         </p>
         <ol className="mt-3 space-y-2 border-l pl-4 text-sm">
-          {data.trail.length === 0 && <li className="text-muted-foreground">Submitted — no decisions yet.</li>}
+          {data.trail.length === 0 && <li className="text-muted-foreground">Submitted, no decisions yet.</li>}
           {data.trail.map((t) => (
             <li key={t.id} className="relative">
               <span className="absolute top-1.5 -left-[21px] size-2.5 rounded-full border-2 border-background bg-foreground" />
@@ -296,7 +297,7 @@ export function ReviewDetail({ id }: { id: string }) {
       </section>
 
       {pending && (
-        <div className="glass sticky bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-30 -mx-4 mt-6 border-y px-4 py-3 sm:-mx-6 sm:px-6 lg:bottom-4 lg:mx-0 lg:rounded-2xl lg:border">
+        <div className="glass sticky bottom-0 z-30 -mx-4 mt-6 border-y px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:px-6 lg:bottom-4 lg:mx-0 lg:rounded-2xl lg:border lg:pb-3">
           <div className="flex gap-2">
             <Button variant="destructive" size="lg" className="shrink-0 px-3.5 sm:px-6" onClick={() => setDecision("REJECT")} aria-label="Reject">
               <X /> <span className="hidden sm:inline">Reject</span>

@@ -65,7 +65,7 @@ export function RunDetail({ id }: { id: string }) {
     setBusy(true);
     try {
       await sendJSON(`/api/deliveries/${id}/pickup`);
-      toast.success("Picked up — customer notified");
+      toast.success("Picked up, customer notified");
       mutate();
     } catch (e) {
       toast.error((e as Error).message);
@@ -129,7 +129,7 @@ export function RunDetail({ id }: { id: string }) {
           </section>
         )}
         {status === "DELIVERED" && !success && (
-          <p className="rounded-3xl bg-success/12 p-4 text-center text-sm">Delivered {o.delivery?.verifiedAt ? formatDateTime(o.delivery.verifiedAt) : ""} — verified by OTP.</p>
+          <p className="rounded-3xl bg-success/12 p-4 text-center text-sm">Delivered {o.delivery?.verifiedAt ? formatDateTime(o.delivery.verifiedAt) : ""}, verified by OTP.</p>
         )}
         {status && status !== "DELIVERED" && (
           <Button variant="ghost" className="mt-3 w-full text-muted-foreground" onClick={() => setProblemOpen(true)}>

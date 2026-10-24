@@ -39,7 +39,7 @@ export async function markPacked(orderId: string, farmerId: string) {
  */
 export async function bookDelivery(orderId: string, farmerId: string) {
   const order = await loadOwned(orderId, farmerId);
-  if (order.fulfilment !== "DELIVERY") throw new HttpError(400, "This is a self-pickup order — mark it ready for pickup instead");
+  if (order.fulfilment !== "DELIVERY") throw new HttpError(400, "This is a self-pickup order, mark it ready for pickup instead");
   if (order.delivery?.workerId && order.delivery.status !== "FAILED") {
     const w = await db.user.findUnique({ where: { id: order.delivery.workerId }, select: { id: true, name: true } });
     return { worker: w, alreadyBooked: true };
@@ -51,7 +51,7 @@ export async function bookDelivery(orderId: string, farmerId: string) {
     where: { role: "DELIVERY", isAvailable: true, suspended: false },
     select: { id: true, name: true, area: true, _count: { select: { deliveries: { where: { status: { in: ["ASSIGNED", "PICKED_UP"] } } } } } },
   });
-  if (!riders.length) throw new HttpError(409, "No riders are free right now — try again in a few minutes");
+  if (!riders.length) throw new HttpError(409, "No riders are free right now, try again in a few minutes");
   riders.sort((a, b) => Number(a.area !== order.area) - Number(b.area !== order.area) || a._count.deliveries - b._count.deliveries);
   const rider = riders[0];
 
@@ -69,7 +69,7 @@ export async function bookDelivery(orderId: string, farmerId: string) {
 /** PACKED (or CONFIRMED) → READY_FOR_PICKUP; prepares the handover record. */
 export async function markReadyForPickup(orderId: string, farmerId: string) {
   const order = await loadOwned(orderId, farmerId);
-  if (order.fulfilment !== "PICKUP") throw new HttpError(400, "This order is for delivery — book a rider instead");
+  if (order.fulfilment !== "PICKUP") throw new HttpError(400, "This order is for delivery, book a rider instead");
   if (order.status === "CONFIRMED") await markPacked(orderId, farmerId);
   const moved = await withTxRetry(async (tx) => {
     const ok = await moveOrder(tx, orderId, "READY_FOR_PICKUP", { from: ["PACKED"], actorId: farmerId, note: "Ready at the farm pickup point" });

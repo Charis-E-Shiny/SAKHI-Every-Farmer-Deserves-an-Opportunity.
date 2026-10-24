@@ -1,4 +1,4 @@
-// Farmer home dashboard: greeting + big "list a harvest" action, KPI
+// Farmer sales dashboard (/farmer/insights): greeting + big "list a harvest" action, KPI
 // tiles (today, 30-day revenue, fees, delivery costs, estimated net,
 // pending vs settled), 14-day sales bars, mandi price trend lines,
 // inventory sell-through, order pipeline and a surplus alert.
@@ -131,9 +131,9 @@ export function FarmerDashboard() {
 
       <div className="grid gap-5 lg:grid-cols-2">
         <ChartCard
-          title="Sales · last 14 days"
-          subtitle={`${formatINR(data.series.reduce((s, d) => s + d.gross, 0))} across ${data.last30.orders} orders this month`}
-          table={[["Day", "Sales (₹)", "Kg"], ...data.series.map((s) => [shortDay(s.date), Math.round(s.gross), s.kg])]}
+          title={t("dash.sales14")}
+          subtitle={t("dash.salesSub", { amount: formatINR(data.series.reduce((s, d) => s + d.gross, 0)), count: data.last30.orders })}
+          table={[[t("dash.day"), t("dash.salesRs"), t("common.kg")], ...data.series.map((s) => [shortDay(s.date), Math.round(s.gross), s.kg])]}
         >
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
@@ -142,7 +142,7 @@ export function FarmerDashboard() {
                 <XAxis dataKey="date" tickFormatter={shortDay} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} interval="preserveStartEnd" minTickGap={24} />
                 <YAxis hide />
                 <Tooltip cursor={{ fill: "var(--muted)", opacity: 0.6 }} content={<ChartTooltip formatValue={(v) => formatINR(v)} formatLabel={(l) => shortDay(l)} />} />
-                <Bar dataKey="gross" name="Sales" fill="var(--chart-1)" radius={[4, 4, 0, 0]} maxBarSize={28} />
+                <Bar dataKey="gross" name={t("dash.sales")} fill="var(--chart-1)" radius={[4, 4, 0, 0]} maxBarSize={28} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -150,9 +150,9 @@ export function FarmerDashboard() {
 
         <ChartCard
           title={t("dash.priceTrend")}
-          subtitle={`${data.trend.mandi} modal ₹/unit · indicative`}
+          subtitle={t("dash.trendSub", { mandi: data.trend.mandi })}
           legend={data.trend.crops.map((c, i) => ({ label: cropName(c, lang), color: SERIES[i] }))}
-          table={[["Day", ...data.trend.crops.map((c) => cropName(c, lang))], ...data.trend.rows.map((r) => [shortDay(String(r.date)), ...data.trend.crops.map((c) => r[c] ?? "—")])]}
+          table={[[t("dash.day"), ...data.trend.crops.map((c) => cropName(c, lang))], ...data.trend.rows.map((r) => [shortDay(String(r.date)), ...data.trend.crops.map((c) => r[c] ?? "-")])]}
           action={<TrendingUp className="size-4 text-muted-foreground" />}
         >
           <div className="h-48">
@@ -193,7 +193,7 @@ export function FarmerDashboard() {
                 <div className="flex items-center justify-between gap-2 text-sm">
                   <span className="font-medium">{cropName(l.crop, lang)}</span>
                   <span className="tabular text-muted-foreground">
-                    {formatQty(l.available, l.unit)} {t("listings.available")} · {l.sellThrough}% {t("listings.sold")}
+                    {formatQty(l.available, l.unit, lang)} {t("listings.available")} · {l.sellThrough}% {t("listings.sold")}
                   </span>
                 </div>
                 <div className="mt-1 flex h-2 gap-0.5 overflow-hidden rounded-full">

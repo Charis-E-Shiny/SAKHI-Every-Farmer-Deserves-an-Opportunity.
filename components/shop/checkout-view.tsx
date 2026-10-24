@@ -186,7 +186,7 @@ export function CheckoutView({ profile }: { profile: { area: string | null; addr
           ) : (
             <Section title="Pickup">
               <p className="rounded-2xl bg-muted/60 p-4 text-sm">
-                Collect from each farm&apos;s pickup point. Show your <b>pickup QR</b> or tell the farmer your <b>OTP</b> — it appears on the order page once it&apos;s packed.
+                Collect from each farm&apos;s pickup point. Show your <b>pickup QR</b> or tell the farmer your <b>OTP</b>, it appears on the order page once it&apos;s packed.
               </p>
             </Section>
           )}
@@ -274,7 +274,7 @@ export function CheckoutView({ profile }: { profile: { area: string | null; addr
             <Info className="mt-0.5 size-3.5 shrink-0" />
             We authorise the amount now and capture it only once each farm&apos;s stock is reserved. Farmers are paid after delivery is verified.
           </p>
-          <div className="glass fixed inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-30 border-t px-4 py-3 lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
+          <div className="glass fixed inset-x-0 bottom-0 z-30 border-t px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:static lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
             <Button size="lg" variant="brand" className="w-full" onClick={pay} disabled={!quote || Boolean(quote.issues.length) || outOfArea || phase !== null}>
               Pay {quote ? formatINR(quote.total, true) : ""} <ArrowRight />
             </Button>
@@ -312,7 +312,7 @@ function Success({ result }: { result: PlaceResult }) {
         Order{result.placed.length > 1 ? "s" : ""} <span className="font-serif font-normal italic">placed</span>
       </h1>
       <p className="mt-2 max-w-sm text-muted-foreground">
-        {formatINR(result.total, true)} captured — your farmers are packing. Track each order live.
+        {formatINR(result.total, true)} captured, your farmers are packing. Track each order live.
       </p>
       <div className="mt-6 w-full max-w-md space-y-2">
         {result.placed.map((p) => (
@@ -330,7 +330,7 @@ function Success({ result }: { result: PlaceResult }) {
           <div key={f.farmerId} className="flex gap-2 rounded-2xl bg-warning/12 p-4 text-left text-sm">
             <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
             <span>
-              <b>{f.farmerName}:</b> {f.reason}. That part wasn&apos;t charged — it&apos;s still in your cart.
+              <b>{f.farmerName}:</b> {f.reason}. That part wasn&apos;t charged, it&apos;s still in your cart.
             </span>
           </div>
         ))}

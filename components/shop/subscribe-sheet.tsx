@@ -166,7 +166,7 @@ function PlanForm({ listing, onBack, onDone }: { listing: SubscribableListing; o
     setBusy(true);
     try {
       await sendJSON("/api/subscriptions", { listingId: listing.id, qty, frequency: v.frequency, dayOfWeek: v.frequency === "WEEKLY" ? v.dayOfWeek : null, preferredSlot: v.preferredSlot });
-      toast.success(`Plan started — first delivery ${deliveryLabel(first.deliveryAt, v.preferredSlot)}`);
+      toast.success(`Plan started, first delivery ${deliveryLabel(first.deliveryAt, v.preferredSlot)}`);
       onDone();
     } catch (e) {
       toast.error((e as Error).message);

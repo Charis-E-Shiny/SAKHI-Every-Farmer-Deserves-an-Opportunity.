@@ -11,7 +11,10 @@ import { batchDetailsSchema } from "@/lib/validators/batch";
 export const GET = handler({ roles: ["FARMER"] }, async ({ user }) => {
   const batches = await db.batch.findMany({
     where: { farmerId: user.id },
-    include: { media: { orderBy: { createdAt: "asc" } }, listing: { select: { id: true, status: true } } },
+    include: {
+      media: { orderBy: { createdAt: "asc" } },
+      listing: { select: { id: true, status: true, availableQty: true, pricePerUnit: true } },
+    },
     orderBy: { createdAt: "desc" },
     take: 50,
   });
@@ -30,7 +33,7 @@ export const POST = handler({ roles: ["FARMER"], body: batchDetailsSchema }, asy
       farmerId: user.id,
       crop: body.crop,
       category: info.category,
-      title: `${info.names.en} — ${farm?.farmName ?? user.name}`,
+      title: `${info.names.en}, ${farm?.farmName ?? user.name}`,
       quantityKg: body.quantity,
       unit: body.unit,
       harvestDate: new Date(`${body.harvestDate}T06:00:00`),

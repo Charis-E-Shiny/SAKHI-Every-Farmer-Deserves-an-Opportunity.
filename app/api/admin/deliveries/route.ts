@@ -72,7 +72,7 @@ export const GET = handler({ roles: ["ADMIN"] }, async () => {
       method: a.method,
       success: a.success,
       reason: a.reason,
-      actor: a.actorId ? actors.get(a.actorId)?.name ?? "—" : "—",
+      actor: a.actorId ? actors.get(a.actorId)?.name ?? "-" : "-",
       actorRole: a.actorId ? actors.get(a.actorId)?.role ?? null : null,
       createdAt: a.createdAt.toISOString(),
     })),

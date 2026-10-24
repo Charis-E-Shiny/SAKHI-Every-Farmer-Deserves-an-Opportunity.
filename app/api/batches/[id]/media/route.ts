@@ -55,7 +55,7 @@ export const POST = handler<undefined, undefined, Params>({ roles: ["FARMER"] },
   const stored = await saveFile(bytes, hash, mime);
   const capturedAt = isImage && !isFrame ? await exifCapturedAt(bytes) : null;
   const note = duplicateOf
-    ? "Same file hash as media on another batch — flag for review"
+    ? "Same file hash as media on another batch, flag for review"
     : provenanceNote(capturedAt, batch.harvestDate, isFrame);
 
   const asset = await db.mediaAsset.create({

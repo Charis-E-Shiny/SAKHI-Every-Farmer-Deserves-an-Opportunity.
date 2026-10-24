@@ -15,7 +15,7 @@ import { MicOrb } from "@/components/voice/mic-orb";
 import { SPEECH_LANGS, useSpeech } from "@/hooks/use-speech";
 import { cropName } from "@/lib/crops";
 import { sendJSON } from "@/lib/fetcher";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatQty } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export interface ParsedListingResult {
@@ -70,7 +70,7 @@ export function VoiceCapture({
         <p className="text-xl font-semibold">{t("batch.speak")}</p>
         <p className="mt-1 text-sm text-muted-foreground">{t("batch.speakHint")}</p>
 
-        <div className="mt-4 flex flex-wrap gap-2" role="radiogroup" aria-label="Speech language">
+        <div className="mt-4 flex flex-wrap gap-2" role="radiogroup" aria-label={t("batch.speechLang")}>
           {SPEECH_LANGS.map((l) => (
             <button
               key={l.code}
@@ -93,7 +93,7 @@ export function VoiceCapture({
             listening={speech.listening}
             onClick={toggle}
             disabled={parsing || !speech.supported}
-            label={speech.listening ? "Stop recording" : t("batch.speak")}
+            label={speech.listening ? t("batch.stopRecording") : t("batch.speak")}
           />
           <AnimatePresence mode="wait">
             {speech.listening ? (
@@ -102,13 +102,11 @@ export function VoiceCapture({
               </motion.p>
             ) : parsing ? (
               <motion.p key="p" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="-mt-3 inline-flex min-h-12 items-center gap-2 text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" /> Understanding…
+                <Loader2 className="size-4 animate-spin" /> {t("batch.understanding")}
               </motion.p>
             ) : (
               <motion.p key="h" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="-mt-3 min-h-12 max-w-md text-center text-sm text-muted-foreground">
-                {!speech.supported
-                  ? "Voice input isn't supported in this browser — type it instead."
-                  : speech.error ?? "Tap the mic and speak naturally."}
+                {!speech.supported ? t("speech.unsupported") : (speech.error ?? t("batch.tapMic"))}
               </motion.p>
             )}
           </AnimatePresence>
@@ -130,11 +128,11 @@ export function VoiceCapture({
                 rows={2}
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder="50 kilo tamatar, aaj tode, 25 rupaye kilo"
+                placeholder={t("batch.typePh")}
                 className="border-white/15"
               />
               <Button type="button" variant="brand" disabled={parsing || text.trim().length < 2} onClick={() => parse(text)}>
-                <Wand2 /> Fill the form
+                <Wand2 /> {t("batch.fillForm")}
               </Button>
             </div>
           )}
@@ -149,8 +147,8 @@ function Heard({ transcript, result }: { transcript: string; result: ParsedListi
   const { t, lang } = useI18n();
   const chips = [
     result.crop && { k: t("batch.crop"), v: cropName(result.crop, lang) },
-    result.qty && { k: t("batch.quantity"), v: `${result.qty} ${result.unit ?? ""}` },
-    result.harvestDate && { k: t("batch.harvestDate"), v: formatDate(`${result.harvestDate}T12:00:00`) },
+    result.qty && { k: t("batch.quantity"), v: result.unit ? formatQty(result.qty, result.unit, lang) : String(result.qty) },
+    result.harvestDate && { k: t("batch.harvestDate"), v: formatDate(`${result.harvestDate}T12:00:00`, lang) },
     result.price && { k: t("batch.price"), v: `₹${result.price}` },
   ].filter(Boolean) as { k: string; v: string }[];
   const labels: Record<string, string> = { crop: t("batch.crop"), qty: t("batch.quantity"), unit: t("batch.unit"), harvestDate: t("batch.harvestDate"), price: t("batch.price") };

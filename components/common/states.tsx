@@ -4,6 +4,7 @@
 
 import { AlertTriangle, RotateCw, type LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
+import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -17,8 +18,9 @@ export function SkeletonBlock({ className }: { className?: string }) {
  * @param count - number of placeholders
  */
 export function SkeletonCards({ count = 6, className }: { count?: number; className?: string }) {
+  const { t } = useI18n();
   return (
-    <div role="status" aria-label="Loading" className={cn("grid gap-3 sm:grid-cols-2 lg:grid-cols-3", className)}>
+    <div role="status" aria-label={t("common.loadingShort")} className={cn("grid gap-3 sm:grid-cols-2 lg:grid-cols-3", className)}>
       {Array.from({ length: count }).map((_, i) => (
         <div key={i} className="rounded-3xl border bg-card p-4">
           <SkeletonBlock className="aspect-[4/3] w-full" />
@@ -32,8 +34,9 @@ export function SkeletonCards({ count = 6, className }: { count?: number; classN
 
 /** Stack of skeleton rows for list views. */
 export function SkeletonRows({ count = 4 }: { count?: number }) {
+  const { t } = useI18n();
   return (
-    <div role="status" aria-label="Loading" className="space-y-3">
+    <div role="status" aria-label={t("common.loadingShort")} className="space-y-3">
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonBlock key={i} className="h-20 w-full" />
       ))}
@@ -77,14 +80,15 @@ export function EmptyState({
 
 /** Error card with retry. */
 export function ErrorState({ message, onRetry }: { message?: string; onRetry?: () => void }) {
+  const { t } = useI18n();
   return (
     <div role="alert" className="flex flex-col items-center rounded-3xl border border-destructive/30 bg-destructive/5 px-6 py-10 text-center">
       <AlertTriangle className="size-6 text-destructive" />
-      <p className="mt-3 font-medium">Couldn&apos;t load this</p>
-      <p className="mt-1 max-w-sm text-sm text-muted-foreground">{message ?? "Check your connection and try again."}</p>
+      <p className="mt-3 font-medium">{t("state.errorTitle")}</p>
+      <p className="mt-1 max-w-sm text-sm text-muted-foreground">{message ?? t("state.errorBody")}</p>
       {onRetry && (
         <Button variant="outline" className="mt-4" onClick={onRetry}>
-          <RotateCw /> Try again
+          <RotateCw /> {t("common.retry")}
         </Button>
       )}
     </div>

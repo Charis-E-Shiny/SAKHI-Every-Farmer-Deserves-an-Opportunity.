@@ -27,7 +27,7 @@ export function Runs() {
     setBusy(o.id);
     try {
       await sendJSON(`/api/deliveries/${o.id}/pickup`);
-      toast.success(`${o.code} picked up — customer notified`);
+      toast.success(`${o.code} picked up, customer notified`);
       mutate();
     } catch (e) {
       toast.error((e as Error).message);

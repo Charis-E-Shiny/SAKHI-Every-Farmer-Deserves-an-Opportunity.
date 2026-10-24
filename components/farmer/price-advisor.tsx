@@ -13,7 +13,7 @@ import { CountUp } from "@/components/motion/count-up";
 import { useI18n } from "@/components/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { fetcher } from "@/lib/fetcher";
-import { formatINR } from "@/lib/format";
+import { formatINR, unitName } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export interface PriceAdviceData {
@@ -60,17 +60,32 @@ export function PriceAdvisor({
   yourPrice?: number;
   onUse?: (price: number) => void;
 }) {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const { data, error, isLoading } = useSWR(["/api/ai/price-advice", crop, grade], postAdvice, { revalidateOnFocus: false });
 
   if (isLoading) return <SkeletonBlock className="h-80 w-full rounded-3xl" />;
   if (error || !data) {
-    return <p className="rounded-3xl border p-4 text-sm text-muted-foreground">Price guidance is unavailable right now — set the price you think is fair.</p>;
+    return <p className="rounded-3xl border p-4 text-sm text-muted-foreground">{t("advisor.unavailable")}</p>;
   }
 
   const span = Math.max(1, data.max - data.min);
   const pos = (v: number) => `${Math.min(100, Math.max(0, ((v - data.min) / span) * 100))}%`;
   const TrendIcon = data.trend === "rising" ? TrendingUp : data.trend === "falling" ? TrendingDown : Flat;
+  const unit = unitName(data.unit, lang);
+  // Model-written sentences arrive in the farmer's language; the offline basis is English,
+  // so other languages rebuild the same facts from the numbers.
+  const basis =
+    lang === "en" || data.source === "ai"
+      ? data.basis
+      : [
+          t("advisor.basisModal", { mandi: data.mandi, price: data.modalToday, unit }),
+          data.trend === "stable"
+            ? t("advisor.basisSteady")
+            : t(data.trend === "rising" ? "advisor.basisRising" : "advisor.basisFalling", { pct: Math.abs(data.trendPct) }),
+          data.comparableMedian
+            ? t("advisor.basisComparable", { count: data.comparableCount, price: data.comparableMedian, unit })
+            : t("advisor.basisNone"),
+        ];
 
   return (
     <div className="overflow-hidden rounded-3xl border bg-card">
@@ -83,11 +98,11 @@ export function PriceAdvisor({
         <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
           <p className="text-5xl font-semibold tracking-tight">
             <CountUp value={data.suggested} format={(n) => formatINR(n)} />
-            <span className="ml-1 text-lg font-normal text-muted-foreground">/{data.unit}</span>
+            <span className="ml-1 text-lg font-normal text-muted-foreground">/{unit}</span>
           </p>
           {onUse && (
             <Button type="button" variant="brand" onClick={() => onUse(data.suggested)}>
-              Use {formatINR(data.suggested)}
+              {t("advisor.use", { price: formatINR(data.suggested) })}
             </Button>
           )}
         </div>
@@ -105,8 +120,8 @@ export function PriceAdvisor({
           </div>
           {yourPrice ? (
             <p className="mt-1 text-xs text-muted-foreground">
-              <span className="mr-1 inline-block size-2 rounded-full bg-foreground" /> You: {formatINR(yourPrice)}
-              {yourPrice > data.max ? " — above the market range, may sell slowly" : yourPrice < data.min ? " — below market, you may be leaving money on the table" : ""}
+              <span className="mr-1 inline-block size-2 rounded-full bg-foreground" /> {t("advisor.you", { price: formatINR(yourPrice) })}
+              {yourPrice > data.max ? `, ${t("advisor.above")}` : yourPrice < data.min ? `, ${t("advisor.below")}` : ""}
             </p>
           ) : null}
         </div>
@@ -116,9 +131,9 @@ export function PriceAdvisor({
         <div>
           <p className="flex items-center gap-1.5 text-sm font-medium">
             <TrendIcon className={cn("size-4", data.trend === "rising" ? "text-success" : data.trend === "falling" ? "text-tomato" : "")} />
-            {data.trend === "stable" ? "Steady" : `${data.trend === "rising" ? "+" : ""}${data.trendPct}%`} week on week
+            {data.trend === "stable" ? t("advisor.steady") : t("advisor.wow", { pct: `${data.trend === "rising" ? "+" : ""}${data.trendPct}%` })}
           </p>
-          <p className="text-xs text-muted-foreground">{data.mandi} · modal ₹{data.modalToday}</p>
+          <p className="text-xs text-muted-foreground">{t("advisor.modal", { mandi: data.mandi, price: data.modalToday })}</p>
           <div className="mt-2 h-20">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={data.history} margin={{ top: 4, right: 0, left: 0, bottom: 0 }}>
@@ -132,7 +147,7 @@ export function PriceAdvisor({
                 <Tooltip
                   cursor={false}
                   contentStyle={{ borderRadius: 12, border: "1px solid var(--border)", background: "var(--popover)", fontSize: 12 }}
-                  formatter={(v) => [`₹${v}`, "Modal"]}
+                  formatter={(v) => [`₹${v}`, t("advisor.modalShort")]}
                   labelFormatter={(_, p) => (p?.[0]?.payload as { date?: string } | undefined)?.date ?? ""}
                 />
                 <Area type="monotone" dataKey="modal" stroke="var(--chart-1)" strokeWidth={2} fill="url(#spark)" isAnimationActive />
@@ -141,7 +156,7 @@ export function PriceAdvisor({
           </div>
         </div>
         <ul className="space-y-2 text-sm">
-          {data.basis.map((b, i) => (
+          {basis.map((b, i) => (
             <motion.li
               key={b}
               initial={{ opacity: 0, x: 8 }}

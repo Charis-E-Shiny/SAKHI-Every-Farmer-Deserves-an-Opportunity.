@@ -1,24 +1,12 @@
-// FoodFlow wordmark + mark (a sprouting leaf riding a flow line). Used in
+// FoodFlow wordmark + badge. Used in
 // the landing nav, login and every app shell.
+import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-/** The standalone mark — inherits currentColor, lime accent dot. */
+/** The standalone mark: the FoodFlow badge (public/brand/logo.svg — replace the file to change it). */
 export function LogoMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" aria-hidden className={cn("size-7", className)}>
-      <rect width="32" height="32" rx="10" className="fill-foreground" />
-      <path
-        d="M8 21.5c4.2 0 5.4-3.4 8-3.4s3.8 3.4 8 3.4"
-        fill="none"
-        strokeWidth="2.4"
-        strokeLinecap="round"
-        className="stroke-background"
-      />
-      <path d="M16 18.2c0-4.6 2.2-7.6 6.6-8.4-.3 4.6-2.6 7.6-6.6 8.4Z" className="fill-lime" />
-      <path d="M16 18.2c0-3.4-1.6-5.6-4.8-6.2.2 3.4 1.9 5.6 4.8 6.2Z" className="fill-background/80" />
-    </svg>
-  );
+  return <Image src="/brand/logo.svg" alt="" width={56} height={56} unoptimized priority className={cn("size-8 rounded-full", className)} />;
 }
 
 /**
@@ -43,8 +31,9 @@ export function Logo({
     >
       <LogoMark className="transition-transform duration-500 group-hover:rotate-[-8deg]" />
       {!compact && (
-        <span className="text-[17px]">
-          Food<span className="font-serif text-[19px] font-normal italic">flow</span>
+        // Fixed fonts: the wordmark must look identical on every page, whatever the page's own type.
+        <span className="font-[family-name:var(--font-geist)] text-[17px] font-semibold tracking-tight">
+          Food<span className="font-[family-name:var(--font-instrument)] text-[19px] font-normal italic">flow</span>
         </span>
       )}
     </Link>

@@ -104,7 +104,7 @@ export function PostDemand() {
           },
         ],
       });
-      toast.success("Posted — nearby farmers are being notified");
+      toast.success("Posted, nearby farmers are being notified");
       router.push(`/bulk/demands/${res.ids[0]}`);
     } catch (e) {
       toast.error((e as Error).message);
@@ -143,7 +143,7 @@ export function PostDemand() {
             setMissing(r.missing);
             setVoiceInfo({ transcript, source: r.source });
             setMode("form");
-            toast.success("Here's what we heard — check it before posting");
+            toast.success("Here's what we heard, check it before posting");
           }}
         />
       )}
@@ -250,7 +250,7 @@ export function PostDemand() {
             <Textarea id="dn" rows={2} value={draft.notes} onChange={(e) => set({ notes: e.target.value })} placeholder="Size, delivery window, packing…" maxLength={300} />
           </section>
 
-          <div className="glass sticky bottom-[calc(5.75rem+env(safe-area-inset-bottom))] z-30 -mx-4 border-y px-4 py-3 sm:-mx-6 sm:px-6 lg:bottom-4 lg:mx-0 lg:rounded-2xl lg:border">
+          <div className="glass sticky bottom-0 z-30 -mx-4 border-y px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:-mx-6 sm:px-6 lg:bottom-4 lg:mx-0 lg:rounded-2xl lg:border lg:pb-3">
             <Button size="lg" variant="brand" className="w-full" onClick={submit} disabled={busy}>
               {busy ? <Loader2 className="animate-spin" /> : <Send />} Post requirement
             </Button>
@@ -303,7 +303,7 @@ function VoiceDemand({ onParsed }: { onParsed: (r: ParsedDemandResult, transcrip
       </div>
       <div className="relative flex flex-col items-center">
         <MicOrb listening={speech.listening} onClick={() => (speech.listening ? speech.stop() : speech.start(lang))} disabled={!speech.supported || busy} label="Speak your requirement" />
-        <p className="-mt-3 min-h-12 max-w-md text-center">{speech.listening ? speech.interim || "Listening…" : busy ? "Understanding…" : !speech.supported ? "Voice isn't supported here — type below." : speech.error ?? "Tap and speak."}</p>
+        <p className="-mt-3 min-h-12 max-w-md text-center">{speech.listening ? speech.interim || "Listening…" : busy ? "Understanding…" : !speech.supported ? "Voice isn't supported here, type below." : speech.error ?? "Tap and speak."}</p>
       </div>
       <div className="relative space-y-2">
         <Textarea rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder="…or type it here" className="border-white/15" />
@@ -364,7 +364,7 @@ function ListDemand() {
       const form = new FormData();
       form.append("image", f);
       const r = await sendForm<{ items: { name: string; qty: number; unit: string }[]; sample: boolean }>("/api/ai/parse-grocery-list", form);
-      if (r.sample) toast("Photo reading needs the AI service — showing a sample list to edit");
+      if (r.sample) toast("Photo reading needs the AI service, showing a sample list to edit");
       await accept(r.items);
     } catch (e) {
       toast.error((e as Error).message);
@@ -418,7 +418,7 @@ function ListDemand() {
                 onChange={(e) => setRows((xs) => xs.map((x, j) => (j === i ? { ...x, crop: (e.target.value || null) as CropSlug | null } : x)))}
                 className={cn("col-span-3 h-11 rounded-xl border bg-background/60 px-3 text-base sm:col-span-1", !r.crop && "border-tomato")}
               >
-                <option value="">{r.name} — pick crop</option>
+                <option value="">{r.name}, pick crop</option>
                 {CROP_SLUGS.map((c) => (
                   <option key={c} value={c}>
                     {cropName(c)}

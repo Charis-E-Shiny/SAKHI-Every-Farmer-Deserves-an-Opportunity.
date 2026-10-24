@@ -42,7 +42,7 @@ export function otpMatches(otp: string, d: { id: string; otpNonce: string | null
 export async function issueOtp(deliveryId: string): Promise<{ otp: string; expiresAt: Date; nonce: string }> {
   const d = await db.delivery.findUnique({ where: { id: deliveryId }, select: { otpRegenerations: true } });
   if (!d) throw new HttpError(404, "Delivery not found");
-  if (d.otpRegenerations >= OTP_MAX_REGENERATIONS) throw new HttpError(429, "Too many new codes — contact support");
+  if (d.otpRegenerations >= OTP_MAX_REGENERATIONS) throw new HttpError(429, "Too many new codes, contact support");
   const otp = generateOtp();
   const nonce = randomBytes(8).toString("hex");
   const expiresAt = new Date(Date.now() + OTP_TTL_MS);

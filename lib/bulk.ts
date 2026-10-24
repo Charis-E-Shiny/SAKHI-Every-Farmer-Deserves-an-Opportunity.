@@ -297,7 +297,7 @@ export async function negotiateOffer(user: User, offerId: string, input: Negotia
   }
   // COUNTER
   if (!input.price) throw new HttpError(400, "Enter your counter price");
-  if (offer.rounds >= MAX_COUNTER_ROUNDS) throw new HttpError(409, "Negotiation limit reached (2 rounds) — accept or decline");
+  if (offer.rounds >= MAX_COUNTER_ROUNDS) throw new HttpError(409, "Negotiation limit reached (2 rounds), accept or decline");
   const actor = isBuyer ? "BUYER" : "FARMER";
   if (offer.lastActor === actor && offer.status === "COUNTERED") throw new HttpError(409, "Wait for the other side to respond");
   if (isFarmer && !(offer.status === "COUNTERED" && offer.lastActor === "BUYER")) throw new HttpError(409, "Revise your offer instead of countering");
@@ -340,7 +340,7 @@ export async function acceptOffer(buyer: User, offerId: string) {
     totals,
   });
   const res = await confirmOrder(order.id, buyer.id);
-  if (!res.ok) throw new HttpError(409, `The farmer's stock changed — ${res.reason}. Ask them to revise the offer.`);
+  if (!res.ok) throw new HttpError(409, `The farmer's stock changed, ${res.reason}. Ask them to revise the offer.`);
 
   const awarded = await db.$transaction(async (tx) => {
     await tx.offer.update({ where: { id: offer.id }, data: { status: "ACCEPTED", pricePerKg: price, counterPrice: null } });

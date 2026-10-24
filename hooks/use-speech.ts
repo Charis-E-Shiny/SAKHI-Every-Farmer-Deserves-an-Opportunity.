@@ -4,6 +4,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useI18n } from "@/components/providers/i18n-provider";
+import type { MessageKey } from "@/lib/i18n";
 
 // Minimal typings — the Web Speech API is not in TypeScript's DOM lib.
 interface SpeechAlternative {
@@ -39,14 +41,8 @@ function getCtor(): RecognitionCtor | null {
 
 const noop = () => () => {};
 
-const ERRORS: Record<string, string> = {
-  "not-allowed": "Microphone permission was denied. Allow it in your browser settings, or type instead.",
-  "service-not-allowed": "Voice input is blocked in this browser. You can type instead.",
-  "no-speech": "We didn't hear anything — tap the mic and try again.",
-  "audio-capture": "No microphone found.",
-  network: "Voice recognition needs an internet connection.",
-  "language-not-supported": "This language isn't supported by your browser's voice input — try English or type instead.",
-};
+/** Recognition error codes with a translated message (`speech.<code>`). */
+const KNOWN_ERRORS = ["not-allowed", "service-not-allowed", "no-speech", "audio-capture", "network", "language-not-supported"];
 
 /**
  * @param onFinal - called with the full transcript when the user stops speaking
@@ -55,7 +51,8 @@ export function useSpeech(onFinal?: (transcript: string) => void) {
   const supported = useSyncExternalStore(noop, () => getCtor() !== null, () => false);
   const [listening, setListening] = useState(false);
   const [interim, setInterim] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const { t } = useI18n();
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const recRef = useRef<Recognition | null>(null);
   const finalRef = useRef("");
   const onFinalRef = useRef(onFinal);
@@ -71,7 +68,7 @@ export function useSpeech(onFinal?: (transcript: string) => void) {
    */
   const start = useCallback((lang: string) => {
     const Ctor = getCtor();
-    if (!Ctor) return setError("Voice input isn't supported in this browser — type instead.");
+    if (!Ctor) return setErrorCode("unsupported");
     recRef.current?.abort();
     const rec = new Ctor();
     rec.lang = lang;
@@ -80,7 +77,7 @@ export function useSpeech(onFinal?: (transcript: string) => void) {
     rec.maxAlternatives = 1;
     finalRef.current = "";
     setInterim("");
-    setError(null);
+    setErrorCode(null);
     rec.onresult = (e) => {
       let text = "";
       for (let i = 0; i < e.results.length; i++) {
@@ -91,7 +88,7 @@ export function useSpeech(onFinal?: (transcript: string) => void) {
       setInterim((finalRef.current + text).trim());
     };
     rec.onerror = (e) => {
-      if (e.error !== "aborted") setError(ERRORS[e.error] ?? `Voice input error: ${e.error}`);
+      if (e.error !== "aborted") setErrorCode(e.error);
     };
     rec.onend = () => {
       setListening(false);
@@ -105,7 +102,14 @@ export function useSpeech(onFinal?: (transcript: string) => void) {
 
   useEffect(() => () => recRef.current?.abort(), []);
 
-  return { supported, listening, interim, error, start, stop, setError };
+  const error =
+    errorCode === null
+      ? null
+      : errorCode === "unsupported" || KNOWN_ERRORS.includes(errorCode)
+        ? t(`speech.${errorCode}` as MessageKey)
+        : t("speech.error", { code: errorCode });
+
+  return { supported, listening, interim, error, start, stop };
 }
 
 /** Speech languages offered across the app. */

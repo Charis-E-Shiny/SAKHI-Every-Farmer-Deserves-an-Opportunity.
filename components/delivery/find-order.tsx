@@ -105,7 +105,7 @@ export function FindOrder() {
         <div className="flex flex-col items-center">
           <MicOrb listening={speech.listening} onClick={() => (speech.listening ? speech.stop() : speech.start("en-IN"))} disabled={!speech.supported || busy} label="Say the order code" />
           <p className="-mt-2 min-h-12 text-center text-muted-foreground">
-            {speech.listening ? speech.interim || "Listening…" : !speech.supported ? "Voice isn't supported here — type the code." : speech.error ?? "Say the 5 characters after FF, e.g. “seven K two Q A”."}
+            {speech.listening ? speech.interim || "Listening…" : !speech.supported ? "Voice isn't supported here, type the code." : speech.error ?? "Say the 5 characters after FF, e.g. “seven K two Q A”."}
           </p>
         </div>
       )}

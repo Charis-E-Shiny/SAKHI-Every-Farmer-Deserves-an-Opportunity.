@@ -7,9 +7,9 @@ import { categoryChips } from "@/lib/categories";
 
 export const metadata: Metadata = { title: "Browse & buy" };
 
-/** Bulk buyers buy listed stock directly, in bigger steps. */
-export default async function BulkBrowsePage() {
-  const user = await getCurrentUser();
+/** Bulk buyers buy listed stock directly, in bigger steps (`?q=` from the top-bar search). */
+export default async function BulkBrowsePage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const [{ q = "" }, user] = await Promise.all([searchParams, getCurrentUser()]);
   const area = user?.area ?? null;
-  return <Browse area={area} categories={await categoryChips(area)} bulk title="Browse & *buy*" top={<BulkTabs />} />;
+  return <Browse key={q} initialQuery={q} area={area} categories={await categoryChips(area)} bulk title="Browse & *buy*" top={<BulkTabs />} />;
 }

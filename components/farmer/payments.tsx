@@ -47,10 +47,10 @@ interface Data {
   rows: Row[];
 }
 
-const STAGES: { key: Stage; title: MessageKey; sub: MessageKey; tone: string; icon: typeof Wallet }[] = [
-  { key: "AWAITING", title: "payments.awaiting", sub: "payments.awaitingSub", tone: "bg-info/12 text-info", icon: Clock },
-  { key: "PENDING", title: "payments.pending", sub: "payments.pendingSub", tone: "bg-warning/20", icon: Wallet },
-  { key: "SETTLED", title: "payments.settled", sub: "payments.settledSub", tone: "bg-lime/40", icon: Landmark },
+const STAGES: { key: Stage; title: MessageKey; short: MessageKey; sub: MessageKey; tone: string; icon: typeof Wallet }[] = [
+  { key: "AWAITING", title: "payments.awaiting", short: "payments.awaiting", sub: "payments.awaitingSub", tone: "bg-info/12 text-info", icon: Clock },
+  { key: "PENDING", title: "payments.pending", short: "payments.pending", sub: "payments.pendingSub", tone: "bg-warning/20", icon: Wallet },
+  { key: "SETTLED", title: "payments.settled", short: "status.SETTLED", sub: "payments.settledSub", tone: "bg-lime/40", icon: Landmark },
 ];
 
 /** /farmer/payments */
@@ -127,7 +127,7 @@ export function Payments() {
           {(["ALL", "AWAITING", "PENDING", "SETTLED"] as const).map((f) => (
             <button key={f} type="button" onClick={() => setFilter(f)} className={cn("relative h-11 rounded-full px-4 text-sm font-medium", filter === f ? "text-background" : "border text-muted-foreground")}>
               {filter === f && <motion.span layoutId="pay-pill" className="absolute inset-0 -z-10 rounded-full bg-foreground" />}
-              {f === "ALL" ? t("payments.all") : t(STAGES.find((x) => x.key === f)!.title).split(" ·")[0]}
+              {f === "ALL" ? t("payments.all") : t(STAGES.find((x) => x.key === f)!.short)}
             </button>
           ))}
         </div>
@@ -159,12 +159,13 @@ function FlowConnector() {
 }
 
 function PaymentRow({ row }: { row: Row }) {
+  const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
   const steps = [
-    { k: "Authorised", at: row.authorisedAt },
-    { k: "Captured", at: row.capturedAt },
-    { k: "Delivered", at: row.deliveredAt },
-    { k: "Settled", at: row.settledAt },
+    { k: t("payments.authorised"), at: row.authorisedAt },
+    { k: t("payments.captured"), at: row.capturedAt },
+    { k: t("status.DELIVERED"), at: row.deliveredAt },
+    { k: t("status.SETTLED"), at: row.settledAt, settle: true },
   ];
   return (
     <li className="overflow-hidden rounded-2xl border bg-card">
@@ -178,16 +179,16 @@ function PaymentRow({ row }: { row: Row }) {
                 {i < steps.length - 1 && <span className={cn("h-px w-3", steps[i + 1].at ? "bg-lime" : "bg-muted-foreground/30")} />}
               </span>
             ))}
-            <span className="ml-2 text-xs text-muted-foreground">{formatDate(row.createdAt)}</span>
+            <span className="ml-2 text-xs text-muted-foreground">{formatDate(row.createdAt, lang)}</span>
           </span>
         </span>
         <span className="text-right">
           <span className="tabular block font-semibold">
-            {row.estimated && <span className="mr-1 text-xs font-normal text-muted-foreground">est.</span>}
+            {row.estimated && <span className="mr-1 text-xs font-normal text-muted-foreground">{t("payments.est")}</span>}
             {formatINR(row.net, true)}
           </span>
           <span className={cn("text-xs", row.stage === "SETTLED" ? "text-success" : row.stage === "PENDING" ? "text-foreground" : "text-muted-foreground")}>
-            {row.stage === "SETTLED" ? "Settled" : row.stage === "PENDING" ? "Settlement pending" : "Awaiting delivery"}
+            {row.stage === "SETTLED" ? t("status.SETTLED") : row.stage === "PENDING" ? t("payments.pending") : t("payments.awaiting")}
           </span>
         </span>
         <ChevronDown className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
@@ -198,8 +199,8 @@ function PaymentRow({ row }: { row: Row }) {
             <div className="space-y-3 p-4 text-sm">
               <p className="tabular flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span>{formatINR(row.gross, true)}</span>
-                <span className="text-muted-foreground">− {formatINR(row.platformFee, true)} fee</span>
-                <span className="text-muted-foreground">− {formatINR(row.deliveryCost, true)} delivery</span>
+                <span className="text-muted-foreground">− {t("payments.feeLine", { amount: formatINR(row.platformFee, true) })}</span>
+                <span className="text-muted-foreground">− {t("payments.deliveryLine", { amount: formatINR(row.deliveryCost, true) })}</span>
                 <span>= </span>
                 <span className="font-semibold">{formatINR(row.net, true)}</span>
               </p>
@@ -207,7 +208,7 @@ function PaymentRow({ row }: { row: Row }) {
                 {steps.map((st) => (
                   <li key={st.k} className={cn("rounded-xl p-2", st.at ? "bg-lime/20" : "bg-muted/60 text-muted-foreground")}>
                     <span className="block text-xs font-medium">{st.k}</span>
-                    <span className="block text-[11px]">{st.at ? formatDateTime(st.at) : st.k === "Settled" && row.stage === "PENDING" ? "Next batch" : "—"}</span>
+                    <span className="block text-[11px]">{st.at ? formatDateTime(st.at, lang) : st.settle && row.stage === "PENDING" ? t("payments.nextBatch") : "-"}</span>
                   </li>
                 ))}
               </ol>
