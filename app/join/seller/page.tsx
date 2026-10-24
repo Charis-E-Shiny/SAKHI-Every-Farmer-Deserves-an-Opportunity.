@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { getPendingGoogle } from "@/lib/auth/google";
+import { getPendingJoinProfile } from "@/lib/auth/firebase-pending";
 import { BackLink } from "@/components/auth/join/back-link";
 import { SellerWizard } from "@/components/auth/join/seller-wizard";
 
@@ -9,7 +10,7 @@ export const metadata: Metadata = { title: "Sell on FoodFlow" };
 
 /** Seller setup screen. */
 export default async function SellerJoinPage() {
-  const google = await getPendingGoogle();
+  const google = (await getPendingGoogle()) ?? (await getPendingJoinProfile());
   return (
     <AuthShell width="max-w-2xl">
       <BackLink href="/login" label="Back" />

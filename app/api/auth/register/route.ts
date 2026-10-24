@@ -49,7 +49,7 @@ export const POST = handler({ body: registerSchema }, async ({ body, req }) => {
           : undefined,
     },
   });
-  await creds.done();
+  await creds.done(user.id);
   await startSession({ id: user.id, role: body.role, name: user.name });
   return { user: { id: user.id, name: user.name, role: user.role }, redirect: ROLE_HOME[body.role] };
 });

@@ -52,4 +52,3 @@ CREATE UNIQUE INDEX "PaymentIntent_providerPaymentId_key" ON "PaymentIntent"("pr
 
 -- CreateIndex
 CREATE INDEX "PaymentIntent_buyerId_idx" ON "PaymentIntent"("buyerId");
-

@@ -6,7 +6,7 @@ import { ArrowRight, Mic, ShoppingBasket, Sprout } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { GoogleButton } from "@/components/auth/google-button";
+import { FirebaseAuthPanel } from "@/components/auth/firebase-auth-panel";
 import { LoginForm } from "@/components/auth/login-form";
 import { WordReveal } from "@/components/motion/reveal";
 import { sendJSON } from "@/lib/fetcher";
@@ -80,16 +80,7 @@ export function Gateway({ next, google, error }: { next?: string; google?: { nam
       </div>
       <p className="mt-3 text-sm text-muted-foreground">You can use both later and switch between buying and selling.</p>
 
-      {!google && (
-        <div className="mt-6">
-          <div className="mb-4 flex items-center gap-3 text-xs text-muted-foreground">
-            <span className="h-px flex-1 bg-border" />
-            or
-            <span className="h-px flex-1 bg-border" />
-          </div>
-          <GoogleButton next={next} />
-        </div>
-      )}
+      {!google && <FirebaseAuthPanel next={next} />}
 
       <div className="mt-8 border-t pt-6">
         <button type="button" aria-expanded={signingIn} onClick={() => setSigningIn((v) => !v)} className={cn("text-[15px] font-semibold underline-offset-4 hover:underline", signingIn && "underline")}>

@@ -62,7 +62,8 @@ How it stays trustworthy:
   them), then the most natural voice on the device (Edge's *Natural* voices, Google and Apple enhanced
   voices), in a female voice by default with a male one a tap away. Amounts are read the Indian way (*1 lakh 25 thousand*, *ಎರಡು ಸಾವಿರದ
   ಐನೂರು*), order codes letter by letter, and replies sentence by sentence. Replies are fixed templates with
-  numbers from the database.
+  numbers from the database. Kannada is never read by an English voice: where a device has no Kannada voice
+  (desktop Chrome), a Hindi voice reads it from Devanagari letters, and the panel says so.
 - **A real Kannada voice.** Browsers rarely have one (desktop Chrome has none), so FoodFlow speaks Kannada
   itself: SYSPIN's open Kannada female voice from IISc Bangalore (CC BY 4.0), converted to ONNX and run on
   the server with onnxruntime-node (`/api/tts`). Names, *FoodFlow* and order codes inside Kannada lines are
@@ -249,7 +250,7 @@ refund ids.
 Next.js 16 (App Router, Turbopack) · React 19 · TypeScript (strict) · Tailwind CSS 4 · shadcn/ui ·
 Framer Motion · React Three Fiber · Recharts · Prisma 6 (SQLite locally, Postgres for deploy) · Zod ·
 jose (JWT sessions) · SWR · Zustand · sharp · Razorpay (Checkout + REST API, no SDK) · Vitest ·
-Playwright (responsive QA script).
+Playwright (responsive QA script) · Firebase Authentication · Firestore.
 
 ## Scripts
 
@@ -260,6 +261,7 @@ Playwright (responsive QA script).
 | `npm run build` / `npm start` | Production build and server |
 | `npm test` | Vitest suite — inventory races, OTP rules, fee maths, ranking, subscriptions, parsers, Razorpay payments (against a stand-in API) |
 | `npm run lint` / `npm run typecheck` | ESLint (zero warnings) and TypeScript |
+| `npm run db:firestore:import` | Dry-run a copy of Prisma records into Firestore; add `-- --write` to import |
 | `npm run db:reset` | Recreate the database and reseed the demo |
 | `npm run db:studio` | Browse the data in Prisma Studio |
 | `npm run voice:hindi` | The same for SYSPIN's Hindi voice (`models/hi-female`) |
@@ -273,20 +275,58 @@ Copy `.env.example` to `.env` (`npm run setup` does this for you).
 | Variable | Required | Purpose |
 | --- | --- | --- |
 | `DATABASE_URL` | yes | `file:./dev.db` locally; a Postgres URL in production |
+| `DIRECT_URL` | no | Direct (unpooled) Postgres URL for Neon / Supabase |
 | `SESSION_SECRET` | yes | 32+ random characters; signs sessions, pickup QRs and OTP hashes |
 | `GEMINI_API_KEY` | for photo checks | Enables Gemini: photo checks, and smarter parsing / explanations. Without it photo checks say *not detectable* (an admin reviews the photos) and other AI features use their fallbacks. The free tier allows only a few requests a minute; enable billing for real use |
 | `GEMINI_MODEL`, `AI_TIMEOUT_MS` | no | Model name and per-call timeout before falling back |
 | `GEMINI_FALLBACK_MODEL` | no | Answers when the main model is rate-limited or overloaded (default `gemini-3.1-flash-lite`; empty turns it off) |
 | `STORAGE_DRIVER` | no | `local` (default) writes uploads to `public/uploads`; falls back to inline on read-only hosts |
 | `CRON_SECRET` | no | Lets a scheduler call `/api/subscriptions/run-due` |
+| `NEXT_PUBLIC_STT_PROVIDER` | no | `browser` (default) uses the browser's speech recognition for Sakhi. `server` is reserved for a self-hosted Indic model and is not implemented yet |
+| `DEMO_MODE` | no | One-tap sign-in as seeded accounts (API only). Off in production unless set to `true`; keep it off on a live site |
+| `NEXT_PUBLIC_FIREBASE_*` | no | Firebase web app configuration for the modular client SDK |
+| `FIREBASE_PROJECT_ID` | no | Firebase project used by the Admin SDK and import script |
+| `FIREBASE_SERVICE_ACCOUNT_JSON` | no | Server-only service account JSON; alternatively configure Application Default Credentials |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET` | no | Turn on Razorpay checkout and refunds. Test keys (`rzp_test_…`) are free and move no real money |
 | `RAZORPAY_WEBHOOK_SECRET` | no | Verifies `/api/payments/razorpay/webhook`, which places orders if a buyer closes the tab after paying |
 | `KANNADA_VOICE_DIR` | no | Where Sakhi's Kannada voice model lives (default `models/kn-female`, built by `npm run voice:kannada`, which needs Python with `torch`, `onnx` and `onnxruntime`). Without it Kannada uses the device's voices |
 | `HINDI_VOICE_DIR` | no | Where Sakhi's Hindi voice model lives (default `models/hi-female`, built by `npm run voice:hindi`). Without it Hindi uses the device's voices |
 | `SMS_PROVIDER` | for launch | How sign-up and "Forgot PIN?" codes are texted: `msg91` (India, DLT template with an `{otp}` variable; `MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID`) or `twilio` (`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM`). `console` shows the code on screen instead, for development and labelled demos only. Unset: development behaves like `console`, production refuses to send |
-| `NEXT_PUBLIC_STT_PROVIDER` | no | `browser` (default) uses the browser's speech recognition for Sakhi. `server` is reserved for a self-hosted Indic model and is not implemented yet |
-| `DEMO_MODE` | no | One-tap sign-in as seeded accounts (API only). Off in production unless set to `true`; keep it off on a live site |
-| `DIRECT_URL` | no | Direct (unpooled) Postgres URL for Neon / Supabase |
+
+### Firebase authentication and Firestore migration
+
+The sign-in page supports Firebase Google sign-in, email/password accounts and passwordless email
+links. New Firebase accounts continue through the existing role-specific onboarding and get a
+Firestore user profile plus an authentication link. Existing Prisma users can link their account
+when they sign in with the same verified email. Phone/PIN and the existing marketplace remain
+available during the data migration.
+
+In Firebase Console, enable Google, Email/Password and Email link sign-in, create a Firestore
+database, and copy the web app settings into the `NEXT_PUBLIC_FIREBASE_*` entries in `.env`. For
+server-side Firestore access, set
+`FIREBASE_PROJECT_ID` and configure a service account through `FIREBASE_SERVICE_ACCOUNT_JSON` or
+`GOOGLE_APPLICATION_CREDENTIALS`. Never expose service-account credentials to the browser.
+
+Firestore is configured for server-only access by default (`firestore.rules` denies client reads and
+writes). Deploy those rules before importing data. The import command is copy-only and leaves the
+SQLite/Postgres source unchanged. For a PostgreSQL source, first generate the Prisma client for
+PostgreSQL with the existing `npm run db:postgres` command and set `DATABASE_URL` to that database.
+
+```bash
+npm run db:firestore:import
+npm run db:firestore:import -- --write
+```
+
+The first command reports per-model record counts without writing. The second copies records to
+collections named after their Prisma models, preserving foreign keys as IDs. User PIN hashes and
+Google IDs are kept separately in the server-only `authCredentials` collection instead of the
+`User` documents. You can rerun the importer safely to overwrite imported records, or limit it to
+one model with `-- --model=User --write`.
+
+This importer is a copy-only bridge; it does not cut marketplace reads/writes over from Prisma, nor
+does it convert PIN hashes into Firebase passwords. Firebase Auth profiles are linked as users sign
+in, while app data continues to use the source database. Keep the source database until every
+Firestore-backed data flow has been migrated and verified.
 
 ## Deploy (Vercel + Postgres)
 

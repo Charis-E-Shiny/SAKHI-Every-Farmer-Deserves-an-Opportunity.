@@ -2,6 +2,7 @@
 import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { getPendingGoogle } from "@/lib/auth/google";
+import { getPendingJoinProfile } from "@/lib/auth/firebase-pending";
 import { BackLink } from "@/components/auth/join/back-link";
 import { HouseholdForm } from "@/components/auth/join/household-form";
 
@@ -9,7 +10,7 @@ export const metadata: Metadata = { title: "Household sign-up" };
 
 /** Household sign-up screen. */
 export default async function HouseholdJoinPage() {
-  const google = await getPendingGoogle();
+  const google = (await getPendingGoogle()) ?? (await getPendingJoinProfile());
   return (
     <AuthShell>
       <BackLink href="/join/buyer" label="Back" />

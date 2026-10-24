@@ -3,6 +3,7 @@
 import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { getPendingGoogle } from "@/lib/auth/google";
+import { getPendingJoinProfile } from "@/lib/auth/firebase-pending";
 import { BackLink } from "@/components/auth/join/back-link";
 import { RestaurantForm } from "@/components/auth/join/restaurant-form";
 
@@ -10,7 +11,7 @@ export const metadata: Metadata = { title: "Restaurant sign-up" };
 
 /** Restaurant sign-up screen. */
 export default async function RestaurantJoinPage() {
-  const google = await getPendingGoogle();
+  const google = (await getPendingGoogle()) ?? (await getPendingJoinProfile());
   return (
     <AuthShell width="max-w-2xl">
       <BackLink href="/join/buyer" label="Back" />

@@ -40,7 +40,7 @@ export const POST = handler({ body: restaurantOnboardingSchema }, async ({ body,
       onboarding: { create: { kind: "RESTAURANT", data: answers } },
     },
   });
-  await creds.done();
+  await creds.done(user.id);
   await startSession({ id: user.id, role: "BULK_BUYER", name: user.name });
   return { user: { id: user.id, name: user.name, role: user.role }, redirect: ROLE_HOME.BULK_BUYER };
 });
