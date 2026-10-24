@@ -64,10 +64,22 @@ Status of each build phase, what's next, and the decisions made along the way.
 - Payments (`/farmer/payments`): awaiting → pending → settled with fee equations; admin payout batch
 - Tests: 39 passing (OTP hashing/expiry/lockout/wrong rider/races/QR binding, fee math)
 
-## Next — Phase 4 (bulk procurement)
+## Phase 4 — Bulk procurement ✅
 
-Demand posting (form / voice / list, urgent, recurring) → farmer offers + AI ranking + negotiation +
-award → bulk order → invoices.
+- Post requirements by form, voice (`/api/ai/parse-demand`, offline parser understands "kal tak",
+  urgency and repeat cues) or procurement list (several at once); urgent + recurring
+- Farmer feed (`/farmer/bulk`): own crops first, offers backed by a live listing, revise/withdraw,
+  respond to counters — competitors' offers never shown
+- `/api/ai/rank-offers`: deterministic weighted scoring (`lib/ranking.ts`, unit-tested) with optional
+  model re-weighing + reasons; buyer page auto-ranks, cards shuffle into order with factor bars
+- Negotiation: max 2 counter rounds; accept → BULK order through the atomic reservation, demand
+  AWARDED when covered, other offers declined
+- Bulk orders with printable invoice, recurring schedule (post next / stop), Browse & buy
+- Tests: 45 passing (+ ranking)
+
+## Next — Phase 5 (analytics & surplus)
+
+Farmer dashboard → surplus detection + suggestions → admin analytics, trust & safety, platform controls.
 
 ## Decisions
 
@@ -93,4 +105,7 @@ award → bulk order → invoices.
 | Courier pricing | Pooled routes: ₹15 + ₹1.5/km per order, capped at ₹60. The farmer pays only the shortfall over the buyer's delivery fee, and never more than 15% of the order value — FoodFlow absorbs the rest, so a small order can't leave a farmer out of pocket. |
 | Recipient generates the OTP | The plaintext OTP is returned only to the buyer when they tap "Show OTP" (kept in sessionStorage until expiry). The rider never sees it except from the customer. |
 | Pickup QR | A JWT bound to the order and the current OTP nonce, so regenerating the code invalidates old QRs. |
+| Offers need a live listing | A bulk offer must point at one of the farmer's ACTIVE listings of that crop, so accepting it can reserve real stock atomically. Farmers without one are nudged to list a harvest. |
+| Offer ranking | Cost scored as a ratio to the cheapest delivered price (courier cost spread over the quantity), ×0.6 if the ETA misses the deadline; weights cost 30 / coverage 20 / ETA 15 / quality 15 / distance 10 / reliability 10. |
+| Bulk nav | Five phone tab slots; the bulk buyer's cart is reached via the floating cart bar. |
 | Smart basket weights | Price 0.30, ETA 0.27, freshness 0.25, visual score 0.18, +0.12 per extra item a farm covers — so a marginally cheaper lot 60 km away loses to a nearby fresher one. |

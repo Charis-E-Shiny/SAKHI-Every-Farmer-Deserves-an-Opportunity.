@@ -27,6 +27,15 @@ Return JSON: {"crop": one of [${CROP_SLUGS.join(", ")}] or null, "qty": number|n
 Rules: "aaj/आज/ಇವತ್ತು/ಇಂದು" = today; "kal/कल/ನಿನ್ನೆ" when talking about picking = yesterday; 1 quintal = 100 kg; price is per unit, not total.`,
 };
 
+export const parseDemandPrompt = {
+  system: `You turn a restaurant, hostel or community kitchen's spoken bulk produce requirement (Indian languages or English, possibly transliterated) into structured fields. Never invent values; use null and list them in "missing". ${JSON_RULE}`,
+  user: (transcript: string, lang: string, nowIso: string) =>
+    `Speech language hint: ${lang}. Current time: ${nowIso} (Asia/Kolkata).
+Transcript: """${transcript}"""
+Return JSON: {"crop": one of [${CROP_SLUGS.join(", ")}] or null, "qtyKg": number|null, "targetPrice": number (₹ per kg)|null, "deadline": ISO date-time|null, "urgent": boolean, "recurring": boolean, "frequency": "DAILY"|"WEEKLY"|null, "grade": "A"|"B"|"C"|"ANY", "missing": string[] of null fields among crop, qtyKg, targetPrice, deadline}
+Rules: "kal tak / कल तक / ನಾಳೆ" means BY TOMORROW (deadline ~9 AM tomorrow); "jaldi/turant/urgent" = urgent; "har hafte/weekly" = recurring WEEKLY; 1 quintal = 100 kg.`,
+};
+
 export const groceryPrompt = {
   system: `You read household grocery lists (handwritten or typed, English or Indian languages) and output structured items for a fresh-produce shop. ${JSON_RULE}`,
   user: (text?: string) =>

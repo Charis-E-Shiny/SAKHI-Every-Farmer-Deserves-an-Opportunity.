@@ -9,6 +9,7 @@ import { geminiFromEnv } from "./gemini";
 import { AIUnavailableError, type AIImage, type AIProvider } from "./provider";
 import {
   groceryPrompt,
+  parseDemandPrompt,
   parseListingPrompt,
   priceExplainPrompt,
   qualityPrompt,
@@ -16,14 +17,17 @@ import {
 import {
   QUALITY_DISCLAIMER,
   groceryListSchema,
+  parsedDemandSchema,
   parsedListingSchema,
   priceExplanationSchema,
   qualitySchema,
   type AIResult,
   type GroceryList,
+  type ParsedDemand,
   type ParsedListing,
   type QualityCore,
 } from "./schemas";
+import { parseDemandFallback } from "./fallback/demand-parser";
 import { SAMPLE_GROCERY_LIST, parseGroceryFallback } from "./fallback/grocery-parser";
 import { isoDay, parseListingFallback } from "./fallback/listing-parser";
 import { qualityHeuristic } from "./fallback/quality-heuristic";
@@ -128,6 +132,31 @@ export async function parseListing(transcript: string, lang: string): Promise<AI
         }),
       ),
     () => parseListingFallback(transcript),
+  );
+}
+
+/**
+ * Structures a spoken bulk requirement into demand fields (a draft the
+ * buyer reviews before posting).
+ */
+export async function parseDemand(transcript: string, lang: string): Promise<AIResult<ParsedDemand>> {
+  return withFallback(
+    "parse-demand",
+    async (p) => {
+      const out = await p.generateJSON({
+        task: "parse-demand",
+        system: parseDemandPrompt.system,
+        prompt: parseDemandPrompt.user(transcript, lang, new Date().toISOString()),
+        schema: parsedDemandSchema,
+        temperature: 0,
+      });
+      const crop = out.crop && isCropSlug(out.crop.toLowerCase()) ? out.crop.toLowerCase() : null;
+      const deadline = out.deadline && !Number.isNaN(Date.parse(out.deadline)) ? new Date(out.deadline).toISOString() : null;
+      const fixed = { ...out, crop, deadline };
+      const missing = (["crop", "qtyKg", "targetPrice", "deadline"] as const).filter((k) => fixed[k] === null);
+      return { ...fixed, missing: [...missing] };
+    },
+    () => parseDemandFallback(transcript),
   );
 }
 

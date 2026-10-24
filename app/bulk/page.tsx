@@ -1,7 +1,12 @@
-// Restaurant & community home — the full view is built in a later step of the plan.
-import { PageHeader } from "@/components/shell/page-header";
+// /bulk — restaurant & community kitchen home: requirements and offers.
+import type { Metadata } from "next";
+import { BulkHome } from "@/components/bulk/bulk-home";
+import { getCurrentUser } from "@/lib/auth/session";
 
-/** Restaurant & community landing view. */
-export default function BulkHome() {
-  return <PageHeader title="Bulk *procurement*" description="Loading your workspace…" />;
+export const metadata: Metadata = { title: "Bulk procurement" };
+
+/** Bulk buyer dashboard. */
+export default async function BulkPage() {
+  const user = await getCurrentUser();
+  return <BulkHome orgName={user?.orgName ?? user?.name ?? ""} />;
 }

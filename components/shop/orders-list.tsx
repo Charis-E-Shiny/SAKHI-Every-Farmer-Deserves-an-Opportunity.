@@ -23,7 +23,7 @@ const STEP_PROGRESS: Record<string, number> = { PLACED: 10, CONFIRMED: 30, PACKE
 /**
  * @param basePath - detail route prefix (/shop/orders or /bulk/orders)
  */
-export function OrdersList({ basePath = "/shop/orders", title = "Your *orders*" }: { basePath?: string; title?: string }) {
+export function OrdersList({ basePath = "/shop/orders", title = "Your *orders*", shopHref = "/shop" }: { basePath?: string; title?: string; shopHref?: string }) {
   const [scope, setScope] = useState<"active" | "past">("active");
   const { data, error, isLoading, mutate } = useSWR<SerializedOrder[]>(`/api/orders?scope=${scope}`);
   useLive(["order.updated"], () => mutate());
@@ -49,7 +49,7 @@ export function OrdersList({ basePath = "/shop/orders", title = "Your *orders*" 
           title={scope === "active" ? "No orders on the way" : "No past orders yet"}
           action={
             <Button asChild variant="outline">
-              <Link href="/shop">Start shopping</Link>
+              <Link href={shopHref}>Start shopping</Link>
             </Button>
           }
         />

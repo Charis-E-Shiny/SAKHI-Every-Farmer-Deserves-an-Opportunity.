@@ -26,17 +26,20 @@ const CANCEL_REASONS = ["Ordered by mistake", "Need it at a different time", "Fo
  * @param backHref - list to return to
  * @param handover - optional OTP/QR panel (rendered when the order is with a rider or ready for pickup)
  * @param after - optional block shown after delivery (feedback)
+ * @param actions - optional header buttons (e.g. invoice)
  */
 export function OrderDetail({
   id,
   backHref = "/shop/orders",
   handover,
   after,
+  actions,
 }: {
   id: string;
   backHref?: string;
   handover?: (order: SerializedOrder, refresh: () => void) => React.ReactNode;
   after?: (order: SerializedOrder, refresh: () => void) => React.ReactNode;
+  actions?: (order: SerializedOrder) => React.ReactNode;
 }) {
   const { data: order, error, isLoading, mutate } = useSWR<SerializedOrder>(`/api/orders/${id}`);
   const [live, setLive] = useState(false);
@@ -79,8 +82,11 @@ export function OrderDetail({
         <Link href={backHref} className="inline-flex min-h-9 items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
           <ArrowLeft className="size-4" /> Orders
         </Link>
-        <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs", live ? "border-lime/60 text-foreground" : "text-muted-foreground")}>
-          <Radio className={cn("size-3.5", live && "text-lime")} /> {live ? "Live" : "Auto-updating"}
+        <span className="flex items-center gap-2">
+          {actions?.(order)}
+          <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs", live ? "border-lime/60 text-foreground" : "text-muted-foreground")}>
+            <Radio className={cn("size-3.5", live && "text-lime")} /> {live ? "Live" : "Auto-updating"}
+          </span>
         </span>
       </div>
 

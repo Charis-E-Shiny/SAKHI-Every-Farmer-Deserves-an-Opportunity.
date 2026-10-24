@@ -53,12 +53,15 @@ export function Browse({
   detailBase = "/shop/listing",
   bulk = false,
   title = "Fresh from the *farm*",
+  top,
 }: {
   area: string | null;
   categories: CategoryChip[];
   detailBase?: string;
   bulk?: boolean;
   title?: string;
+  /** Rendered under the header (e.g. the bulk buyer tabs). */
+  top?: React.ReactNode;
 }) {
   const [q, setQ] = useState("");
   const query = useDeferredValue(q.trim());
@@ -92,6 +95,7 @@ export function Browse({
           </span>
         }
       />
+      {top}
 
       <div className="flex gap-2">
         <label className="relative min-w-0 flex-1">

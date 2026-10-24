@@ -95,3 +95,18 @@ export function StatusBadge({
     </span>
   );
 }
+
+/**
+ * Offer-specific wording (PENDING on an offer means "waiting for the buyer",
+ * not a settlement).
+ * @param viewer - whose screen this is, to phrase counters from their side
+ */
+export function offerStatusLabel(status: string, lastActor: string | null, viewer: "BUYER" | "FARMER"): string {
+  if (status === "PENDING") return viewer === "FARMER" ? "Awaiting buyer" : "New offer";
+  if (status === "COUNTERED") {
+    const mine = (lastActor === "BUYER") === (viewer === "BUYER");
+    return mine ? "You countered" : viewer === "FARMER" ? "Buyer countered" : "Farmer countered";
+  }
+  if (status === "REJECTED") return "Declined";
+  return statusLabel(status);
+}

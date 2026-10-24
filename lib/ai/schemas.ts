@@ -41,6 +41,20 @@ export const parsedListingSchema = z.object({
 });
 export type ParsedListing = z.infer<typeof parsedListingSchema>;
 
+export const parsedDemandSchema = z.object({
+  crop: z.string().nullable(),
+  qtyKg: z.number().positive().nullable(),
+  targetPrice: z.number().positive().nullable(),
+  /** ISO date-time */
+  deadline: z.string().nullable(),
+  urgent: z.boolean(),
+  recurring: z.boolean(),
+  frequency: z.enum(["DAILY", "WEEKLY"]).nullable(),
+  grade: z.enum(["A", "B", "C", "ANY"]),
+  missing: z.array(z.enum(["crop", "qtyKg", "targetPrice", "deadline"])),
+});
+export type ParsedDemand = z.infer<typeof parsedDemandSchema>;
+
 export const groceryListSchema = z.object({
   items: z
     .array(

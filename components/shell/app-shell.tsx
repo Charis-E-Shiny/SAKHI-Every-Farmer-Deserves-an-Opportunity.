@@ -65,13 +65,13 @@ function ShellInner({
   const mobileOnly = variant === "mobile";
 
   return (
-    <div className={cn("min-h-dvh", !mobileOnly && "lg:grid lg:grid-cols-[264px_minmax(0,1fr)]")}>
+    <div className={cn("min-h-dvh", !mobileOnly && "lg:grid lg:grid-cols-[264px_minmax(0,1fr)] print:block")}>
       {!mobileOnly && <Sidebar role={role} user={user} items={items} active={active} />}
       <div className="flex min-w-0 flex-col">
         <TopBar role={role} user={user} items={items} active={active} mobileOnly={mobileOnly} />
         <main
           className={cn(
-            "pb-nav mx-auto w-full flex-1 px-4 pt-4 sm:px-6",
+            "pb-nav mx-auto w-full flex-1 px-4 pt-4 sm:px-6 print:p-0",
             mobileOnly ? "max-w-md" : "max-w-6xl lg:px-10 lg:pt-8 lg:pb-12",
           )}
         >
@@ -87,7 +87,7 @@ function Sidebar({ role, user, items, active }: { role: Role; user: PublicUser; 
   const { t } = useI18n();
   const badges = useNavBadges(role);
   return (
-    <aside className="sticky top-0 hidden h-dvh flex-col border-r bg-sidebar px-4 py-6 lg:flex">
+    <aside className="sticky top-0 hidden h-dvh flex-col border-r bg-sidebar px-4 py-6 lg:flex print:hidden">
       <div className="flex items-center justify-between px-2">
         <Logo href={items[0].href} />
         <ThemeToggle />
@@ -152,7 +152,7 @@ function TopBar({
   return (
     <header
       className={cn(
-        "glass sticky top-0 z-40 flex h-14 items-center gap-2 border-b px-4 sm:px-6",
+        "glass sticky top-0 z-40 flex h-14 items-center gap-2 border-b px-4 sm:px-6 print:hidden",
         !mobileOnly && "lg:hidden",
       )}
     >
@@ -204,7 +204,7 @@ function BottomNav({
       <nav
         aria-label="Tabs"
         className={cn(
-          "fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 mx-auto max-w-md",
+          "fixed inset-x-3 bottom-[max(0.75rem,env(safe-area-inset-bottom))] z-50 mx-auto max-w-md print:hidden",
           !mobileOnly && "lg:hidden",
         )}
       >
@@ -304,7 +304,7 @@ function Tab({ item, on, label, count }: { item: NavItem; on: boolean; label: st
           </motion.span>
         )}
       </span>
-      <span className="max-w-full text-center break-words">{label}</span>
+      <span className="max-w-full text-center whitespace-nowrap">{label}</span>
     </Link>
   );
 }

@@ -67,7 +67,7 @@ export const NAV: Record<Role, NavItem[]> = {
     { href: "/bulk/demands/new", labelKey: "nav.postDemand", icon: Plus, fab: true },
     { href: "/bulk/orders", labelKey: "nav.orders", icon: Truck, tab: true },
     { href: "/bulk/schedule", labelKey: "nav.schedule", icon: CalendarClock, tab: true },
-    { href: "/shop/cart", labelKey: "nav.cart", icon: ShoppingBag, badge: "cart" },
+    // Cart is reached from the floating cart bar, keeping the phone tab bar to five slots.
   ],
   ADMIN: [
     { href: "/admin", labelKey: "nav.overview", icon: ChartNoAxesCombined, tab: true },
